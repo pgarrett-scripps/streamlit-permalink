@@ -20,4 +20,12 @@ setup(
         'streamlit >= 1.4.0',
         'packaging >= 15.0',
     ],
+    extras_require={
+        'test': [
+            'pytest>=8.0.0',
+            'pytest-cov>=4.1.0',  # For coverage reporting
+            'pytest-xdist>=3.5.0',  # For parallel testing
+        ],
+    },
+    python_requires='>=3.8',  # Match Streamlit's minimum Python version
 )

@@ -17,7 +17,7 @@ stp.number_input, stp.text_area, stp.date_input, stp.time_input, stp.color_picke
 
 In addition to standard input widgets, it also has an url-aware version of the [streamlit-option-menu](https://github.com/victoryhb/streamlit-option-menu) component: `stp.option_menu`. For this to work, `streamlit-option-menu` must be installed separately.
 
-General usage of input widgets is described in [Streamlit docs](https://docs.streamlit.io/library/api-reference/widgets). Url-aware widgets additionally take one more keyword argument: `url_key`. It is the name of the query parameter in the URL under which the widget’s state will be persisted:
+General usage of input widgets is described in [Streamlit docs](https://docs.streamlit.io/library/api-reference/widgets). Url-aware widgets additionally take one more keyword argument: `url_key`. It is the name of the query parameter in the URL under which the widget's state will be persisted:
 
 ```python
 import streamlit_permalink as stp
@@ -89,5 +89,35 @@ if form.form_submit_button('Submit'):
   # URL is updated only when users hit the submit button
   st.write(text)
 ```
+
+\
+
+### Development and Testing
+
+To set up the development environment and run tests:
+
+1. Clone the repository and install in editable mode with test dependencies:
+```bash
+git clone https://github.com/franekp/streamlit-permalink.git
+cd streamlit-permalink
+pip install -e ".[test]"
+```
+
+2. Run the tests:
+```bash
+# Run all tests
+pytest
+
+# Run tests with coverage report
+pytest --cov=streamlit_permalink
+
+# Run tests in parallel
+pytest -n auto
+
+# Run a specific test file
+pytest tests/test_checkbox.py
+```
+
+The test suite includes comprehensive tests for all supported Streamlit widgets, covering both standalone and form-based usage scenarios.
 
 \
