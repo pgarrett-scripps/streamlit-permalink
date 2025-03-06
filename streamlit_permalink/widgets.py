@@ -4,6 +4,9 @@ from packaging.version import parse as V
 from .utils import to_url_value, _EMPTY
 from .core import _active_form
 
+# Can't split this up into multiple files due to URLAwareWidget and UrlAwareForm both referencing each other
+# - would introduce circular dependencies
+
 class UrlAwareWidget:
     def __init__(self, base_widget, form=None):
         self.base_widget = base_widget
