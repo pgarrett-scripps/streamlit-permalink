@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools"]
+
+[project]
+name = "streamlit-permalink"
+dynamic = ["version"]
+description = "Effortless permalinks in Streamlit apps"
+readme = "README.md"
+authors = [
+    { name = "Franciszek Piszcz", email = "franciszek.piszcz@rtbhouse.com" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "streamlit>=1.4.0",
+    "packaging>=15.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.dynamic]
+version = {attr = "streamlit_permalink.__version__"}
+
+[project.urls]
+repository = "https://github.com/franekp/streamlit-permalink"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.5.0",
+] 

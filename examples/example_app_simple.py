@@ -23,9 +23,9 @@ if hasattr(st, 'pills'):
 
 # Add feedback widgets if available
 if hasattr(st, 'feedback'):
-    feedback_thumbs = stp.feedback('thumbs', url_key='feedback_thumbs')
-    feedback_faces = stp.feedback('faces', url_key='feedback_faces')
-    feedback_stars = stp.feedback('stars', url_key='feedback_stars')
+    feedback_thumbs = stp.feedback(options='thumbs', url_key='feedback_thumbs')
+    feedback_faces = stp.feedback(options='faces', url_key='feedback_faces')
+    feedback_stars = stp.feedback(options='stars', url_key='feedback_stars')
 
 # Add segmented control widgets if available
 if hasattr(st, 'segmented_control'):

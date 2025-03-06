@@ -12,7 +12,8 @@ The `streamlit_permalink` (shorthand: `stp`) namespace contains url-aware versio
 
 ```python
 stp.checkbox, stp.radio, stp.selectbox, stp.multiselect, stp.slider, stp.select_slider, stp.text_input
-stp.number_input, stp.text_area, stp.date_input, stp.time_input, stp.color_picker, stp.form_submit_button
+stp.number_input, stp.text_area, stp.date_input, stp.time_input, stp.color_picker, stp.form_submit_button, 
+stp.pills, stp.feedback, stp.segmented_control
 ```
 
 In addition to standard input widgets, it also has an url-aware version of the [streamlit-option-menu](https://github.com/victoryhb/streamlit-option-menu) component: `stp.option_menu`. For this to work, `streamlit-option-menu` must be installed separately.
@@ -108,16 +109,8 @@ pip install -e ".[test]"
 # Run all tests
 pytest
 
-# Run tests with coverage report
-pytest --cov=streamlit_permalink
-
-# Run tests in parallel
-pytest -n auto
-
 # Run a specific test file
 pytest tests/test_checkbox.py
 ```
 
 The test suite includes comprehensive tests for all supported Streamlit widgets, covering both standalone and form-based usage scenarios.
-
-\

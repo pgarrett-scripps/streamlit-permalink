@@ -1,6 +1,7 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
 import streamlit as st
+import streamlit_permalink as stp
 import pytest
 from .utils import get_query_params, set_query_params
 
@@ -82,7 +83,7 @@ class TestMultiselect:
         # Unselect all remaining options
         self.at.multiselect[0].set_value([]).run()
         # Empty list is represented by _STREAMLIT_PERMALINK_EMPTY in URL
-        assert get_query_params(self.at)["multi"] == ["_STREAMLIT_PERMALINK_EMPTY"]
+        assert get_query_params(self.at)["multi"] == [stp._EMPTY]
         assert self.at.multiselect[0].value == []
 
     def test_multiselect_set_value_interaction(self):
