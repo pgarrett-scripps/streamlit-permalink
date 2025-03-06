@@ -233,6 +233,54 @@ class UrlAwareWidget:
         result = self.base_widget(label, value, *args, **kwargs)
         return result, result
 
+    def handle_pills(self, url_value, label, options, selection_mode="single", default=None, *args, **kwargs):
+        options = list(map(str, options))
+        if selection_mode == "single":
+            if url_value is not None:
+                try:
+                    default = url_value[0]
+                except (IndexError, ValueError):
+                    pass
+            result = self.base_widget(label, options, selection_mode=selection_mode, default=default, *args, **kwargs)
+            return result, result
+        else:  # multi selection mode
+            if url_value == [_EMPTY]:
+                default = []
+            elif url_value is not None:
+                default = url_value
+            result = self.base_widget(label, options, selection_mode=selection_mode, default=default, *args, **kwargs)
+            return result, result
+
+    def handle_feedback(self, url_value, options="thumbs", *args, **kwargs):
+        if url_value is not None:
+            # Since feedback returns None or int, we need to convert the string URL value to int or None
+            if url_value[0] == "None":
+                value = None
+            else:
+                value = int(url_value[0])
+            result = self.base_widget(options, *args, **kwargs)
+            return str(result) if result is not None else "None", result
+        result = self.base_widget(options, *args, **kwargs)
+        return str(result) if result is not None else "None", result
+
+    def handle_segmented_control(self, url_value, label, options, selection_mode="single", default=None, *args, **kwargs):
+        options = list(map(str, options))
+        if selection_mode == "single":
+            if url_value is not None:
+                try:
+                    default = url_value[0]
+                except (IndexError, ValueError):
+                    pass
+            result = self.base_widget(label, options, selection_mode=selection_mode, default=default, *args, **kwargs)
+            return result, result
+        else:  # multi selection mode
+            if url_value == [_EMPTY]:
+                default = []
+            elif url_value is not None:
+                default = url_value
+            result = self.base_widget(label, options, selection_mode=selection_mode, default=default, *args, **kwargs)
+            return result, result
+
 
 class UrlAwareFormSubmitButton:
     def __init__(self, base_widget, form=None):
@@ -291,6 +339,12 @@ text_area = UrlAwareWidget(st.text_area)
 date_input = UrlAwareWidget(st.date_input)
 time_input = UrlAwareWidget(st.time_input)
 color_picker = UrlAwareWidget(st.color_picker)
+if hasattr(st, 'pills'):
+    pills = UrlAwareWidget(st.pills)
+if hasattr(st, 'feedback'):
+    feedback = UrlAwareWidget(st.feedback)
+if hasattr(st, 'segmented_control'):
+    segmented_control = UrlAwareWidget(st.segmented_control)
 form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
 
 try:
@@ -316,6 +370,12 @@ class UrlAwareForm:
     date_input = UrlAwareWidget(st.date_input)
     time_input = UrlAwareWidget(st.time_input)
     color_picker = UrlAwareWidget(st.color_picker)
+    if hasattr(st, 'pills'):
+        pills = UrlAwareWidget(st.pills)
+    if hasattr(st, 'feedback'):
+        feedback = UrlAwareWidget(st.feedback)
+    if hasattr(st, 'segmented_control'):
+        segmented_control = UrlAwareWidget(st.segmented_control)
     form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
 
     if _has_option_menu:
