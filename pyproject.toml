@@ -7,7 +7,8 @@ dynamic = ["version"]
 description = "Effortless permalinks in Streamlit apps"
 readme = "README.md"
 authors = [
-    { name = "Franciszek Piszcz", email = "franciszek.piszcz@rtbhouse.com" }
+    { name = "Franciszek Piszcz", email = "franciszek.piszcz@rtbhouse.com"},
+    { name = "Patrick Garrett", email = "pgarrett@scripps.edu"}
 ]
 requires-python = ">=3.8"
 dependencies = [
