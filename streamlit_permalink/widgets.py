@@ -3,9 +3,7 @@ import streamlit as st
 from packaging.version import parse as V
 from .utils import to_url_value, _EMPTY
 from .core import _active_form
-
-# Can't split this up into multiple files due to URLAwareWidget and UrlAwareForm both referencing each other
-# - would introduce circular dependencies
+from .handlers import HANDLERS
 
 class UrlAwareWidget:
     def __init__(self, base_widget, form=None):
@@ -56,11 +54,12 @@ class UrlAwareWidget:
             url_value = url.get(url_key, None)
         else:
             url_value = st.query_params.get_all(url_key) or None
-        handler = getattr(self, f'handle_{self.base_widget.__name__}')
+        handler = HANDLERS[self.base_widget.__name__]
         # TODO: remove the first return value from the handle_{widget-name}() methods
         # NOTE: do this when we gain confidence that the on_change callbacks are a
         # reliable replacement for the SessionState-based hacky solution for permalinks
-        _, result = handler(url_value, *args, **kwargs)
+        _, result = handler(self.base_widget, url_value, *args, **kwargs)
+
         return result
 
     def call_inside_form(self, form, *args, **kwargs):
@@ -77,189 +76,6 @@ class UrlAwareWidget:
         handler = getattr(self, f'handle_{self.base_widget.__name__}')
         _, result = handler(url_value, *args, **kwargs)
         return result
-
-    def handle_checkbox(self, url_value, label, value=False, *args, **kwargs):
-        url_value = url_value and url_value[0]
-        url_value = {'True': True, 'False': False}.get(url_value, url_value)
-        if url_value is not None:
-            value = url_value
-        result = self.base_widget(label, value, *args, **kwargs)
-        return str(result), result
-
-    def handle_toggle(self, url_value, label, value=False, *args, **kwargs):
-        return self.handle_checkbox(url_value, label, value, *args, **kwargs)
-
-    def handle_radio(self, url_value, *args, **kwargs):
-        return self.handle_selectbox(url_value, *args, **kwargs)
-
-    def handle_selectbox(self, url_value, label, options, index=0, *args, **kwargs):
-        url_value = url_value and url_value[0]
-        options = list(map(str, options))
-        if url_value is not None:
-            try:
-                index = options.index(url_value)
-            except ValueError:
-                pass
-        result = self.base_widget(label, options, index, *args, **kwargs)
-        return result, result
-
-    def handle_option_menu(self, url_value, menu_title, options, default_index=0, *args, **kwargs):
-        url_value = url_value and url_value[0]
-        options = list(map(str, options))
-        if url_value is not None:
-            try:
-                default_index = options.index(url_value)
-            except ValueError:
-                pass
-        result = self.base_widget(menu_title, options, default_index, *args, **kwargs)
-        return result, result
-
-    def handle_multiselect(self, url_value, label, options, default=None, *args, **kwargs):
-        options = list(map(str, options))
-        if url_value == [_EMPTY]:
-            default = []
-        elif url_value is not None:
-            default = url_value
-        result = self.base_widget(label, options, default, *args, **kwargs)
-        return result, result
-
-    def handle_slider(self, url_value, label, min_value=None, max_value=None, value=None, *args, **kwargs):
-        if value is not None and not isinstance(value, list):
-            slider_type = type(value)
-        if value is not None and isinstance(value, list):
-            slider_type = type(value[0])
-        elif min_value is not None:
-            slider_type = type(min_value)
-        elif max_value is not None:
-            slider_type = type(max_value)
-        assert slider_type in (int, float), "unsupported slider type"
-        if url_value is not None:
-            if len(url_value) == 1:
-                value = slider_type(float(url_value[0]))
-            else:
-                value = [slider_type(float(i)) for i in url_value]
-        result = self.base_widget(label, min_value, max_value, value, *args, **kwargs)
-        if isinstance(result, tuple):
-            new_url_value = list(map(str, result))
-        else:
-            new_url_value = str(result)
-        return new_url_value, result
-
-    def handle_select_slider(self, url_value, label, options, value=None, *args, **kwargs):
-        options = list(map(str, options))
-        if url_value is not None:
-            if len(url_value) == 1:
-                value = url_value[0]
-            else:
-                value = url_value
-        result = self.base_widget(label, options, value, *args, **kwargs)
-        return result, result
-
-    def handle_text_input(self, url_value, label, value="", *args, **kwargs):
-        if url_value is not None:
-            value = url_value[0]
-        result = self.base_widget(label, value, *args, **kwargs)
-        return result, result
-
-    def handle_number_input(self, url_value, label, min_value=None, max_value=None, value=None, *args, **kwargs):
-        input_type = float
-        if value is not None:
-            input_type = type(value)
-        elif min_value is not None:
-            input_type = type(min_value)
-        elif max_value is not None:
-            input_type = type(max_value)
-        assert input_type in (int, float), "unsupported number_input type"
-        if url_value is not None:
-            value = input_type(float(url_value[0]))
-        if value is None:
-            result = self.base_widget(label, min_value, max_value, *args, **kwargs)
-        else:
-            result = self.base_widget(label, min_value, max_value, value, *args, **kwargs)
-        return str(result), result
-
-    def handle_text_area(self, url_value, *args, **kwargs):
-        return self.handle_text_input(url_value, *args, **kwargs)
-
-    def handle_date_input(self, url_value, label, value=None, *args, **kwargs):
-        parse_date = lambda s: datetime.strptime(s,'%Y-%m-%d').date()
-        if url_value is not None:
-            if len(url_value) == 1:
-                value = parse_date(url_value[0])
-            else:
-                value = list(map(parse_date, url_value))
-        result = self.base_widget(label, value, *args, **kwargs)
-        if isinstance(result, tuple):
-            new_url_value = [d.isoformat() for d in result]
-        elif result is not None:
-            new_url_value = result.isoformat()
-        else:
-            new_url_value = result
-        return new_url_value, result
-
-    def handle_time_input(self, url_value, label, value=None, *args, **kwargs):
-        parse_time = lambda s: datetime.strptime(s, '%H:%M').time()
-        if url_value is not None:
-            value = parse_time(url_value[0])
-        result = self.base_widget(label, value, *args, **kwargs)
-        if result is not None:
-            return result.strftime('%H:%M'), result
-        else:
-            return result, result
-
-    def handle_color_picker(self, url_value, label, value=None, *args, **kwargs):
-        if url_value is not None:
-            value = url_value[0]
-        result = self.base_widget(label, value, *args, **kwargs)
-        return result, result
-
-    def handle_pills(self, url_value, label, options, selection_mode="single", default=None, *args, **kwargs):
-        options = list(map(str, options))
-        if selection_mode == "single":
-            if url_value is not None:
-                try:
-                    default = url_value[0]
-                except (IndexError, ValueError):
-                    pass
-            result = self.base_widget(label, options, selection_mode=selection_mode, default=default, *args, **kwargs)
-            return result, result
-        else:  # multi selection mode
-            if url_value == [_EMPTY]:
-                default = []
-            elif url_value is not None:
-                default = url_value
-            result = self.base_widget(label, options, selection_mode=selection_mode, default=default, *args, **kwargs)
-            return result, result
-
-    def handle_feedback(self, url_value, options="thumbs", *args, **kwargs):
-        if url_value is not None:
-            # Since feedback returns None or int, we need to convert the string URL value to int or None
-            if url_value[0] == "None":
-                value = None
-            else:
-                value = int(url_value[0])
-            result = self.base_widget(options, *args, **kwargs)
-            return str(result) if result is not None else "None", result
-        result = self.base_widget(options, *args, **kwargs)
-        return str(result) if result is not None else "None", result
-
-    def handle_segmented_control(self, url_value, label, options, selection_mode="single", default=None, *args, **kwargs):
-        options = list(map(str, options))
-        if selection_mode == "single":
-            if url_value is not None:
-                try:
-                    default = url_value[0]
-                except (IndexError, ValueError):
-                    pass
-            result = self.base_widget(label, options, selection_mode=selection_mode, default=default, *args, **kwargs)
-            return result, result
-        else:  # multi selection mode
-            if url_value == [_EMPTY]:
-                default = []
-            elif url_value is not None:
-                default = url_value
-            result = self.base_widget(label, options, selection_mode=selection_mode, default=default, *args, **kwargs)
-            return result, result
 
 
 class UrlAwareFormSubmitButton:

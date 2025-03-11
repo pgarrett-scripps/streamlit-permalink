@@ -65,3 +65,10 @@ for i in irrelevant:
     if i in loc:
         del loc[i]
 st.write(loc)
+
+
+# if text == error, rerun the app
+if text_input == 'error':
+    st.error('error')
+    st.stop()
+
