@@ -22,12 +22,6 @@ with stp.form('form'):
         pills_single = stp.pills('pills_single', ['Option A', 'Option B', 'Option C'], url_key='pills_single')
         pills_multi = stp.pills('pills_multi', ['Option A', 'Option B', 'Option C'], selection_mode='multi', url_key='pills_multi')
 
-    # Add feedback widgets if available
-    if hasattr(st, 'feedback'):
-        feedback_thumbs = stp.feedback(options='thumbs', url_key='feedback_thumbs')
-        feedback_faces = stp.feedback(options='faces', url_key='feedback_faces')
-        feedback_stars = stp.feedback(options='stars', url_key='feedback_stars')
-
     # Add segmented control widgets if available
     if hasattr(st, 'segmented_control'):
         seg_single = stp.segmented_control(
@@ -41,6 +35,7 @@ with stp.form('form'):
             selection_mode="multi",
             url_key='segmented_control_multi'
         )
+        
     stp.form_submit_button('Submit')
 
 loc = locals().copy()

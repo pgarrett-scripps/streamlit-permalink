@@ -37,13 +37,18 @@ class TestRadio:
         assert self.at.radio[0].value == self.OPTIONS[0]
         assert self.at.radio[0].index == 0
         # Verify URL parameters are empty
-        assert not get_query_params(self.at)
+
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["radio"] == ["Option A"] # default value
 
     def test_radio_url_param(self):
         """Test radio with URL parameter set"""
         # Set initial URL parameter
         set_query_params(self.at, {"radio": "Option B"})
         self.at.run()
+
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["radio"] == ["Option B"]
         
         # Verify radio reflects URL state
         assert self.at.radio[0].value == "Option B"
@@ -55,7 +60,8 @@ class TestRadio:
         
         # Initially first option and no URL params
         assert self.at.radio[0].value == self.OPTIONS[0]
-        assert not get_query_params(self.at)
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["radio"] == ["Option A"] # default value
         
         # Select new option
         self.at.radio[0].set_value("Option B").run()
@@ -73,6 +79,27 @@ class TestRadio:
         assert self.at.radio[0].value == "Option C"
         assert self.at.radio[0].index == 2
 
+    def test_radio_invalid_url_param(self):
+        """Test radio behavior with invalid option value"""
+        set_query_params(self.at, {"radio": "Invalid Option"})
+        self.at.run()
+        
+        assert self.at.exception
+
+    def test_radio_empty_url_param(self):
+        """Test radio behavior with empty URL parameter value"""
+        set_query_params(self.at, {"radio": ""})
+        self.at.run()
+        
+        assert self.at.exception
+
+    def test_radio_multiple_url_values(self):
+        """Test radio behavior with multiple URL parameter values"""
+        set_query_params(self.at, {"radio": ["Option A", "Option B"]})
+        self.at.run()
+        
+        assert self.at.exception
+
 class TestFormRadio:
     def setup_method(self):
         self.at = AppTest.from_function(create_form_radio_app)
@@ -89,12 +116,16 @@ class TestFormRadio:
         assert self.at.radio[0].value == self.OPTIONS[0]
         assert self.at.radio[0].index == 0
         # Verify URL parameters are empty
-        assert not get_query_params(self.at)
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["form_radio"] == ["Option A"] # default value
 
     def test_form_radio_url_param(self):
         """Test form radio with URL parameter set"""
         set_query_params(self.at, {"form_radio": "Option B"})
         self.at.run()
+
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["form_radio"] == ["Option B"]
         
         assert self.at.radio[0].value == "Option B"
         assert self.at.radio[0].index == 1
@@ -105,8 +136,8 @@ class TestFormRadio:
         
         # Initially first option and no URL params
         assert self.at.radio[0].value == self.OPTIONS[0]
-        assert not get_query_params(self.at)
-        
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["form_radio"] == ["Option A"] # default value
         # Select new option
         self.at.radio[0].set_value("Option B")
         # Submit the form
@@ -131,14 +162,15 @@ class TestFormRadio:
         
         # Initially first option and no URL params
         assert self.at.radio[0].value == self.OPTIONS[0]
-        assert not get_query_params(self.at)
-        
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["form_radio"] == ["Option A"] # default value
+
         # Select new option without submitting
         self.at.radio[0].set_value("Option B").run()
         
         # Verify URL parameters haven't changed
-        assert not get_query_params(self.at)
-        
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["form_radio"] == ["Option A"] # default value
         # Now submit the form
         self.at.button[0].click().run()
         
@@ -160,4 +192,25 @@ class TestFormRadio:
         
         # Verify only final selection is in URL
         assert get_query_params(self.at)["form_radio"] == ["Option B"]
-        assert self.at.radio[0].value == "Option B" 
+        assert self.at.radio[0].value == "Option B"
+
+    def test_form_radio_invalid_url_param(self):
+        """Test form radio behavior with invalid option value"""
+        set_query_params(self.at, {"form_radio": "Invalid Option"})
+        self.at.run()
+        
+        assert self.at.exception
+
+    def test_form_radio_empty_url_param(self):
+        """Test form radio behavior with empty URL parameter value"""
+        set_query_params(self.at, {"form_radio": ""})
+        self.at.run()
+        
+        assert self.at.exception
+
+    def test_form_radio_multiple_url_values(self):
+        """Test form radio behavior with multiple URL parameter values"""
+        set_query_params(self.at, {"form_radio": ["Option A", "Option B"]})
+        self.at.run()
+        
+        assert self.at.exception 

@@ -3,6 +3,8 @@ from packaging.version import parse as V
 import streamlit as st
 import pytest
 from datetime import time
+
+from streamlit_permalink.constants import _EMPTY, _NONE
 from .utils import get_query_params, set_query_params
 
 def create_time_input_app():
@@ -50,8 +52,7 @@ class TestTimeInput:
         assert self.at.time_input[0].value == time(12, 0)  # Basic time
         assert self.at.time_input[1].value == time(15, 30, 45)  # Specific time
         assert self.at.time_input[2].value == time(9, 0)  # Stepped time
-        # Verify URL parameters are empty
-        assert not get_query_params(self.at)
+
 
     def test_time_input_url_params(self):
         """Test time inputs with URL parameters set"""
@@ -73,7 +74,7 @@ class TestTimeInput:
         self.at.run()
         
         # Set new values
-        self.at.time_input[0].set_value(time(14, 30)).run()
+        self.at.time_input[0].set_value(time(14, 30, 1)).run() # ignore seconds
         
         # Verify URL parameters were updated
         params = get_query_params(self.at)
@@ -118,6 +119,52 @@ class TestTimeInput:
         expected_stepped = time((initial_stepped.hour - 1) % 24, initial_stepped.minute)
         assert self.at.time_input[2].value == expected_stepped
 
+    def test_time_input_with_empty_none_values(self):
+        """Test time inputs with _EMPTY and _NONE URL parameter values"""
+        # Set URL parameters with special values
+        set_query_params(self.at, {
+            "time": _EMPTY,
+            "specific_time": _NONE,
+            "stepped_time": "10:00"
+        })
+        
+        self.at.run()
+
+        assert self.at.exception
+
+    def test_time_input_invalid_format(self):
+        """Test time inputs with invalid format in URL parameters"""
+        # Set URL parameters with invalid time format
+        set_query_params(self.at, {
+            "time": "13:45",
+            "specific_time": "16:30:45",  # Invalid - includes seconds
+            "stepped_time": "10:00"
+        })
+        
+        self.at.run()
+
+        assert self.at.exception
+        
+        # Try different invalid format
+        set_query_params(self.at, {
+            "time": "13-45",  # Invalid format
+            "specific_time": "16:30",
+            "stepped_time": "10:00"
+        })
+        
+        self.at.run()
+
+        assert self.at.exception
+    
+    def test_time_input_multiple_values(self):
+        """Test time inputs with multiple values in URL parameters"""
+        # Set URL parameters with multiple values for a time input
+        self.at.query_params["time"] = ["13:45", "14:30"]
+        
+        self.at.run()
+
+        assert self.at.exception
+
 class TestFormTimeInput:
     def setup_method(self):
         self.at = AppTest.from_function(create_form_time_input_app)
@@ -132,8 +179,10 @@ class TestFormTimeInput:
         assert len(self.at.time_input) == 2
         assert self.at.time_input[0].value == time(12, 0)
         assert self.at.time_input[1].value == time(9, 0)
-        # Verify URL parameters are empty
-        assert not get_query_params(self.at)
+        
+        assert get_query_params(self.at)    
+        assert get_query_params(self.at)["form_time"] == ["12:00"]
+        assert get_query_params(self.at)["form_stepped_time"] == ["09:00"]
 
     def test_form_time_input_url_params(self):
         """Test form time inputs with URL parameters set"""
@@ -180,8 +229,9 @@ class TestFormTimeInput:
         self.at.time_input[0].set_value(time(17, 15))
         self.at.time_input[1].increment().run()
         
-        # Verify URL parameters haven't changed
-        assert not get_query_params(self.at)
+        assert get_query_params(self.at)    
+        assert get_query_params(self.at)["form_time"] == ["12:00"]
+        assert get_query_params(self.at)["form_stepped_time"] == ["09:00"]
         
         # Submit the form
         self.at.button[0].click().run()
@@ -209,4 +259,48 @@ class TestFormTimeInput:
         # Verify only final times are in URL
         params = get_query_params(self.at)
         assert params["form_time"] == ["09:30"]
-        assert params["form_stepped_time"] == ["10:00"] 
+        assert params["form_stepped_time"] == ["10:00"]
+
+    def test_form_time_input_with_empty_none_values(self):
+        """Test form time inputs with _EMPTY and _NONE URL parameter values"""
+        # Set URL parameters with special values
+        set_query_params(self.at, {
+            "form_time": _NONE,
+            "form_stepped_time": _NONE
+        })
+        self.at.run()
+        
+        assert self.at.exception
+
+    
+    def test_form_time_input_invalid_format(self):
+        """Test form time inputs with invalid format in URL parameters"""
+        # Set URL parameters with invalid time format
+        set_query_params(self.at, {
+            "form_time": "13:45:30",  # Invalid - includes seconds
+            "form_stepped_time": "10:00" 
+        })
+        
+        self.at.run()
+
+        assert self.at.exception
+        
+        # Try different invalid format
+        set_query_params(self.at, {
+            "form_time": "25:45",  # Invalid hour
+            "form_stepped_time": "10:00"
+        })
+        
+        self.at.run()
+
+        assert self.at.exception
+
+    
+    def test_form_time_input_multiple_values(self):
+        """Test form time inputs with multiple values in URL parameters"""
+        # Set URL parameters with multiple values for a time input
+        self.at.query_params["form_time"] = ["13:45", "14:30"]
+
+        self.at.run()
+        
+        assert self.at.exception

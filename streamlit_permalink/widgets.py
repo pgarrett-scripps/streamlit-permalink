@@ -1,12 +1,25 @@
 from datetime import datetime
 import streamlit as st
 from packaging.version import parse as V
+from typing import Callable, Any, Dict, Optional, Type, TypeVar, Union
 from .utils import to_url_value, _EMPTY
 from .core import _active_form
 from .handlers import HANDLERS
+import inspect
+
+T = TypeVar('T')
 
 class UrlAwareWidget:
-    def __init__(self, base_widget, form=None):
+    """A wrapper class that adds URL parameter awareness to Streamlit widgets.
+    
+    This class wraps standard Streamlit widgets to enable their values to be 
+    controlled via URL parameters, enabling permalink functionality.
+    
+    Args:
+        base_widget (Callable): The original Streamlit widget function to wrap
+        form (Optional[UrlAwareForm]): The form instance if this widget is part of a form
+    """
+    def __init__(self, base_widget: Callable, form: Optional['UrlAwareForm'] = None) -> None:
         self.base_widget = base_widget
         self.form = form
         self.__module__ = base_widget.__module__
@@ -23,63 +36,88 @@ class UrlAwareWidget:
     # For this second way, we need to know if UrlAwareWidget has been
     # called like a method on the form object. Therefore, we use the
     # descriptor protocol to attach the form object:
-    def __get__(self, form, _objtype=None):
+    def __get__(self, form: 'UrlAwareForm', _objtype: Optional[Type] = None) -> 'UrlAwareWidget':
+        """Implements the descriptor protocol for form-based widget access."""
         assert isinstance(form, UrlAwareForm)
         return UrlAwareWidget(getattr(form.base_form, self.base_widget.__name__), form)
-
+    
     def __call__(self, *args, **kwargs):
-        if 'url_key' not in kwargs:
-            return self.base_widget(*args, **kwargs)
+
+        url_key = kwargs.pop('url_key', None)
+
+        signature = inspect.signature(self.base_widget)
+        bound_args = signature.bind_partial(*args, **kwargs)
+
+        key = bound_args.arguments.get('key', None)
+
+        # sets url key or errors 
+        if url_key is None:
+
+            if key is None:
+                raise ValueError("url_key or key is required")
+            else:
+                url_key = key
+
+        if key is None:
+            bound_args.arguments['key'] = url_key
+
         if _active_form is not None or self.form is not None:
-            return self.call_inside_form(self.form or _active_form, *args, **kwargs)
-        url_key = kwargs.pop('url_key')
-        if 'key' not in kwargs:
-            kwargs['key'] = url_key
-        key = kwargs['key']
+            return self.call_inside_form(self.form or _active_form, url_key, bound_args)
+        
         if V(st.__version__) < V('1.30'):
             url = st.experimental_get_query_params()
-        user_supplied_change_handler = kwargs.get('on_change', lambda *args, **kwargs: None)
+
+        # if user provides on_change and its not None, we need to update the url when the widget changes
+        if 'on_change' in kwargs and kwargs['on_change'] is not None:
+            user_supplied_change_handler = kwargs.get('on_change', lambda *args, **kwargs: None)
+        else:
+            user_supplied_change_handler = None
 
         def on_change(*args, **kwargs):
             if V(st.__version__) < V('1.30'):
-                url[url_key] = to_url_value(getattr(st.session_state, key))
+                url[url_key] = to_url_value(getattr(st.session_state, bound_args.arguments['key']))
                 st.experimental_set_query_params(**url)
             else:
-                st.query_params[url_key] = to_url_value(getattr(st.session_state, key))
-            user_supplied_change_handler(*args, **kwargs)
+                st.query_params[url_key] = to_url_value(getattr(st.session_state, bound_args.arguments['key']))
 
+            if user_supplied_change_handler is not None:
+                user_supplied_change_handler(*args, **kwargs)
 
-        kwargs['on_change'] = on_change
+        bound_args.arguments['on_change'] = on_change
         if V(st.__version__) < V('1.30'):
             url_value = url.get(url_key, None)
         else:
             url_value = st.query_params.get_all(url_key) or None
-        handler = HANDLERS[self.base_widget.__name__]
-        # TODO: remove the first return value from the handle_{widget-name}() methods
-        # NOTE: do this when we gain confidence that the on_change callbacks are a
-        # reliable replacement for the SessionState-based hacky solution for permalinks
-        _, result = handler(self.base_widget, url_value, *args, **kwargs)
 
+        handler = HANDLERS[self.base_widget.__name__]
+        result = handler(url_key, url_value, bound_args)
         return result
 
-    def call_inside_form(self, form, *args, **kwargs):
-        url_key = kwargs.pop('url_key')
-        if 'key' not in kwargs:
-            kwargs['key'] = url_key
-        key = kwargs['key']
-        form.field_mapping[url_key] = key
+    def call_inside_form(self, form, url_key, bound_args):
+
+        form.field_mapping[url_key] = bound_args.arguments['key']
+
         if V(st.__version__) < V('1.30'):
             url = st.experimental_get_query_params()
             url_value = url.get(url_key, None)
         else:
             url_value = st.query_params.get_all(url_key) or None
-        handler = getattr(self, f'handle_{self.base_widget.__name__}')
-        _, result = handler(url_value, *args, **kwargs)
+            
+        handler = HANDLERS[self.base_widget.__name__]
+        result = handler(url_key, url_value, bound_args)
         return result
 
 
 class UrlAwareFormSubmitButton:
-    def __init__(self, base_widget, form=None):
+    """A wrapper class for Streamlit form submit buttons with URL parameter support.
+    
+    Handles updating URL parameters when a form is submitted.
+    
+    Args:
+        base_widget (Callable): The original form submit button widget
+        form (Optional[UrlAwareForm]): The form instance if this button is part of a form
+    """
+    def __init__(self, base_widget: Callable, form: Optional['UrlAwareForm'] = None) -> None:
         self.base_widget = base_widget
         self.form = form
 
@@ -91,7 +129,8 @@ class UrlAwareFormSubmitButton:
     # For this second way, we need to know if UrlAwareWidget has been
     # called like a method on the form object. Therefore, we use the
     # descriptor protocol to attach the form object:
-    def __get__(self, form, _objtype=None):
+    def __get__(self, form: 'UrlAwareForm', _objtype: Optional[Type] = None) -> 'UrlAwareFormSubmitButton':
+        """Implements the descriptor protocol for form-based button access."""
         assert isinstance(form, UrlAwareForm)
         return UrlAwareFormSubmitButton(getattr(form.base_form, self.base_widget.__name__), form)
 
@@ -137,8 +176,6 @@ time_input = UrlAwareWidget(st.time_input)
 color_picker = UrlAwareWidget(st.color_picker)
 if hasattr(st, 'pills'):
     pills = UrlAwareWidget(st.pills)
-if hasattr(st, 'feedback'):
-    feedback = UrlAwareWidget(st.feedback)
 if hasattr(st, 'segmented_control'):
     segmented_control = UrlAwareWidget(st.segmented_control)
 form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
@@ -152,6 +189,16 @@ except ImportError:
 
 
 class UrlAwareForm:
+    """A wrapper class for Streamlit forms that adds URL parameter support.
+    
+    Enables form fields to be controlled via URL parameters and updates the URL
+    when the form is submitted.
+    
+    Args:
+        key (str): The unique key for the form
+        *args: Additional positional arguments passed to st.form
+        **kwargs: Additional keyword arguments passed to st.form
+    """
     checkbox = UrlAwareWidget(st.checkbox)
     if hasattr(st, 'toggle'):
         toggle = UrlAwareWidget(st.toggle)
@@ -168,8 +215,6 @@ class UrlAwareForm:
     color_picker = UrlAwareWidget(st.color_picker)
     if hasattr(st, 'pills'):
         pills = UrlAwareWidget(st.pills)
-    if hasattr(st, 'feedback'):
-        feedback = UrlAwareWidget(st.feedback)
     if hasattr(st, 'segmented_control'):
         segmented_control = UrlAwareWidget(st.segmented_control)
     form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
@@ -177,22 +222,27 @@ class UrlAwareForm:
     if _has_option_menu:
         option_menu = UrlAwareWidget(streamlit_option_menu.option_menu)
 
-    def __init__(self, key, *args, **kwargs):
+    def __init__(self, key: str, *args: Any, **kwargs: Any) -> None:
         self.base_form = st.form(key, *args, **kwargs)
         # map from URL query param names to streamlit widget keys
-        self.field_mapping = {}
+        self.field_mapping: Dict[str, str] = {}
 
-    def __enter__(self):
+    def __enter__(self) -> Any:
+        """Enters the form context."""
         global _active_form
         _active_form = self
         return self.base_form.__enter__()
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type: Optional[Type[BaseException]], 
+                 exc_value: Optional[BaseException], 
+                 traceback: Optional[Any]) -> None:
+        """Exits the form context."""
         global _active_form
         _active_form = None
         return self.base_form.__exit__(exc_type, exc_value, traceback)
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
+        """Delegates attribute access to the underlying form."""
         return getattr(self.base_form, attr)
 
 
