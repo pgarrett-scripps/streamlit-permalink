@@ -29,17 +29,15 @@ def handle_selectbox(url_key: str, url_value: Optional[List[str]], bound_args: i
         init_url_value(url_key, value)
         return st.selectbox(**bound_args.arguments)
 
-    url_value: Optional[str] = validate_single_url_value(url_key, url_value, 'radio')
+    url_value: Optional[str] = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
 
     if url_value is not None:
         try:
-            # Convert string values back to original option values
-            # Create mapping once instead of in each iteration
             options_map = {str(v): v for v in options}
             actual_url_value = options_map[url_value]
             bound_args.arguments['index'] = options.index(actual_url_value)
         except KeyError:
-            raise UrlParamError(f"Invalid value for radio parameter '{url_key}': {url_value}. Expected one of {options}.")
+            raise UrlParamError(f"Invalid value for {_HANDLER_NAME} parameter '{url_key}': {url_value}. Expected one of {options}.")
     else:
         bound_args.arguments['index'] = None
     

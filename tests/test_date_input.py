@@ -1,48 +1,44 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
-import pytest
 from datetime import date, datetime
 
 from streamlit_permalink.constants import _EMPTY, _NONE
 from .utils import get_query_params, set_query_params
 
 def create_date_input_app():
-    import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
     from datetime import date, datetime
 
     # Basic date input with default value
-    stp.date_input("Basic Date", value=date(2024, 1, 1), url_key="date")
+    st.date_input("Basic Date", value=date(2024, 1, 1), url_key="date")
     
     # Date input with min/max dates
-    stp.date_input("Limited Date", 
+    st.date_input("Limited Date", 
                    min_value=date(2024, 1, 1),
                    max_value=date(2024, 12, 31),
                    value=date(2024, 6, 15),
                    url_key="limited_date")
     
     # Date range input
-    stp.date_input("Date Range",
+    st.date_input("Date Range",
                    value=(date(2024, 1, 1), date(2024, 12, 31)),
                    url_key="date_range")
     
     # Date input with 'today' value
-    stp.date_input("Today Date", 
+    st.date_input("Today Date", 
                    value="today",
                    url_key="today_date")
     
     # Date input with datetime object
-    stp.date_input("Datetime Input", 
+    st.date_input("Datetime Input", 
                    value=datetime(2024, 5, 15, 10, 30, 0),
                    url_key="datetime_date")
 
 def create_form_date_input_app():
-    import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
     from datetime import date
 
-    form = stp.form("test_form")
+    form = st.form("test_form")
     with form:
         basic_date = form.date_input("Form Date", 
                                     value=date(2024, 1, 1),

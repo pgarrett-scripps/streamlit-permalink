@@ -9,24 +9,24 @@ from .utils import get_query_params, set_query_params
 
 def create_time_input_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
     from datetime import time
 
     # Basic time input with default value
-    stp.time_input("Basic Time", value=time(12, 0), url_key="time")
+    st.time_input("Basic Time", value=time(12, 0), url_key="time")
     
     # Time input with specific value
-    stp.time_input("Specific Time", value=time(15, 30, 45), url_key="specific_time")
+    st.time_input("Specific Time", value=time(15, 30, 45), url_key="specific_time")
     
     # Time input with step
-    stp.time_input("Stepped Time", value=time(9, 0), step=3600, url_key="stepped_time")
+    st.time_input("Stepped Time", value=time(9, 0), step=3600, url_key="stepped_time")
 
 def create_form_time_input_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
     from datetime import time
 
-    form = stp.form("test_form")
+    form = st.form("test_form")
     with form:
         basic_time = form.time_input("Form Time", 
                                     value=time(12, 0),

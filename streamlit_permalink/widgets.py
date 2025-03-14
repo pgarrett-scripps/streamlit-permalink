@@ -1,9 +1,8 @@
-from datetime import datetime
 import streamlit as st
 from packaging.version import parse as V
-from typing import Callable, Any, Dict, Optional, Type, TypeVar, Union
-from .utils import to_url_value, _EMPTY
-from .core import _active_form
+from typing import Callable, Any, Dict, Optional, Type, TypeVar
+from .utils import to_url_value
+from .core import form_state
 from .handlers import HANDLERS
 import inspect
 
@@ -61,8 +60,9 @@ class UrlAwareWidget:
         if key is None:
             bound_args.arguments['key'] = url_key
 
-        if _active_form is not None or self.form is not None:
-            return self.call_inside_form(self.form or _active_form, url_key, bound_args)
+        active_form = form_state.get_active_form()
+        if active_form is not None:
+            return self.call_inside_form(active_form, url_key, bound_args)
         
         if V(st.__version__) < V('1.30'):
             url = st.experimental_get_query_params()
@@ -135,8 +135,9 @@ class UrlAwareFormSubmitButton:
         return UrlAwareFormSubmitButton(getattr(form.base_form, self.base_widget.__name__), form)
 
     def __call__(self, *args, **kwargs):
-        if _active_form is not None or self.form is not None:
-            return self.call_inside_form(self.form or _active_form, *args, **kwargs)
+        active_form = form_state.get_active_form()
+        if active_form is not None:
+            return self.call_inside_form(active_form, *args, **kwargs)
         return self.base_widget(*args, **kwargs)
 
     def call_inside_form(self, form, *args, **kwargs):
@@ -227,19 +228,17 @@ class UrlAwareForm:
         # map from URL query param names to streamlit widget keys
         self.field_mapping: Dict[str, str] = {}
 
-    def __enter__(self) -> Any:
-        """Enters the form context."""
-        global _active_form
-        _active_form = self
-        return self.base_form.__enter__()
-
-    def __exit__(self, exc_type: Optional[Type[BaseException]], 
-                 exc_value: Optional[BaseException], 
-                 traceback: Optional[Any]) -> None:
-        """Exits the form context."""
-        global _active_form
-        _active_form = None
-        return self.base_form.__exit__(exc_type, exc_value, traceback)
+    def __enter__(self):
+        self.base_form.__enter__()
+        # Use the context manager instead of directly setting global variable
+        self._form_context = form_state.set_active_form(self)
+        self._form_context.__enter__()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Exit the context manager to restore previous state
+        self._form_context.__exit__(exc_type, exc_val, exc_tb)
+        return self.base_form.__exit__(exc_type, exc_val, exc_tb)
 
     def __getattr__(self, attr: str) -> Any:
         """Delegates attribute access to the underlying form."""

@@ -161,7 +161,7 @@ def _validate_multi_options(options: Iterable[Any], widget_name: str) -> List[st
     return str_options
 
 
-def _validate_multi_default(default: Union[list[Any], Any, None], options: Union[list[Any], Any, None], widget_name: str) -> List[str]:
+def _validate_multi_default(default: Union[List[Any], Any, None], options: Union[List[Any], Any, None], widget_name: str) -> List[str]:    
     """
     Validate multiselect default value and convert to list of strings.
     """

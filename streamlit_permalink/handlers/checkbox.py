@@ -9,30 +9,32 @@ _DEFAULT_VALUE = False
 
 def handle_checkbox(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> bool:
     """
-    Handle checkbox widget URL state.
+    Handle checkbox widget URL state synchronization.
     
-    Synchronizes the checkbox widget state with URL parameters, handling both
-    initial rendering and state restoration from URL.
+    Maps URL parameters to checkbox state and vice versa, either initializing URL params
+    from widget defaults or setting widget state from URL values.
 
     Args:
-        url_key: URL parameter key for this checkbox
-        url_value: Value(s) from URL, or None if not present
-        bound_args: Bound arguments for the checkbox widget
+        url_key: Parameter key in URL
+        url_value: Value(s) from URL parameter, None if not present
+        bound_args: Bound arguments for the checkbox widget call
 
     Returns:
-        A boolean value indicating the state of the checkbox
-    """
+        Boolean state of the checkbox widget
 
-    # Handle the default case when no URL value is provided
+    Raises:
+        UrlParamError: If URL value is invalid
+    """
+    # Initialize from default when no URL value exists
     if url_value is None:
         default_value = bound_args.arguments.get('value', _DEFAULT_VALUE)
         init_url_value(url_key, default_value)
         return st.checkbox(**bound_args.arguments)
 
-    # Process and validate the URL value in a single chain
-    url_value: str = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
-    url_value: bool = validate_bool_url_value(url_key, url_value, _HANDLER_NAME)
+    # Process URL value: ensure single value and convert to boolean
+    validated_value = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
+    url_value_bool = validate_bool_url_value(url_key, validated_value, _HANDLER_NAME)
 
-    # Update the bound arguments with the validated value
-    bound_args.arguments['value'] = url_value
+    # Update widget state with URL value
+    bound_args.arguments['value'] = url_value_bool
     return st.checkbox(**bound_args.arguments)

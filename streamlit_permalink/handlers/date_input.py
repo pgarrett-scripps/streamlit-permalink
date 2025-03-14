@@ -1,10 +1,9 @@
-from typing import Any, List, Optional, Union, Tuple, cast
+from typing import Any, List, Optional, Union, Tuple
 import inspect
 import streamlit as st
 from datetime import datetime, date, timedelta
 
-from streamlit_permalink.constants import _EMPTY, _NONE
-
+from ..constants import _EMPTY, _NONE
 from ..utils import init_url_value
 from ..exceptions import UrlParamError
 
@@ -15,17 +14,15 @@ _DEFAULT_VALUE = 'today'
 
 DateValue = Union[None, date, Tuple[date, ...]]
 
-"""
-Multiple date inputs examples:
-(datetime.date(2024, 1, 5), datetime.date(2024, 1, 19)) -> tuple[date, date]
-(datetime.date(2024, 1, 5),) -> tuple[date]
-() -> Tuple[None]
-
-Single date input examples:
-datetime.date(2024, 1, 5) -> date
-None -> None
-
-"""
+# Date input format examples:
+# Multiple date inputs:
+# (datetime.date(2024, 1, 5), datetime.date(2024, 1, 19)) -> tuple[date, date]
+# (datetime.date(2024, 1, 5),) -> tuple[date]
+# () -> Tuple[None]
+#
+# Single date input:
+# datetime.date(2024, 1, 5) -> date
+# None -> None
 
 def get_today() -> date:
     """Get the current date."""
@@ -63,7 +60,7 @@ def _parse_url_date_params(url_key: str, url_value: List[str], is_range: bool) -
             if url_value[0] == _EMPTY:
                 return tuple()
             elif url_value[0] == _NONE:
-                # this is a range date input, _NONE is not allowed, use _EMPTY
+                # This is a range date input, _NONE is not allowed, use _EMPTY
                 raise UrlParamError(f"URL parameter '{url_key}' has value '{_NONE}' which is invalid for date ranges. Use '{_EMPTY}' for empty ranges.")
             else:
                 try:
@@ -71,7 +68,6 @@ def _parse_url_date_params(url_key: str, url_value: List[str], is_range: bool) -
                 except ValueError:
                     raise UrlParamError(f"URL parameter '{url_key}' has invalid date format: '{url_value[0]}'. Please use YYYY-MM-DD format.")
         elif len(url_value) == 2:
-            
             try:
                 start_date = _parse_date_from_string(url_value[0])
             except ValueError:
@@ -148,14 +144,25 @@ def _validate_date_values(url_key: str, value: Any, min_value: date, max_value: 
         if value[1] > max_value:
             raise ValueError(f"End date ({value[1]}) is after the maximum allowed date ({max_value}).")
 
-def handle_date_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments):
+def handle_date_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Any:
     """
-    Handle date input widget URL state.
+    Handle date input widget URL state synchronization.
+    
+    Manages bidirectional sync between date input widget state and URL parameters,
+    supporting both single dates and date ranges. Handles validation of date formats,
+    ranges, and boundary constraints.
 
     Args:
-        url_key: URL parameter key
-        url_value: URL parameter value(s)
+        url_key: URL parameter key for this date input
+        url_value: Value(s) from URL, or None if not present
         bound_args: Bound arguments for the date input widget
+
+    Returns:
+        The date input widget's return value (date or tuple of dates)
+
+    Raises:
+        UrlParamError: If URL value is invalid
+        ValueError: If date value is invalid
     """
     # Extract parameters from bound arguments
     min_date = bound_args.arguments.get('min_value', _DEFAULT_MIN_VALUE)

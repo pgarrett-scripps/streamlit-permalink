@@ -6,17 +6,17 @@ from .utils import get_query_params, set_query_params
 
 def create_text_area_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    stp.text_area("Basic Text Area", value="", url_key="area")
-    stp.text_area("Limited Text Area", max_chars=100, url_key="limited_area")
-    stp.text_area("Default Value Area", value="default text", url_key="default_area")
+    st.text_area("Basic Text Area", value="", url_key="area")
+    st.text_area("Limited Text Area", max_chars=100, url_key="limited_area")
+    st.text_area("Default Value Area", value="default text", url_key="default_area")
 
 def create_form_text_area_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    form = stp.form("test_form")
+    form = st.form("test_form")
     with form:
         text = form.text_area("Form Text Area", url_key="form_area")
         limited = form.text_area("Form Limited Area", max_chars=100, url_key="form_limited_area")

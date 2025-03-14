@@ -6,17 +6,17 @@ from .utils import get_query_params, set_query_params
 
 def create_text_input_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    stp.text_input("Basic Text Input", value="", url_key="text")
-    stp.text_input("Limited Text Input", max_chars=10, url_key="limited_text")
-    stp.text_input("Default Value Text", value="default", url_key="default_text")
+    st.text_input("Basic Text Input", value="", url_key="text")
+    st.text_input("Limited Text Input", max_chars=10, url_key="limited_text")
+    st.text_input("Default Value Text", value="default", url_key="default_text")
 
 def create_form_text_input_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    form = stp.form("test_form")
+    form = st.form("test_form")
     with form:
         text = form.text_input("Form Text Input", url_key="form_text")
         limited = form.text_input("Form Limited Text", max_chars=10, url_key="form_limited")

@@ -1,27 +1,40 @@
-from typing import List, Optional
+from typing import Any, List, Optional, Union, Type
 import inspect
 import streamlit as st
 
 from ..utils import init_url_value, validate_single_url_value
 from ..exceptions import UrlParamError
 
-def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments):
+_HANDLER_NAME = 'number_input'
+_DEFAULT_VALUE = 'min'
+
+def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Union[int, float]:
     """
-    Handle number input widget URL state.
+    Handle number input widget URL state synchronization.
+    
+    Manages bidirectional sync between number input widget state and URL parameters,
+    handling type detection (int/float), validation against min/max constraints,
+    and proper parsing of numeric values.
 
     Args:
-        url_key: URL parameter key
-        url_value: URL parameter value(s)
+        url_key: URL parameter key for this number input
+        url_value: Value(s) from URL, or None if not present
         bound_args: Bound arguments for the number input widget
+        
+    Returns:
+        The number input widget's return value (int or float)
+        
+    Raises:
+        UrlParamError: If URL value is invalid, out of bounds, or of wrong type
+        ValueError: If min/max values are invalid
     """
     # Get number input parameters
     min_value = bound_args.arguments.get('min_value', None)
     max_value = bound_args.arguments.get('max_value', None)
-    value = bound_args.arguments.get('value', "min")
-    step = bound_args.arguments.get('step', None)
+    value = bound_args.arguments.get('value', _DEFAULT_VALUE)
     
     # Determine input type (defaults to float)
-    input_type = float
+    input_type: Type[Union[int, float]] = float
     
     # Check if we can determine type from existing values
     option_types = set()
@@ -52,7 +65,7 @@ def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args
         init_url_value(url_key, default_value)
         return st.number_input(**bound_args.arguments)
     
-    validate_single_url_value(url_key, url_value, 'number_input')
+    validate_single_url_value(url_key, url_value, _HANDLER_NAME)
 
     try:
         # Parse value based on determined type
@@ -61,18 +74,18 @@ def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args
         # Validate against min/max constraints
         if min_value is not None and parsed_value < min_value:
             raise UrlParamError(
-                f"Value {parsed_value} for number_input parameter '{url_key}' is less than minimum allowed value {min_value}."
+                f"Value {parsed_value} for {_HANDLER_NAME} parameter '{url_key}' is less than minimum allowed value {min_value}."
             )
         if max_value is not None and parsed_value > max_value:
             raise UrlParamError(
-                f"Value {parsed_value} for number_input parameter '{url_key}' is greater than maximum allowed value {max_value}."
+                f"Value {parsed_value} for {_HANDLER_NAME} parameter '{url_key}' is greater than maximum allowed value {max_value}."
             )
         
         bound_args.arguments['value'] = parsed_value
         
     except ValueError as e:
         raise UrlParamError(
-            f"Invalid value for number_input parameter '{url_key}': {url_value[0]}. "
+            f"Invalid value for {_HANDLER_NAME} parameter '{url_key}': {url_value[0]}. "
             f"Expected {input_type.__name__} value. Error: {str(e)}"
         )
     

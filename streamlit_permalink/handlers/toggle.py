@@ -5,13 +5,14 @@ import streamlit as st
 from ..utils import init_url_value, validate_bool_url_value, validate_single_url_value
 
 _DEFAULT_VALUE = False
+_HANDLER_NAME = 'toggle'
 
 def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> bool:
     """
-    Handle toggle widget URL state.
+    Handle toggle widget URL state synchronization.
     
-    Synchronizes the toggle widget state with URL parameters, handling both
-    initial rendering and state restoration from URL.
+    Manages bidirectional sync between toggle widget state and URL parameters,
+    handling validation of boolean values and proper state restoration.
 
     Args:
         url_key: URL parameter key for this toggle
@@ -19,7 +20,7 @@ def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: insp
         bound_args: Bound arguments for the toggle widget
 
     Returns:
-        Streamlit toggle widget with synchronized state
+        bool: The toggle widget's return value (True if toggled on, False otherwise)
     """
     # Handle the default case when no URL value is provided
     if url_value is None:
@@ -27,10 +28,10 @@ def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: insp
         init_url_value(url_key, default_value)
         return st.toggle(**bound_args.arguments)
 
-    # Process and validate the URL value in a single chain
-    url_value: str = validate_single_url_value(url_key, url_value, 'toggle')
-    url_value: bool = validate_bool_url_value(url_key, url_value, 'toggle')
+    # Process and validate the URL value
+    url_value_str = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
+    url_value_bool = validate_bool_url_value(url_key, url_value_str, _HANDLER_NAME)
 
     # Update the bound arguments with the validated value
-    bound_args.arguments['value'] = url_value
+    bound_args.arguments['value'] = url_value_bool
     return st.toggle(**bound_args.arguments)

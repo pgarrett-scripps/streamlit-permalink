@@ -8,23 +8,23 @@ from datetime import datetime, date, time, timedelta
 
 def create_single_slider_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    stp.slider("Single Value Slider", min_value=0, max_value=100, value=50, url_key="slider")
+    st.slider("Single Value Slider", min_value=0, max_value=100, value=50, url_key="slider")
 
 def create_range_slider_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    stp.slider("Range Slider", min_value=0, max_value=100, value=(25, 75), url_key="range_slider")
+    st.slider("Range Slider", min_value=0, max_value=100, value=(25, 75), url_key="range_slider")
 
 def create_datetime_slider_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
     from datetime import datetime, timedelta
     start_date = datetime(2024, 1, 1)
     end_date = datetime(2024, 12, 31)
-    stp.slider("Datetime Slider", 
+    st.slider("Datetime Slider", 
                min_value=start_date,
                max_value=end_date,
                value=start_date + timedelta(days=180),
@@ -32,11 +32,11 @@ def create_datetime_slider_app():
 
 def create_date_slider_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
     from datetime import date
     start_date = date(2024, 1, 1)
     end_date = date(2024, 12, 31)
-    stp.slider("Date Slider", 
+    st.slider("Date Slider", 
                min_value=start_date,
                max_value=end_date,
                value=start_date,
@@ -44,9 +44,9 @@ def create_date_slider_app():
 
 def create_time_slider_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
     from datetime import time
-    stp.slider("Time Slider", 
+    st.slider("Time Slider", 
                min_value=time(0, 0),
                max_value=time(23, 59),
                value=time(12, 0),
@@ -54,9 +54,9 @@ def create_time_slider_app():
 
 def create_form_slider_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    form = stp.form("test_form")
+    form = st.form("test_form")
     with form:
         single = form.slider("Form Single Slider", min_value=0, max_value=100, value=50, url_key="form_slider")
         range_slider = form.slider("Form Range Slider", min_value=0, max_value=100, value=(25, 75), url_key="form_range")
@@ -125,8 +125,8 @@ class TestSingleSlider:
         """Test slider with step parameter"""
         def step_slider_app():
             import streamlit as st
-            import streamlit_permalink as stp
-            stp.slider("Step Slider", min_value=0, max_value=10, value=2, step=2, url_key="step_slider")
+            import streamlit_permalink as st
+            st.slider("Step Slider", min_value=0, max_value=10, value=2, step=2, url_key="step_slider")
 
         at = AppTest.from_function(step_slider_app)
         at.run()
@@ -359,8 +359,8 @@ class TestFormSlider:
         """Test form sliders with float values"""
         def float_slider_app():
             import streamlit as st
-            import streamlit_permalink as stp
-            form = stp.form("test_form")
+            import streamlit_permalink as st
+            form = st.form("test_form")
             with form:
                 slider = form.slider("Float Slider", min_value=0.0, max_value=1.0, value=0.5, step=0.1, url_key="float_slider")
                 submitted = form.form_submit_button("Submit")
@@ -382,9 +382,9 @@ class TestFormSlider:
         """Test form with different slider types"""
         def multi_type_form_app():
             import streamlit as st
-            import streamlit_permalink as stp
+            import streamlit_permalink as st
             from datetime import date
-            form = stp.form("test_form")
+            form = st.form("test_form")
             with form:
                 int_slider = form.slider("Int Slider", 0, 100, 50, url_key="int_slider")
                 float_slider = form.slider("Float Slider", 0.0, 1.0, 0.5, url_key="float_slider")

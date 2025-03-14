@@ -1,14 +1,12 @@
 from streamlit.testing.v1 import AppTest
-import pytest
 from .utils import get_query_params, set_query_params
 from streamlit_permalink.handlers.checkbox import _DEFAULT_VALUE
 
 
 def create_checkbox_app():
-    import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    stp.checkbox("Test Checkbox", url_key="check")
+    st.checkbox("Test Checkbox", url_key="check")
 
 class TestCheckbox:
     def setup_method(self):
@@ -94,9 +92,8 @@ class TestCheckbox:
     def test_checkbox_with_default_true(self):
         """Test checkbox with default value set to True"""
         def app_with_default_true():
-            import streamlit as st
-            import streamlit_permalink as stp
-            stp.checkbox("Default True Checkbox", value=True, url_key="check_default_true")
+            import streamlit_permalink as st
+            st.checkbox("Default True Checkbox", value=True, url_key="check_default_true")
         
         at = AppTest.from_function(app_with_default_true)
         at.run()
@@ -125,10 +122,9 @@ class TestCheckbox:
         assert self.at.checkbox[0].value is False
 
 def create_form_checkbox_app():
-    import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    form = stp.form("test_form")
+    form = st.form("test_form")
     with form:
         checkbox = form.checkbox("Form Checkbox", url_key="form_check")
         submitted = form.form_submit_button("Submit")
@@ -214,15 +210,14 @@ class TestFormCheckbox:
     def test_form_checkbox_multiple_forms(self):
         """Test multiple checkboxes in different forms"""
         def multi_form_app():
-            import streamlit as st
-            import streamlit_permalink as stp
+            import streamlit_permalink as st
             
-            form1 = stp.form("form1")
+            form1 = st.form("form1")
             with form1:
                 check1 = form1.checkbox("Checkbox 1", url_key="check1")
                 form1.form_submit_button("Submit 1")
             
-            form2 = stp.form("form2")
+            form2 = st.form("form2")
             with form2:
                 check2 = form2.checkbox("Checkbox 2", url_key="check2")
                 form2.form_submit_button("Submit 2")

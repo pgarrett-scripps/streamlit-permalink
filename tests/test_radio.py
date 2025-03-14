@@ -6,16 +6,16 @@ from .utils import get_query_params, set_query_params
 
 def create_radio_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
     OPTIONS = ["Option A", "Option B", "Option C"]
-    stp.radio("Test Radio", options=OPTIONS, url_key="radio")
+    st.radio("Test Radio", options=OPTIONS, url_key="radio")
 
 def create_form_radio_app():
     import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    form = stp.form("test_form")
+    form = st.form("test_form")
     with form:
         OPTIONS = ["Option A", "Option B", "Option C"]
         radio = form.radio("Form Radio", options=OPTIONS, url_key="form_radio")

@@ -1,21 +1,19 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
+import streamlit_permalink as st
 import pytest
 from .utils import get_query_params, set_query_params
 from streamlit_permalink.handlers.toggle import _DEFAULT_VALUE
 
 def create_toggle_app():
-    import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    stp.toggle("Test Toggle", url_key="toggle")
+    st.toggle("Test Toggle", url_key="toggle")
 
 def create_form_toggle_app():
-    import streamlit as st
-    import streamlit_permalink as stp
+    import streamlit_permalink as st
 
-    form = stp.form("test_form")
+    form = st.form("test_form")
     with form:
         toggle = form.toggle("Form Toggle", url_key="form_toggle")
         submitted = form.form_submit_button("Submit")
@@ -106,8 +104,8 @@ class TestToggle:
         """Test toggle with default value set to True"""
         def app_with_default_true():
             import streamlit as st
-            import streamlit_permalink as stp
-            stp.toggle("Default True Toggle", value=True, url_key="toggle_default_true")
+            import streamlit_permalink as st
+            st.toggle("Default True Toggle", value=True, url_key="toggle_default_true")
         
         at = AppTest.from_function(app_with_default_true)
         at.run()
@@ -225,14 +223,14 @@ class TestFormToggle:
         """Test multiple toggles in different forms"""
         def multi_form_app():
             import streamlit as st
-            import streamlit_permalink as stp
+            import streamlit_permalink as st
             
-            form1 = stp.form("form1")
+            form1 = st.form("form1")
             with form1:
                 toggle1 = form1.toggle("Toggle 1", url_key="toggle1")
                 form1.form_submit_button("Submit 1")
             
-            form2 = stp.form("form2")
+            form2 = st.form("form2")
             with form2:
                 toggle2 = form2.toggle("Toggle 2", url_key="toggle2")
                 form2.form_submit_button("Submit 2")

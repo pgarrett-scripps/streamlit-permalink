@@ -1,22 +1,27 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 import inspect
 import streamlit as st
 
 from ..utils import _validate_multi_default, _validate_multi_options, _validate_multi_url_values, init_url_value
 
 _HANDLER_NAME = 'multiselect'
+_DEFAULT_VALUE = None
 
-def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments):
+def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Any:
     """
-    Handle multiselect widget URL state.
+    Handle multiselect widget URL state synchronization.
+    
+    Manages bidirectional sync between multiselect widget state and URL parameters,
+    handling validation of options and conversion between string representations and
+    actual option values.
 
     Args:
-        url_key: URL parameter key
-        url_value: URL parameter value(s)
+        url_key: URL parameter key for this multiselect
+        url_value: Value(s) from URL, or None if not present
         bound_args: Bound arguments for the multiselect widget
         
     Returns:
-        Streamlit multiselect widget
+        The multiselect widget's return value (list of selected options)
         
     Raises:
         ValueError: If options are invalid
@@ -27,7 +32,7 @@ def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args:
     str_options: List[str] = _validate_multi_options(options, _HANDLER_NAME)
     
     # Get and validate default values
-    default = bound_args.arguments.get('default')
+    default = bound_args.arguments.get('default', _DEFAULT_VALUE)
     str_default: List[str] = _validate_multi_default(default, options, _HANDLER_NAME)    
     
     # If no URL value is provided, initialize with default value
@@ -39,7 +44,6 @@ def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args:
     url_values: List[str] = _validate_multi_url_values(url_key, url_value, str_options, _HANDLER_NAME)
 
     # Convert string values back to original option values
-    # Create mapping once instead of in each iteration
     options_map = {str(v): v for v in options}
     actual_url_values = [options_map[v] for v in url_values]
     
