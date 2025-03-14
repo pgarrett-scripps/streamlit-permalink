@@ -1,25 +1,20 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
-import pytest
 from .utils import get_query_params, set_query_params
 from streamlit_permalink.exceptions import UrlParamError
 from datetime import datetime, date, time, timedelta
 
 def create_single_slider_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     st.slider("Single Value Slider", min_value=0, max_value=100, value=50, url_key="slider")
 
 def create_range_slider_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     st.slider("Range Slider", min_value=0, max_value=100, value=(25, 75), url_key="range_slider")
 
 def create_datetime_slider_app():
-    import streamlit as st
     import streamlit_permalink as st
     from datetime import datetime, timedelta
     start_date = datetime(2024, 1, 1)
@@ -31,7 +26,6 @@ def create_datetime_slider_app():
                url_key="datetime_slider")
 
 def create_date_slider_app():
-    import streamlit as st
     import streamlit_permalink as st
     from datetime import date
     start_date = date(2024, 1, 1)
@@ -43,7 +37,6 @@ def create_date_slider_app():
                url_key="date_slider")
 
 def create_time_slider_app():
-    import streamlit as st
     import streamlit_permalink as st
     from datetime import time
     st.slider("Time Slider", 
@@ -53,7 +46,6 @@ def create_time_slider_app():
                url_key="time_slider")
 
 def create_form_slider_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     form = st.form("test_form")
@@ -124,7 +116,6 @@ class TestSingleSlider:
     def test_slider_step(self):
         """Test slider with step parameter"""
         def step_slider_app():
-            import streamlit as st
             import streamlit_permalink as st
             st.slider("Step Slider", min_value=0, max_value=10, value=2, step=2, url_key="step_slider")
 
@@ -358,7 +349,6 @@ class TestFormSlider:
     def test_form_slider_float_values(self):
         """Test form sliders with float values"""
         def float_slider_app():
-            import streamlit as st
             import streamlit_permalink as st
             form = st.form("test_form")
             with form:
@@ -381,7 +371,6 @@ class TestFormSlider:
     def test_form_slider_all_types(self):
         """Test form with different slider types"""
         def multi_type_form_app():
-            import streamlit as st
             import streamlit_permalink as st
             from datetime import date
             form = st.form("test_form")

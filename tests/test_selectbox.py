@@ -1,18 +1,14 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
-import pytest
 from .utils import get_query_params, set_query_params
 
 def create_selectbox_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     OPTIONS = ["Option A", "Option B", "Option C"]
     st.selectbox("Test Selectbox", options=OPTIONS, url_key="select")
 
 def create_form_selectbox_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     form = st.form("test_form")

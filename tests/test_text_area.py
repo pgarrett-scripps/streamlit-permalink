@@ -1,11 +1,8 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
-import pytest
 from .utils import get_query_params, set_query_params
 
 def create_text_area_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     st.text_area("Basic Text Area", value="", url_key="area")
@@ -13,7 +10,6 @@ def create_text_area_app():
     st.text_area("Default Value Area", value="default text", url_key="default_area")
 
 def create_form_text_area_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     form = st.form("test_form")

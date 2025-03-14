@@ -1,18 +1,14 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
-import pytest
 from .utils import get_query_params, set_query_params
 
 def create_radio_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     OPTIONS = ["Option A", "Option B", "Option C"]
     st.radio("Test Radio", options=OPTIONS, url_key="radio")
 
 def create_form_radio_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     form = st.form("test_form")

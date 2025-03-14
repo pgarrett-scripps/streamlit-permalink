@@ -1,11 +1,8 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
-import pytest
 from .utils import get_query_params, set_query_params
 
 def create_text_input_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     st.text_input("Basic Text Input", value="", url_key="text")
@@ -13,7 +10,6 @@ def create_text_input_app():
     st.text_input("Default Value Text", value="default", url_key="default_text")
 
 def create_form_text_input_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     form = st.form("test_form")

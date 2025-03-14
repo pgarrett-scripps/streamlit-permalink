@@ -1,7 +1,6 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
-import pytest
+
 
 from streamlit_permalink.constants import _NONE
 from .utils import get_query_params, set_query_params
@@ -9,14 +8,12 @@ from streamlit_permalink.exceptions import UrlParamError
 from streamlit_permalink.utils import _EMPTY
 
 def create_multiselect_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     OPTIONS = ["Option A", "Option B", "Option C"]
     st.multiselect("Test Multiselect", options=OPTIONS, url_key="multi")
 
 def create_form_multiselect_app():
-    import streamlit as st
     import streamlit_permalink as st
 
     form = st.form("test_form")
@@ -26,14 +23,12 @@ def create_form_multiselect_app():
         submitted = form.form_submit_button("Submit")
 
 def create_multiselect_with_default_app():
-    import streamlit as st
     import streamlit_permalink as st
     
     OPTIONS = ["Option A", "Option B", "Option C"]
     st.multiselect("Default Multiselect", options=OPTIONS, default=["Option B"], url_key="default_multi")
 
 def create_multiselect_with_nonstring_app():
-    import streamlit as st
     import streamlit_permalink as st
     
     # Non-string options
@@ -41,7 +36,6 @@ def create_multiselect_with_nonstring_app():
     st.multiselect("Number Multiselect", options=OPTIONS, url_key="num_multi")
 
 def create_multiselect_with_specialchars_app():
-    import streamlit as st
     import streamlit_permalink as st
     
     # Options with special characters
@@ -49,7 +43,6 @@ def create_multiselect_with_specialchars_app():
     st.multiselect("Special Chars Multiselect", options=OPTIONS, url_key="special_multi")
 
 def create_multiselect_with_duplicate_string_options_app():
-    import streamlit as st
     import streamlit_permalink as st
     
     # Options that are not unique when cast to strings
@@ -182,7 +175,6 @@ class TestMultiselectAdditional:
         """Test error when multiselect options list is empty"""
         # Define an app with empty options
         def create_empty_options_app():
-            import streamlit as st
             import streamlit_permalink as st
             
             EMPTY_OPTIONS = []

@@ -1,14 +1,11 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
-import streamlit as st
-import pytest
 from datetime import time
 
 from streamlit_permalink.constants import _EMPTY, _NONE
 from .utils import get_query_params, set_query_params
 
 def create_time_input_app():
-    import streamlit as st
     import streamlit_permalink as st
     from datetime import time
 
@@ -22,7 +19,6 @@ def create_time_input_app():
     st.time_input("Stepped Time", value=time(9, 0), step=3600, url_key="stepped_time")
 
 def create_form_time_input_app():
-    import streamlit as st
     import streamlit_permalink as st
     from datetime import time
 
