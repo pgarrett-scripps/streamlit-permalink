@@ -6,7 +6,6 @@ import zlib
 from packaging.version import parse as V
 import streamlit as st
 import warnings
-import brotli
 
 from .constants import _EMPTY, _NONE, TRUE_VALUE, TRUE_FALSE_VALUE
 from .exceptions import UrlParamError
@@ -207,7 +206,7 @@ def _validate_selection_mode(selection_mode: str) -> str:
 
 def compress_text(text: str) -> str:
     """
-    Compress text using brotli and encode with base64 to make it URL-compatible.
+    Compress text using zlib and encode with base64 to make it URL-compatible.
     
     Args:
         text: The text to compress
@@ -215,7 +214,7 @@ def compress_text(text: str) -> str:
     Returns:
         URL-compatible compressed string
     """
-    compressed = brotli.compress(text.encode('utf-8'), quality=11)  # Quality 0-11
+    compressed = zlib.compress(text.encode('utf-8'), level=9)  # Level 0-9, 9 is highest compression
     encoded = base64.urlsafe_b64encode(compressed).decode('utf-8')
     return encoded
 
@@ -230,5 +229,5 @@ def decompress_text(compressed_text: str) -> str:
         Original decompressed text
     """
     decoded = base64.urlsafe_b64decode(compressed_text)
-    decompressed = brotli.decompress(decoded).decode('utf-8')
+    decompressed = zlib.decompress(decoded).decode('utf-8')
     return decompressed

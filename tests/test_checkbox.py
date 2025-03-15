@@ -121,6 +121,82 @@ class TestCheckbox:
         assert not self.at.exception
         assert self.at.checkbox[0].value is False
 
+    def test_checkbox_with_compression(self):
+        """Test checkbox with compression enabled"""
+        
+        # Create app with compressed checkbox
+        def app_with_compression():
+            import streamlit_permalink as st
+            st.checkbox("Compressed Checkbox", url_key="compressed_check", compress=True)
+        
+        at = AppTest.from_function(app_with_compression)
+        at.run()
+        
+        # Verify checkbox exists and is unchecked by default
+        assert len(at.checkbox) == 1
+        assert at.checkbox[0].value is False
+        
+        # Verify URL parameter is initialized with compressed value
+        params = get_query_params(at)
+        assert "compressed_check" in params
+        # The compressed value should not be the raw "False" string
+        assert params["compressed_check"][0] != "False"
+        
+        # Check the checkbox
+        at.checkbox[0].check().run()
+        
+        # Verify URL parameter was updated with compressed value
+        params = get_query_params(at)
+        assert "compressed_check" in params
+        # The compressed value should not be the raw "True" string
+        assert params["compressed_check"][0] != "True"
+        
+        # Now set a compressed URL parameter and verify it's correctly decompressed
+        # First, get the compressed value for "True"
+        compressed_true = params["compressed_check"][0]
+        
+        # Create a new app instance with this compressed value
+        at2 = AppTest.from_function(app_with_compression)
+        set_query_params(at2, {"compressed_check": compressed_true})
+        at2.run()
+        
+        # Verify checkbox correctly decompressed the value
+        assert at2.checkbox[0].value is True
+        
+        # Test with custom compressor/decompressor
+        def custom_app():
+            import streamlit_permalink as st
+
+            # Simple custom compressor that adds a prefix
+            def custom_compress(text):
+                return f"compressed_{text}"
+            
+            # Simple custom decompressor that removes the prefix
+            def custom_decompress(text):
+                if text.startswith("compressed_"):
+                    return text.replace("compressed_", "")
+                return text
+            
+            st.checkbox("Custom Compressed", 
+                       url_key="custom_compressed",
+                       compress=True,
+                       compressor=custom_compress,
+                       decompressor=custom_decompress)
+        
+        at3 = AppTest.from_function(custom_app)
+        at3.run()
+        
+        # Verify URL has custom compressed value
+        params = get_query_params(at3)
+        assert params["custom_compressed"][0] == "compressed_False"
+        
+        # Check the checkbox
+        at3.checkbox[0].check().run()
+        
+        # Verify URL updated with custom compressed value
+        params = get_query_params(at3)
+        assert params["custom_compressed"][0] == "compressed_True"
+
 def create_form_checkbox_app():
     import streamlit_permalink as st
 
