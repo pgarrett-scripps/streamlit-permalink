@@ -1,13 +1,14 @@
-from typing import List, Optional
+from typing import Callable, Dict, List, Optional, Any
 import inspect
 import streamlit as st
 
-from ..utils import init_url_value, validate_bool_url_value, validate_single_url_value
+from ..utils import init_url_value, to_url_value, validate_bool_url_value, validate_single_url_value
 
 _HANDLER_NAME = 'checkbox'
 _DEFAULT_VALUE = False
 
-def handle_checkbox(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> bool:
+def handle_checkbox(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> bool:
     """
     Handle checkbox widget URL state synchronization.
     
@@ -28,8 +29,10 @@ def handle_checkbox(url_key: str, url_value: Optional[List[str]], bound_args: in
     # Initialize from default when no URL value exists
     if url_value is None:
         default_value = bound_args.arguments.get('value', _DEFAULT_VALUE)
-        init_url_value(url_key, default_value)
+        init_url_value(url_key, compressor(to_url_value(default_value)))
         return st.checkbox(**bound_args.arguments)
+    
+    url_value = decompressor(url_value) # [str, str], [], None
 
     # Process URL value: ensure single value and convert to boolean
     validated_value = validate_single_url_value(url_key, url_value, _HANDLER_NAME)

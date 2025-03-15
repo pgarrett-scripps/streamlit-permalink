@@ -1,9 +1,12 @@
+import base64
 from datetime import date, datetime, time
 import re
 from typing import Any, Dict, Iterable, List, Optional, Union
+import zlib
 from packaging.version import parse as V
 import streamlit as st
 import warnings
+import brotli
 
 from .constants import _EMPTY, _NONE, TRUE_VALUE, TRUE_FALSE_VALUE
 from .exceptions import UrlParamError
@@ -54,7 +57,7 @@ class StringHashableValue:
         return f"{self.value}"
 
 
-def to_url_value(result: Any) -> str:
+def to_url_value(result: Any) -> Union[str, List[str]]:
     if result is None:
         return _NONE
     if isinstance(result, str):
@@ -63,7 +66,7 @@ def to_url_value(result: Any) -> str:
         return str(result)
     if isinstance(result, (list, tuple)):
         if len(result) == 0:
-            return [_EMPTY]
+            return _EMPTY
         return list(map(to_url_value, result))
     if isinstance(result, (date, datetime)):
         return result.isoformat()
@@ -75,13 +78,13 @@ def to_url_value(result: Any) -> str:
         except:
             raise TypeError(f'unsupported type: {type(result)}') 
 
-def init_url_value(url_key: str, url_value: Any):
+def init_url_value(url_key: str, url_value: str):
     if V(st.__version__) < V('1.30'):
         url = st.experimental_get_query_params()
-        url[url_key] = to_url_value(url_value)
+        url[url_key] = url_value
         st.experimental_set_query_params(**url)
     else:
-        st.query_params[url_key] = to_url_value(url_value)
+        st.query_params[url_key] = url_value
 
 
 def parse_time(time_str: str) -> time:
@@ -89,15 +92,12 @@ def parse_time(time_str: str) -> time:
     return datetime.strptime(time_str, '%H:%M').time()
 
 
-def validate_single_url_value(url_key: str, url_value: List[str], handler_name: str) -> Optional[str]:
+def validate_single_url_value(url_key: str, url_value: Optional[List[str]], handler_name: str) -> Optional[str]:
+    if url_value is None:
+        return None
+    
     if not (isinstance(url_value, (list, tuple)) and len(url_value) == 1):
         raise UrlParamError(f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. Expected a single value.")
-    
-    if url_value == [_EMPTY]:
-        return None
-    
-    if url_value == [_NONE]:
-        return None
     
     return url_value[0]
 
@@ -179,13 +179,13 @@ def _validate_multi_default(default: Union[List[Any], Any, None], options: Union
     
     return list(map(str, default))
 
-def _validate_multi_url_values(url_key: str, url_values: List[str], str_options: List[str], widget_name: str) -> List[str]:
+def _validate_multi_url_values(url_key: str, url_values: Optional[List[str]], str_options: List[str], widget_name: str) -> List[str]:
     """
     Validate that all multiselect values are in the options list.
     """
     # Handle special case for empty selection
-    if url_values == [_EMPTY] or url_values == [_NONE]:
-        return []
+    if url_values is None:
+        return []    
     
     # Validate all values are in options
     invalid_values = [v for v in url_values if v not in str_options]
@@ -204,3 +204,31 @@ def _validate_selection_mode(selection_mode: str) -> str:
     if selection_mode not in ('single', 'multi'):
         raise ValueError(f"Invalid selection_mode: {selection_mode}. Expected 'single' or 'multi'.")
     return selection_mode
+
+def compress_text(text: str) -> str:
+    """
+    Compress text using brotli and encode with base64 to make it URL-compatible.
+    
+    Args:
+        text: The text to compress
+        
+    Returns:
+        URL-compatible compressed string
+    """
+    compressed = brotli.compress(text.encode('utf-8'), quality=11)  # Quality 0-11
+    encoded = base64.urlsafe_b64encode(compressed).decode('utf-8')
+    return encoded
+
+def decompress_text(compressed_text: str) -> str:
+    """
+    Decompress text that was compressed with compress_text.
+    
+    Args:
+        compressed_text: The compressed text
+        
+    Returns:
+        Original decompressed text
+    """
+    decoded = base64.urlsafe_b64decode(compressed_text)
+    decompressed = brotli.decompress(decoded).decode('utf-8')
+    return decompressed

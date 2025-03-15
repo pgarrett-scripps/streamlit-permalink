@@ -1,13 +1,14 @@
-from typing import List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import inspect
 import streamlit as st
 
-from ..utils import _validate_multi_options, init_url_value, validate_single_url_value
+from ..utils import _validate_multi_options, init_url_value, to_url_value, validate_single_url_value
 from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'selectbox'
 
-def handle_selectbox(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments):
+def handle_selectbox(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs):
     """
     Handle selectbox widget URL state.
 
@@ -26,8 +27,10 @@ def handle_selectbox(url_key: str, url_value: Optional[List[str]], bound_args: i
     value = options[index]
 
     if not url_value:
-        init_url_value(url_key, value)
+        init_url_value(url_key, compressor(to_url_value(value)))
         return st.selectbox(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
 
     url_value: Optional[str] = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
 

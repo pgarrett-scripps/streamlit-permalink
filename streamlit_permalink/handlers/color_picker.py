@@ -1,13 +1,14 @@
-from typing import List, Optional
+from typing import Callable, Dict, List, Optional, Any
 import inspect
 import streamlit as st
 
-from ..utils import init_url_value, validate_color_url_value, validate_single_url_value
+from ..utils import init_url_value, to_url_value, validate_color_url_value, validate_single_url_value
 
 _DEFAULT_VALUE = '#000000'  # Black (fixed typo)
 _HANDLER_NAME = 'color_picker'
 
-def handle_color_picker(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> str:
+def handle_color_picker(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> str:
     """
     Handle color picker widget URL state synchronization.
     
@@ -27,8 +28,10 @@ def handle_color_picker(url_key: str, url_value: Optional[List[str]], bound_args
     """
     if not url_value:
         default_value = bound_args.arguments.get('value', _DEFAULT_VALUE)
-        init_url_value(url_key, default_value)
+        init_url_value(url_key, compressor(to_url_value(default_value)))
         return st.color_picker(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
 
     url_value = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
     url_value = validate_color_url_value(url_key, url_value, _HANDLER_NAME)

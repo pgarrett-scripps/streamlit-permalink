@@ -1,14 +1,15 @@
-from typing import Any, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 import inspect
 import streamlit as st
 
-from ..utils import _validate_selection_mode, init_url_value, _validate_multi_options, _validate_multi_default, _validate_multi_url_values
+from ..utils import _validate_selection_mode, init_url_value, _validate_multi_options, _validate_multi_default, _validate_multi_url_values, to_url_value
 
 _HANDLER_NAME = 'pills'
 _DEFAULT_DEFAULT = None
 _DEFAULT_SELECTION_MODE = 'single'
 
-def handle_pills(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Union[List, Any, None]:
+def handle_pills(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Union[List, Any, None]:
     """
     Handle pills widget URL state synchronization.
     
@@ -42,8 +43,10 @@ def handle_pills(url_key: str, url_value: Optional[List[str]], bound_args: inspe
 
     # If no URL value is provided, initialize with default value
     if url_value is None:
-        init_url_value(url_key, default)
+        init_url_value(url_key, compressor(to_url_value(default)))
         return st.pills(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
     
     # Validate URL values against options
     url_values: List[str] = _validate_multi_url_values(url_key, url_value, str_options, _HANDLER_NAME)

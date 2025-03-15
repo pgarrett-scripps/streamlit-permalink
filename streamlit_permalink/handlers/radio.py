@@ -1,14 +1,15 @@
-from typing import Any, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 import inspect
 import streamlit as st
 
-from ..utils import _validate_multi_options, init_url_value, validate_single_url_value
+from ..utils import _validate_multi_options, init_url_value, to_url_value, validate_single_url_value
 from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'radio'
 _DEFAULT_VALUE = 0
 
-def handle_radio(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Union[Any, None]:
+def handle_radio(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Union[Any, None]:
     """
     Handle radio widget URL state synchronization.
     
@@ -36,8 +37,10 @@ def handle_radio(url_key: str, url_value: Optional[List[str]], bound_args: inspe
     value = options[index]
 
     if not url_value:
-        init_url_value(url_key, value)
+        init_url_value(url_key, compressor(to_url_value(value)))
         return st.radio(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
 
     url_value_str: Optional[str] = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
 

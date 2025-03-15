@@ -1,14 +1,15 @@
-from typing import Any, List, Optional, Union, Type
+from typing import Any, Callable, Dict, List, Optional, Union, Type
 import inspect
 import streamlit as st
 
-from ..utils import init_url_value, validate_single_url_value
+from ..utils import init_url_value, to_url_value, validate_single_url_value
 from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'number_input'
 _DEFAULT_VALUE = 'min'
 
-def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Union[int, float]:
+def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Union[int, float]:
     """
     Handle number input widget URL state synchronization.
     
@@ -62,8 +63,10 @@ def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args
         else:
             default_value = value if value is not None else (0 if input_type == int else 0.0)
         
-        init_url_value(url_key, default_value)
+        init_url_value(url_key, compressor(to_url_value(default_value)))
         return st.number_input(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
     
     validate_single_url_value(url_key, url_value, _HANDLER_NAME)
 

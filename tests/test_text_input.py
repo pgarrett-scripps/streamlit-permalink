@@ -14,8 +14,8 @@ def create_form_text_input_app():
 
     form = st.form("test_form")
     with form:
-        text = form.text_input("Form Text Input", url_key="form_text")
-        limited = form.text_input("Form Limited Text", max_chars=10, url_key="form_limited")
+        text = form.text_input("Form Text Input", value="", url_key="form_text")
+        limited = form.text_input("Form Limited Text", max_chars=10, value="", url_key="form_limited")
         submitted = form.form_submit_button("Submit")
 
 class TestTextInput:

@@ -1,12 +1,13 @@
-from typing import Any, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 import inspect
 import streamlit as st
 
-from ..utils import _validate_multi_default, _validate_multi_options, _validate_multi_url_values, _validate_selection_mode, init_url_value
+from ..utils import _validate_multi_default, _validate_multi_options, _validate_multi_url_values, _validate_selection_mode, init_url_value, to_url_value
 
 _HANDLER_NAME = 'segmented_control'
 
-def handle_segmented_control(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Union[List[Any], Any, None]:
+def handle_segmented_control(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Union[List[Any], Any, None]:
     """
     Handle segmented control widget URL state synchronization.
     
@@ -41,8 +42,10 @@ def handle_segmented_control(url_key: str, url_value: Optional[List[str]], bound
 
     # If no URL value is provided, initialize with default value
     if url_value is None:
-        init_url_value(url_key, default)
+        init_url_value(url_key, compressor(to_url_value(default)))
         return st.segmented_control(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
     
     # Validate URL values against options
     url_values: List[str] = _validate_multi_url_values(url_key, url_value, str_options, _HANDLER_NAME)

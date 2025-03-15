@@ -1,8 +1,8 @@
-from typing import Any, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import inspect
 from streamlit_option_menu import option_menu
 
-from ..utils import _validate_multi_options, init_url_value, validate_single_url_value
+from ..utils import _validate_multi_options, init_url_value, to_url_value, validate_single_url_value
 from ..exceptions import UrlParamError
 
 """
@@ -13,7 +13,8 @@ def option_menu(menu_title, options, default_index=0, menu_icon=None, icons=None
 _HANDLER_NAME = 'option_menu'
 _DEFAULT_VALUE = 0
 
-def handle_option_menu(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Any:
+def handle_option_menu(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle option menu widget URL state synchronization.
     
@@ -41,8 +42,10 @@ def handle_option_menu(url_key: str, url_value: Optional[List[str]], bound_args:
     value = options[index]
 
     if not url_value:
-        init_url_value(url_key, value)
+        init_url_value(url_key, compressor(to_url_value(value)))
         return option_menu(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
 
     url_value_str: Optional[str] = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
 

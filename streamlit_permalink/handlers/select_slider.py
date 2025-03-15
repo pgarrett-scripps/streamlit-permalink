@@ -1,13 +1,14 @@
-from typing import Any, List, Optional, Union, Tuple
+from typing import Any, Callable, Dict, List, Optional, Union, Tuple    
 import inspect
 import streamlit as st
 
-from ..utils import _validate_multi_default, _validate_multi_options, _validate_multi_url_values, init_url_value
+from ..utils import _validate_multi_default, _validate_multi_options, _validate_multi_url_values, init_url_value, to_url_value
 from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'select_slider'
 
-def handle_select_slider(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Any:
+def handle_select_slider(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle select slider widget URL state synchronization.
     
@@ -53,9 +54,11 @@ def handle_select_slider(url_key: str, url_value: Optional[List[str]], bound_arg
     values_str = _validate_multi_default(value, options, _HANDLER_NAME)
 
     if not url_value:
-        init_url_value(url_key, value)
+        init_url_value(url_key, compressor(to_url_value(value)))
         return st.select_slider(**bound_args.arguments)
     
+    url_value = decompressor(url_value)
+
     # Validate URL values against options
     url_values: List[str] = _validate_multi_url_values(url_key, url_value, str_options, _HANDLER_NAME)
 

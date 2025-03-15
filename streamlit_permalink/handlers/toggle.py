@@ -1,13 +1,14 @@
-from typing import List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import inspect
 import streamlit as st
 
-from ..utils import init_url_value, validate_bool_url_value, validate_single_url_value
+from ..utils import init_url_value, to_url_value, validate_bool_url_value, validate_single_url_value
 
 _DEFAULT_VALUE = False
 _HANDLER_NAME = 'toggle'
 
-def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> bool:
+def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> bool:
     """
     Handle toggle widget URL state synchronization.
     
@@ -25,8 +26,10 @@ def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: insp
     # Handle the default case when no URL value is provided
     if url_value is None:
         default_value = bound_args.arguments.get('value', _DEFAULT_VALUE)
-        init_url_value(url_key, default_value)
+        init_url_value(url_key, compressor(to_url_value(default_value)))
         return st.toggle(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
 
     # Process and validate the URL value
     url_value_str = validate_single_url_value(url_key, url_value, _HANDLER_NAME)

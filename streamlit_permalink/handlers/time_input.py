@@ -1,10 +1,10 @@
-from typing import List, Optional, Any
+from typing import Any, Callable, Dict, List, Optional
 import inspect
 import streamlit as st
 from datetime import datetime, time
 
 from ..constants import _EMPTY, _NONE
-from ..utils import init_url_value
+from ..utils import init_url_value, to_url_value
 from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'time_input'
@@ -38,7 +38,8 @@ def _parse_time_input_value(value: Any) -> time:
     else:
         raise ValueError(f"Invalid time value: {value}. Expected a time object, 'now', or a string in HH:MM format.")
 
-def handle_time_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> time:
+def handle_time_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> time:
     """
     Handle time input widget URL state synchronization.
     
@@ -64,8 +65,10 @@ def handle_time_input(url_key: str, url_value: Optional[List[str]], bound_args: 
     if url_value is None:
         # Parse the original input value, truncating seconds and microseconds
         parsed_value = _parse_time_input_value(value)
-        init_url_value(url_key, parsed_value)
+        init_url_value(url_key, compressor(to_url_value(parsed_value)))
         return st.time_input(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
     
     # Validate URL value
     if len(url_value) != 1:

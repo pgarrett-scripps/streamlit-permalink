@@ -3,19 +3,32 @@ from datetime import date, time
 # Can simply replace "import streamlit as st" with "import streamlit_permalink as st" 
 import streamlit_permalink as st
 
+import gzip
+import base64
+
+def custom_compress(value: str) -> str:
+    # Compress the string and encode the binary result as base64
+    compressed = gzip.compress(value.encode('utf-8'))
+    return base64.b64encode(compressed).decode('utf-8')
+
+def custom_decompress(value: str) -> str:
+    # Decode the base64 string back to binary and then decompress
+    binary_data = base64.b64decode(value.encode('utf-8'))
+    return gzip.decompress(binary_data).decode('utf-8')
+
+
 OPTIONS = ['Option A', 'Option B', 1, 2, {"Hello": "World"}]
 
-with st.expander('checkbox', expanded=True):
+with st.form('form'):
     is_checked = st.checkbox('checkbox', url_key='checkbox')
-    is_checked_default = st.checkbox('checkbox default', value=True, url_key='checkbox_default')
+    st.form_submit_button('Submit')
+    
+is_checked_default = st.checkbox('checkbox default', value=True, url_key='checkbox_default')
 
 radio = st.radio('radio', options=OPTIONS, url_key='radio')
 
-c1, c2 = st.columns(2)
-with c1:
-    selectbox = st.selectbox('selectbox', options=OPTIONS, url_key='selectbox')
-with c2:
-    multiselect = st.multiselect('multiselect', options=OPTIONS, default=['Option A', 1], url_key='multiselect')
+selectbox = st.selectbox('selectbox', options=OPTIONS, url_key='selectbox')
+multiselect = st.multiselect('multiselect', options=OPTIONS, default=['Option A', 1], url_key='multiselect')
 
 # single and multi sliders with int values
 single_slider = st.slider('single_slider', min_value=1, max_value=100, value=33, url_key='single_slider')
@@ -35,7 +48,11 @@ range_select_slider = st.select_slider('range_select_slider', options=OPTIONS, v
 
 text_input = st.text_input('text_input', value='xxx', url_key='text_input', max_chars=25)
 number_input = st.number_input('number_input', min_value=1, max_value=100, value=42, url_key='number_input')
+
+
 text_area = st.text_area('text_area', url_key='text_area')
+text_area_compress = st.text_area('text_area_compress', url_key='text_area_compress', compress=True)
+text_area_compress_custom = st.text_area('text_area_compress_custom', url_key='text_area_compress_custom', compress=True, compressor=custom_compress, decompressor=custom_decompress)
 
 # single and multi date inputs
 date_input = st.date_input('date_input', url_key='date_input')

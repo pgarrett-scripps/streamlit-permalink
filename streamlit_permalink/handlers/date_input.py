@@ -1,10 +1,10 @@
-from typing import Any, List, Optional, Union, Tuple
+from typing import Any, Callable, Dict, List, Optional, Union, Tuple
 import inspect
 import streamlit as st
 from datetime import datetime, date, timedelta
 
 from ..constants import _EMPTY, _NONE
-from ..utils import init_url_value
+from ..utils import init_url_value, to_url_value
 from ..exceptions import UrlParamError
 
 _DEFAULT_MIN_VALUE, _DEFAULT_MAX_VALUE = None, None
@@ -30,7 +30,10 @@ def get_today() -> date:
 
 def _parse_date_from_string(value: str) -> date:
     """Convert ISO format string to date object."""
-    return date.fromisoformat(value)
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        raise ValueError(f"Invalid date format: '{value}'. Please use YYYY-MM-DD format.")
 
 def _parse_date_input_value(value: Any) -> Optional[date]:
     """Parse various input formats into a date object."""
@@ -39,51 +42,49 @@ def _parse_date_input_value(value: Any) -> Optional[date]:
     elif value == "today":
         return get_today()
     elif isinstance(value, str):
-        try:
-            return _parse_date_from_string(value)
-        except ValueError:
-            raise ValueError(f"Invalid date format: '{value}'. Please use YYYY-MM-DD format.")
+        return _parse_date_from_string(value)
     elif isinstance(value, (date, datetime)):
         return value.date() if isinstance(value, datetime) else value
     else:
         raise ValueError(f"Invalid date value: {value}. Expected a date object, 'today', or a string in YYYY-MM-DD format.")
 
-def _parse_url_date_params(url_key: str, url_value: List[str], is_range: bool) -> DateValue:
+def _parse_url_date_params(url_key: str, url_value: Optional[List[str]], is_range: bool) -> DateValue:
     """Parse and validate date values from URL parameters."""
     if not is_range:
-        if len(url_value) != 1:
+
+        if url_value is None:
+            return None
+        
+        elif isinstance(url_value, list) and len(url_value) == 0:
+            return None
+
+        elif isinstance(url_value, list) and len(url_value) == 1:
+            return _parse_date_from_string(url_value[0])
+
+        else:
             raise UrlParamError(f"URL parameter '{url_key}' has {len(url_value)} values, but single date input expects exactly 1 value.")
+    else: # is range
+        if url_value is None:
+            return ()
+        
+        elif isinstance(url_value, list) and len(url_value) == 0:
+            return ()
+        
+        elif isinstance(url_value, list) and len(url_value) == 1:
+            return (_parse_date_from_string(url_value[0]),)
+        
+        elif isinstance(url_value, list) and len(url_value) == 2:
+            start, end = _parse_date_from_string(url_value[0]), _parse_date_from_string(url_value[1])
 
-        return None if url_value[0] == _NONE else _parse_date_from_string(url_value[0])
-    else:
-        if len(url_value) == 1:
-            if url_value[0] == _EMPTY:
-                return tuple()
-            elif url_value[0] == _NONE:
-                # This is a range date input, _NONE is not allowed, use _EMPTY
-                raise UrlParamError(f"URL parameter '{url_key}' has value '{_NONE}' which is invalid for date ranges. Use '{_EMPTY}' for empty ranges.")
-            else:
-                try:
-                    return (_parse_date_from_string(url_value[0]),)
-                except ValueError:
-                    raise UrlParamError(f"URL parameter '{url_key}' has invalid date format: '{url_value[0]}'. Please use YYYY-MM-DD format.")
-        elif len(url_value) == 2:
-            try:
-                start_date = _parse_date_from_string(url_value[0])
-            except ValueError:
-                raise UrlParamError(f"URL parameter '{url_key}' has invalid start date format: '{url_value[0]}'. Please use YYYY-MM-DD format.")
-            
-            try:
-                end_date = _parse_date_from_string(url_value[1])
-            except ValueError:
-                raise UrlParamError(f"URL parameter '{url_key}' has invalid end date format: '{url_value[1]}'. Please use YYYY-MM-DD format.")
+            # ensure start is before end
+            if start > end:
+                raise UrlParamError(f"Start date ({start}) is after end date ({end}).")
 
-            if start_date > end_date:
-                raise UrlParamError(f"URL parameter '{url_key}' has invalid date range: start date ({start_date}) is after end date ({end_date}).")
-                
-            return (start_date, end_date)
+            return (start, end)
+
         else:
             raise UrlParamError(f"URL parameter '{url_key}' has {len(url_value)} values, but date range input expects 1 or 2 values.")
+
 
 def _check_date_bounds(url_key: str, value: DateValue, min_value: date, max_value: date) -> None:
     """Check if dates are within the allowed range. Raises UrlParamError if not."""
@@ -144,7 +145,8 @@ def _validate_date_values(url_key: str, value: Any, min_value: date, max_value: 
         if value[1] > max_value:
             raise ValueError(f"End date ({value[1]}) is after the maximum allowed date ({max_value}).")
 
-def handle_date_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Any:
+def handle_date_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle date input widget URL state synchronization.
     
@@ -188,8 +190,10 @@ def handle_date_input(url_key: str, url_value: Optional[List[str]], bound_args: 
     _validate_date_values(url_key, value, min_value, max_value, is_range)
 
     if url_value is None:
-        init_url_value(url_key, value)
+        init_url_value(url_key, compressor(to_url_value(value)))
         return st.date_input(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
         
     url_value = _parse_url_date_params(url_key, url_value, is_range)
     _check_date_bounds(url_key, url_value, min_value, max_value)

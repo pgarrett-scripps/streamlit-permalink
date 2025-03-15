@@ -1,12 +1,34 @@
+from functools import partial
 import streamlit as st
 from packaging.version import parse as V
-from typing import Callable, Any, Dict, Optional, Type, TypeVar
-from .utils import to_url_value
+from typing import Callable, Any, Dict, List, Optional, Type, TypeVar, Union
+from .utils import compress_text, decompress_text, to_url_value
 from .core import form_state
 from .handlers import HANDLERS
+from .constants import _EMPTY, _NONE
 import inspect
 
 T = TypeVar('T')
+
+# write a function that takes a callable and a list and runs it with each element of the list
+def _compress_list(func: Callable, l: Union[List[str], str]):
+    if isinstance(l, str):
+        return func(l)
+    if isinstance(l, (list, tuple)):
+        return [func(e) for e in l]
+    
+def _decompress_list(func: Callable, l: List[str]):
+    l = [func(e) for e in l]
+
+    if l == [_EMPTY]:
+        return []
+    
+    if l == [_NONE]:
+        return None
+    
+    return l
+
+
 
 class UrlAwareWidget:
     """A wrapper class that adds URL parameter awareness to Streamlit widgets.
@@ -43,6 +65,21 @@ class UrlAwareWidget:
     def __call__(self, *args, **kwargs):
 
         url_key = kwargs.pop('url_key', None)
+        compress = kwargs.pop('compress', False)
+        compressor = kwargs.pop('compressor', compress_text)
+        decompressor = kwargs.pop('decompressor', decompress_text)
+        stateful = kwargs.pop('stateful', True)
+
+        if stateful is False:
+            return self.base_widget(*args, **kwargs)
+
+        if not compress:
+            compressor = lambda x: x
+            decompressor = lambda x: x
+
+        #partial partial run_with_each_element for compressor and decompressor
+        compressor = partial(_compress_list, compressor)
+        decompressor = partial(_decompress_list, decompressor)
 
         signature = inspect.signature(self.base_widget)
         bound_args = signature.bind_partial(*args, **kwargs)
@@ -51,34 +88,32 @@ class UrlAwareWidget:
 
         # sets url key or errors 
         if url_key is None:
-
             if key is None:
                 raise ValueError("url_key or key is required")
             else:
                 url_key = key
 
-        if key is None:
-            bound_args.arguments['key'] = url_key
+        bound_args.arguments['key'] = url_key
 
         active_form = form_state.get_active_form()
         if active_form is not None:
-            return self.call_inside_form(active_form, url_key, bound_args)
+            return self.call_inside_form(active_form, url_key, bound_args, compressor=compressor, decompressor=decompressor)
         
         if V(st.__version__) < V('1.30'):
             url = st.experimental_get_query_params()
 
         # if user provides on_change and its not None, we need to update the url when the widget changes
-        if 'on_change' in kwargs and kwargs['on_change'] is not None:
-            user_supplied_change_handler = kwargs.get('on_change', lambda *args, **kwargs: None)
-        else:
-            user_supplied_change_handler = None
+        user_supplied_change_handler = None
+        if 'on_change' in bound_args.arguments and bound_args.arguments['on_change'] is not None:
+            user_supplied_change_handler = bound_args.arguments.get('on_change')
 
         def on_change(*args, **kwargs):
+
             if V(st.__version__) < V('1.30'):
-                url[url_key] = to_url_value(getattr(st.session_state, bound_args.arguments['key']))
+                url[url_key] = compressor(to_url_value(getattr(st.session_state, bound_args.arguments['key'])))
                 st.experimental_set_query_params(**url)
             else:
-                st.query_params[url_key] = to_url_value(getattr(st.session_state, bound_args.arguments['key']))
+                st.query_params[url_key] = compressor(to_url_value(getattr(st.session_state, bound_args.arguments['key'])))
 
             if user_supplied_change_handler is not None:
                 user_supplied_change_handler(*args, **kwargs)
@@ -90,10 +125,10 @@ class UrlAwareWidget:
             url_value = st.query_params.get_all(url_key) or None
 
         handler = HANDLERS[self.base_widget.__name__]
-        result = handler(url_key, url_value, bound_args)
+        result = handler(url_key, url_value, bound_args, compressor=compressor, decompressor=decompressor)
         return result
 
-    def call_inside_form(self, form, url_key, bound_args):
+    def call_inside_form(self, form, url_key, bound_args, compressor, decompressor):
 
         form.field_mapping[url_key] = bound_args.arguments['key']
 
@@ -104,7 +139,7 @@ class UrlAwareWidget:
             url_value = st.query_params.get_all(url_key) or None
             
         handler = HANDLERS[self.base_widget.__name__]
-        result = handler(url_key, url_value, bound_args)
+        result = handler(url_key, url_value, bound_args, compressor=compressor, decompressor=decompressor)
         return result
 
 

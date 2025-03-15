@@ -1,13 +1,14 @@
-from typing import Any, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import inspect
 import streamlit as st
 
-from ..utils import _validate_multi_default, _validate_multi_options, _validate_multi_url_values, init_url_value
+from ..utils import _validate_multi_default, _validate_multi_options, _validate_multi_url_values, init_url_value, to_url_value
 
 _HANDLER_NAME = 'multiselect'
 _DEFAULT_VALUE = None
 
-def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Any:
+def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle multiselect widget URL state synchronization.
     
@@ -37,8 +38,10 @@ def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args:
     
     # If no URL value is provided, initialize with default value
     if url_value is None:
-        init_url_value(url_key, default)
+        init_url_value(url_key, compressor(to_url_value(default)))
         return st.multiselect(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
     
     # Validate URL values against options
     url_values: List[str] = _validate_multi_url_values(url_key, url_value, str_options, _HANDLER_NAME)

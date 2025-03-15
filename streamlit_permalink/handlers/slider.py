@@ -1,11 +1,11 @@
 from datetime import datetime, date, time, timedelta
 from enum import Enum
-from typing import Any, List, Optional, Union, Tuple
+from typing import Any, Callable, Dict, List, Optional, Union, Tuple
 
 import inspect
 import streamlit as st
 
-from ..utils import init_url_value
+from ..utils import init_url_value, to_url_value
 from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'slider'
@@ -181,7 +181,8 @@ def _get_slider_type(min_value: Union[int, float, datetime, date, time, None],
     
     return slider_type
 
-def handle_slider(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> Any:
+def handle_slider(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle slider widget URL state synchronization.
     
@@ -210,9 +211,11 @@ def handle_slider(url_key: str, url_value: Optional[List[str]], bound_args: insp
 
     # If no URL value, set it to the default value
     if not url_value:
-        init_url_value(url_key, value)
+        init_url_value(url_key, compressor(to_url_value(value)))
         return st.slider(**bound_args.arguments)
-
+    
+    url_value = decompressor(url_value)
+    
     # Determine if this is a range slider based on the initial value
     is_multi = isinstance(value, (list, tuple))
     expected_values = 2 if is_multi else 1

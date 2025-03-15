@@ -1,13 +1,14 @@
-from typing import List, Optional, Any
+from typing import Any, Callable, Dict, List, Optional
 import inspect
 import streamlit as st
 
-from ..utils import init_url_value, validate_single_url_value
+from ..utils import init_url_value, to_url_value, validate_single_url_value
 from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'text_input'
 
-def handle_text_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments) -> str:
+def handle_text_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+                    compressor: Callable, decompressor: Callable, **kwargs) -> str:
     """
     Handle text input widget URL state synchronization.
     
@@ -26,9 +27,11 @@ def handle_text_input(url_key: str, url_value: Optional[List[str]], bound_args: 
         UrlParamError: If URL value exceeds maximum allowed characters
     """
     if not url_value:
-        value = bound_args.arguments.get("value", "")
-        init_url_value(url_key, value)
+        value = bound_args.arguments.get("value", None)
+        init_url_value(url_key, compressor(to_url_value(value)))
         return st.text_input(**bound_args.arguments)
+    
+    url_value = decompressor(url_value)
 
     validate_single_url_value(url_key, url_value, _HANDLER_NAME)
     value = url_value[0]

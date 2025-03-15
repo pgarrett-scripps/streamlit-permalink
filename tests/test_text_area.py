@@ -14,8 +14,8 @@ def create_form_text_area_app():
 
     form = st.form("test_form")
     with form:
-        text = form.text_area("Form Text Area", url_key="form_area")
-        limited = form.text_area("Form Limited Area", max_chars=100, url_key="form_limited_area")
+        text = form.text_area("Form Text Area", value="", url_key="form_area")
+        limited = form.text_area("Form Limited Area", max_chars=100, value="", url_key="form_limited_area")
         submitted = form.form_submit_button("Submit")
 
 class TestTextArea:
