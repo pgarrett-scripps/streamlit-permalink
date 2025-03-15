@@ -7,7 +7,7 @@ from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'selectbox'
 
-def handle_selectbox(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_selectbox(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs):
     """
     Handle selectbox widget URL state.
@@ -28,7 +28,7 @@ def handle_selectbox(url_key: str, url_value: Optional[List[str]], bound_args: i
 
     if not url_value:
         init_url_value(url_key, compressor(to_url_value(value)))
-        return st.selectbox(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
 
@@ -44,4 +44,4 @@ def handle_selectbox(url_key: str, url_value: Optional[List[str]], bound_args: i
     else:
         bound_args.arguments['index'] = None
     
-    return st.selectbox(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

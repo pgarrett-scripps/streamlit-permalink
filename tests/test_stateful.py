@@ -2,10 +2,10 @@ from streamlit.testing.v1 import AppTest
 from .utils import get_query_params, set_query_params
 
 def create_stateful_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
     
     # Stateful checkbox (default)
-    st.checkbox("Stateful Checkbox", key="stateful", url_key="stateful_param")
+    stp.checkbox("Stateful Checkbox", key="stateful", url_key="stateful_param")
 
 def test_stateful_checkbox():
     """Test stateful checkbox updates URL"""

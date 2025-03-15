@@ -7,7 +7,7 @@ from ..utils import init_url_value, to_url_value, validate_bool_url_value, valid
 _DEFAULT_VALUE = False
 _HANDLER_NAME = 'toggle'
 
-def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_toggle(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> bool:
     """
     Handle toggle widget URL state synchronization.
@@ -27,7 +27,7 @@ def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: insp
     if url_value is None:
         default_value = bound_args.arguments.get('value', _DEFAULT_VALUE)
         init_url_value(url_key, compressor(to_url_value(default_value)))
-        return st.toggle(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
 
@@ -37,4 +37,4 @@ def handle_toggle(url_key: str, url_value: Optional[List[str]], bound_args: insp
 
     # Update the bound arguments with the validated value
     bound_args.arguments['value'] = url_value_bool
-    return st.toggle(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

@@ -4,18 +4,20 @@ from .utils import get_query_params, set_query_params
 from streamlit_permalink.handlers.color_picker import _DEFAULT_VALUE
 
 def create_color_picker_app():
+    import streamlit_permalink as stp
     import streamlit_permalink as st
 
     # Basic color picker with default value
-    st.color_picker("Basic Color", url_key="color")
+    stp.color_picker("Basic Color", url_key="color")
     
     # Color picker with custom default
-    st.color_picker("Custom Color", value="#FF5733", url_key="custom_color")
+    stp.color_picker("Custom Color", value="#FF5733", url_key="custom_color")
 
 def create_form_color_picker_app():
+    import streamlit_permalink as stp
     import streamlit_permalink as st
 
-    form = st.form("test_form")
+    form = stp.form("test_form")
     with form:
         basic_color = form.color_picker("Form Color", 
                                       url_key="form_color")
@@ -23,6 +25,20 @@ def create_form_color_picker_app():
                                        value="#FF5733",
                                        url_key="form_custom_color")
         submitted = form.form_submit_button("Submit")
+
+def multi_form_app():
+    import streamlit_permalink as stp
+    import streamlit_permalink as st
+    
+    form1 = stp.form("form1")
+    with form1:
+        color1 = form1.color_picker("Color 1", value="#000000", url_key="color1")
+        form1.form_submit_button("Submit 1")
+    
+    form2 = stp.form("form2")
+    with form2:
+        color2 = form2.color_picker("Color 2", value="#000000", url_key="color2")
+        form2.form_submit_button("Submit 2")
 
 class TestColorPicker:
     def setup_method(self):
@@ -215,20 +231,7 @@ class TestFormColorPicker:
         assert params["form_custom_color"] == ["#0000FF"]
         
     def test_form_color_picker_multiple_forms(self):
-        """Test multiple color pickers in different forms"""
-        def multi_form_app():
-            import streamlit_permalink as st
-            
-            form1 = st.form("form1")
-            with form1:
-                color1 = form1.color_picker("Color 1", value="#000000", url_key="color1")
-                form1.form_submit_button("Submit 1")
-            
-            form2 = st.form("form2")
-            with form2:
-                color2 = form2.color_picker("Color 2", value="#000000", url_key="color2")
-                form2.form_submit_button("Submit 2")
-        
+        """Test multiple color pickers in different forms"""        
         at = AppTest.from_function(multi_form_app)
         at.run()
         

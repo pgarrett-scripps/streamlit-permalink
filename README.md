@@ -8,36 +8,34 @@ pip install streamlit-permalink
 
 ### Basic usage
 
-The `streamlit_permalink` contains url-aware versions of almost all input widgets from Streamlit:
+The `streamlit_permalink` (shorthand: stp) namespace contains url-aware versions of almost all input widgets from Streamlit:
 
-* `checkbox`
-* `radio`
-* `selectbox`
-* `multiselect`
-* `slider`
-* `select_slider`
-* `text_input`
-* `number_input`
-* `text_area`
-* `date_input`
-* `time_input`
-* `color_picker`
-* `form_submit_button`
-* `pills`
-* `segmented_control`
-* `toggle`
+* `stp.checkbox`
+* `stp.radio`
+* `stp.selectbox`
+* `stp.multiselect`
+* `stp.slider`
+* `stp.select_slider`
+* `stp.text_input`
+* `stp.number_input`
+* `stp.text_area`
+* `stp.date_input`
+* `stp.time_input`
+* `stp.color_picker`
+* `stp.form_submit_button`
+* `stp.pills`
+* `stp.segmented_control`
+* `stp.toggle`
 
 In addition to standard input widgets, it also has an url-aware version of the [streamlit-option-menu](https://github.com/victoryhb/streamlit-option-menu) component: `st.option_menu`. For this to work, `streamlit-option-menu` must be installed separately.
-
-The `streamlit_permalink` namespace now includes all Streamlit functions, so you can completely replace `import streamlit as st` with `import streamlit_permalink as st` in your code.
 
 General usage of input widgets is described in [Streamlit docs](https://docs.streamlit.io/library/api-reference/widgets). streamlit_permalink widgets require a `key` to be provided. 
 
 ```python
-import streamlit_permalink as st
+import streamlit_permalink as stp
 
 # Using key parameter makes the widget URL-aware
-text1 = st.text_input('Type some text', key='secret')
+text1 = stp.text_input('Type some text', key='secret')
 # If the user typed 'foobar' into the above text field, the
 # URL would end with '?secret=foobar' at this point.
 ```
@@ -49,13 +47,14 @@ Once widget state is saved into the URL, it can be shared and whoever opens the 
 To use URL-aware widgets inside Streamlit forms, you need to use `st.form` and `st.form_submit_button`, which are the URL-aware counterparts of Streamlit's form functions:
 
 ```python
-import streamlit_permalink as st
+import streamlit_permalink as stp
+import streamlit as st
 
-with st.form('some-form'):
-  text = st.text_input('Text field inside form', key='secret')
+with stp.form('some-form'):
+  text = stp.text_input('Text field inside form', key='secret')
   # At this point the URL query string is empty / unchanged, even
   # if the user has edited the text field.
-  if st.form_submit_button('Submit'):
+  if stp.form_submit_button('Submit'):
     # URL is updated only when users hit the submit button
     st.write(text)
 ```

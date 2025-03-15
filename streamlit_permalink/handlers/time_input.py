@@ -38,7 +38,7 @@ def _parse_time_input_value(value: Any) -> time:
     else:
         raise ValueError(f"Invalid time value: {value}. Expected a time object, 'now', or a string in HH:MM format.")
 
-def handle_time_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_time_input(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> time:
     """
     Handle time input widget URL state synchronization.
@@ -66,7 +66,7 @@ def handle_time_input(url_key: str, url_value: Optional[List[str]], bound_args: 
         # Parse the original input value, truncating seconds and microseconds
         parsed_value = _parse_time_input_value(value)
         init_url_value(url_key, compressor(to_url_value(parsed_value)))
-        return st.time_input(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
     
@@ -87,4 +87,4 @@ def handle_time_input(url_key: str, url_value: Optional[List[str]], bound_args: 
             f"Expected time in format HH:MM."
         )
     
-    return st.time_input(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

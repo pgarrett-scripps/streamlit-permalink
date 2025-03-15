@@ -8,46 +8,52 @@ from streamlit_permalink.exceptions import UrlParamError
 from streamlit_permalink.utils import _EMPTY
 
 def create_multiselect_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
     OPTIONS = ["Option A", "Option B", "Option C"]
-    st.multiselect("Test Multiselect", options=OPTIONS, url_key="multi")
+    stp.multiselect("Test Multiselect", options=OPTIONS, url_key="multi")
 
 def create_form_multiselect_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
-    form = st.form("test_form")
+    form = stp.form("test_form")
     with form:
         OPTIONS = ["Option A", "Option B", "Option C"]
         multiselect = form.multiselect("Form Multiselect", options=OPTIONS, url_key="form_multi")
         submitted = form.form_submit_button("Submit")
 
 def create_multiselect_with_default_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
     
     OPTIONS = ["Option A", "Option B", "Option C"]
-    st.multiselect("Default Multiselect", options=OPTIONS, default=["Option B"], url_key="default_multi")
+    stp.multiselect("Default Multiselect", options=OPTIONS, default=["Option B"], url_key="default_multi")
 
 def create_multiselect_with_nonstring_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
     
     # Non-string options
     OPTIONS = [1, 2, 3, "Hello", "World"]
-    st.multiselect("Number Multiselect", options=OPTIONS, url_key="num_multi")
+    stp.multiselect("Number Multiselect", options=OPTIONS, url_key="num_multi")
 
 def create_multiselect_with_specialchars_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
     
     # Options with special characters
     OPTIONS = ["Option with spaces", "Option/with/slashes", "Option?with&symbols"]
-    st.multiselect("Special Chars Multiselect", options=OPTIONS, url_key="special_multi")
+    stp.multiselect("Special Chars Multiselect", options=OPTIONS, url_key="special_multi")
 
 def create_multiselect_with_duplicate_string_options_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
     
     # Options that are not unique when cast to strings
     OPTIONS = [1, "1", 2, True, "True"]
-    st.multiselect("Duplicate String Options", options=OPTIONS, url_key="duplicate_multi")
+    stp.multiselect("Duplicate String Options", options=OPTIONS, url_key="duplicate_multi")
+
+def create_empty_options_app():
+    import streamlit_permalink as stp
+    
+    EMPTY_OPTIONS = []
+    stp.multiselect("Empty Options", options=EMPTY_OPTIONS, url_key="empty_multi")
 
 class TestMultiselect:
     def setup_method(self):
@@ -174,11 +180,6 @@ class TestMultiselectAdditional:
     def test_multiselect_empty_options_error(self):
         """Test error when multiselect options list is empty"""
         # Define an app with empty options
-        def create_empty_options_app():
-            import streamlit_permalink as st
-            
-            EMPTY_OPTIONS = []
-            st.multiselect("Empty Options", options=EMPTY_OPTIONS, url_key="empty_multi")
         
         at = AppTest.from_function(create_empty_options_app)
         at.run()

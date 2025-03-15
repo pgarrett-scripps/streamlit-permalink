@@ -6,14 +6,14 @@ from .utils import get_query_params, set_query_params
 from streamlit_permalink.handlers.toggle import _DEFAULT_VALUE
 
 def create_toggle_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
-    st.toggle("Test Toggle", url_key="toggle")
+    stp.toggle("Test Toggle", url_key="toggle")
 
 def create_form_toggle_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
-    form = st.form("test_form")
+    form = stp.form("test_form")
     with form:
         toggle = form.toggle("Form Toggle", url_key="form_toggle")
         submitted = form.form_submit_button("Submit")

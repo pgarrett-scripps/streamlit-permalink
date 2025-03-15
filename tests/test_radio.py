@@ -3,15 +3,15 @@ from packaging.version import parse as V
 from .utils import get_query_params, set_query_params
 
 def create_radio_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
     OPTIONS = ["Option A", "Option B", "Option C"]
-    st.radio("Test Radio", options=OPTIONS, url_key="radio")
+    stp.radio("Test Radio", options=OPTIONS, url_key="radio")
 
 def create_form_radio_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
-    form = st.form("test_form")
+    form = stp.form("test_form")
     with form:
         OPTIONS = ["Option A", "Option B", "Option C"]
         radio = form.radio("Form Radio", options=OPTIONS, url_key="form_radio")

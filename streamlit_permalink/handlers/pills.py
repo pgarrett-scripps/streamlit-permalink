@@ -8,7 +8,7 @@ _HANDLER_NAME = 'pills'
 _DEFAULT_DEFAULT = None
 _DEFAULT_SELECTION_MODE = 'single'
 
-def handle_pills(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_pills(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> Union[List, Any, None]:
     """
     Handle pills widget URL state synchronization.
@@ -44,7 +44,7 @@ def handle_pills(url_key: str, url_value: Optional[List[str]], bound_args: inspe
     # If no URL value is provided, initialize with default value
     if url_value is None:
         init_url_value(url_key, compressor(to_url_value(default)))
-        return st.pills(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
     
@@ -61,4 +61,4 @@ def handle_pills(url_key: str, url_value: Optional[List[str]], bound_args: inspe
     
     # Update bound arguments with validated values
     bound_args.arguments['default'] = actual_url_values
-    return st.pills(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

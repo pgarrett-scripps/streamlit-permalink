@@ -7,7 +7,7 @@ from ..utils import _validate_multi_default, _validate_multi_options, _validate_
 _HANDLER_NAME = 'multiselect'
 _DEFAULT_VALUE = None
 
-def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_multiselect(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle multiselect widget URL state synchronization.
@@ -39,7 +39,7 @@ def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args:
     # If no URL value is provided, initialize with default value
     if url_value is None:
         init_url_value(url_key, compressor(to_url_value(default)))
-        return st.multiselect(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
     
@@ -52,4 +52,4 @@ def handle_multiselect(url_key: str, url_value: Optional[List[str]], bound_args:
     
     # Update bound arguments with validated values
     bound_args.arguments['default'] = actual_url_values
-    return st.multiselect(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

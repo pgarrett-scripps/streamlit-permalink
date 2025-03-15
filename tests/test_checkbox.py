@@ -5,8 +5,9 @@ from streamlit_permalink.handlers.checkbox import _DEFAULT_VALUE
 
 def create_checkbox_app():
     import streamlit_permalink as st
+    import streamlit_permalink as stp
 
-    st.checkbox("Test Checkbox", url_key="check")
+    stp.checkbox("Test Checkbox", url_key="check")
 
 class TestCheckbox:
     def setup_method(self):
@@ -122,9 +123,10 @@ class TestCheckbox:
         assert self.at.checkbox[0].value is False
 
 def create_form_checkbox_app():
+    import streamlit_permalink as stp
     import streamlit_permalink as st
 
-    form = st.form("test_form")
+    form = stp.form("test_form")
     with form:
         checkbox = form.checkbox("Form Checkbox", url_key="form_check")
         submitted = form.form_submit_button("Submit")

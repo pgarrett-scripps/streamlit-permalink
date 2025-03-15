@@ -3,10 +3,13 @@ import streamlit as st
 from packaging.version import parse as V
 from typing import Callable, Any, Dict, List, Optional, Type, TypeVar, Union
 from .utils import compress_text, decompress_text, to_url_value
-from .core import form_state
+#from .core import form_state
 from .handlers import HANDLERS
 from .constants import _EMPTY, _NONE
 import inspect
+from streamlit.delta_generator import DeltaGenerator
+
+_active_form = None
 
 T = TypeVar('T')
 
@@ -57,10 +60,10 @@ class UrlAwareWidget:
     # For this second way, we need to know if UrlAwareWidget has been
     # called like a method on the form object. Therefore, we use the
     # descriptor protocol to attach the form object:
-    def __get__(self, form: 'UrlAwareForm', _objtype: Optional[Type] = None) -> 'UrlAwareWidget':
-        """Implements the descriptor protocol for form-based widget access."""
+    def __get__(self, form, _objtype=None):
         assert isinstance(form, UrlAwareForm)
         return UrlAwareWidget(getattr(form.base_form, self.base_widget.__name__), form)
+        
     
     def __call__(self, *args, **kwargs):
 
@@ -88,16 +91,17 @@ class UrlAwareWidget:
 
         # sets url key or errors 
         if url_key is None:
-            if key is None:
-                raise ValueError("url_key or key is required")
-            else:
+            if key is not None:
                 url_key = key
+            elif bound_args.arguments.get('label') is not None:
+                url_key = bound_args.arguments['label']
+            else:
+                raise ValueError("url_key or key is required")
 
         bound_args.arguments['key'] = url_key
 
-        active_form = form_state.get_active_form()
-        if active_form is not None:
-            return self.call_inside_form(active_form, url_key, bound_args, compressor=compressor, decompressor=decompressor)
+        if _active_form is not None or self.form is not None:
+            return self.call_inside_form(self.form or _active_form, url_key, bound_args, compressor=compressor, decompressor=decompressor)
         
         if V(st.__version__) < V('1.30'):
             url = st.experimental_get_query_params()
@@ -125,7 +129,7 @@ class UrlAwareWidget:
             url_value = st.query_params.get_all(url_key) or None
 
         handler = HANDLERS[self.base_widget.__name__]
-        result = handler(url_key, url_value, bound_args, compressor=compressor, decompressor=decompressor)
+        result = handler(self.base_widget, url_key, url_value, bound_args, compressor=compressor, decompressor=decompressor)
         return result
 
     def call_inside_form(self, form, url_key, bound_args, compressor, decompressor):
@@ -139,7 +143,7 @@ class UrlAwareWidget:
             url_value = st.query_params.get_all(url_key) or None
             
         handler = HANDLERS[self.base_widget.__name__]
-        result = handler(url_key, url_value, bound_args, compressor=compressor, decompressor=decompressor)
+        result = handler(self.base_widget, url_key, url_value, bound_args, compressor=compressor, decompressor=decompressor)
         return result
 
 
@@ -164,16 +168,16 @@ class UrlAwareFormSubmitButton:
     # For this second way, we need to know if UrlAwareWidget has been
     # called like a method on the form object. Therefore, we use the
     # descriptor protocol to attach the form object:
-    def __get__(self, form: 'UrlAwareForm', _objtype: Optional[Type] = None) -> 'UrlAwareFormSubmitButton':
-        """Implements the descriptor protocol for form-based button access."""
+    def __get__(self, form, _objtype=None):
         assert isinstance(form, UrlAwareForm)
         return UrlAwareFormSubmitButton(getattr(form.base_form, self.base_widget.__name__), form)
 
+
     def __call__(self, *args, **kwargs):
-        active_form = form_state.get_active_form()
-        if active_form is not None:
-            return self.call_inside_form(active_form, *args, **kwargs)
+        if _active_form is not None or self.form is not None:
+            return self.call_inside_form(self.form or _active_form, *args, **kwargs)
         return self.base_widget(*args, **kwargs)
+        
 
     def call_inside_form(self, form, *args, **kwargs):
         if V(st.__version__) < V('1.30'):
@@ -258,26 +262,29 @@ class UrlAwareForm:
     if _has_option_menu:
         option_menu = UrlAwareWidget(streamlit_option_menu.option_menu)
 
-    def __init__(self, key: str, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, key, *args, **kwargs):
         self.base_form = st.form(key, *args, **kwargs)
         # map from URL query param names to streamlit widget keys
-        self.field_mapping: Dict[str, str] = {}
+        self.field_mapping = {}
 
     def __enter__(self):
-        self.base_form.__enter__()
-        # Use the context manager instead of directly setting global variable
-        self._form_context = form_state.set_active_form(self)
-        self._form_context.__enter__()
-        return self
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        # Exit the context manager to restore previous state
-        self._form_context.__exit__(exc_type, exc_val, exc_tb)
-        return self.base_form.__exit__(exc_type, exc_val, exc_tb)
+        global _active_form
+        _active_form = self
+        return self.base_form.__enter__()
 
-    def __getattr__(self, attr: str) -> Any:
-        """Delegates attribute access to the underlying form."""
+    def __exit__(self, exc_type, exc_value, traceback):
+        global _active_form
+        _active_form = None
+        return self.base_form.__exit__(exc_type, exc_value, traceback)
+
+    def __getattr__(self, attr):
         return getattr(self.base_form, attr)
 
 
 form = UrlAwareForm
+
+def __getattr__(name: str) -> Any:
+    try:
+        return getattr(st, name)
+    except AttributeError as e:
+        raise AttributeError(str(e).replace('streamlit', 'streamlit_permalink')) 

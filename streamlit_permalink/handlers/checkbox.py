@@ -7,7 +7,7 @@ from ..utils import init_url_value, to_url_value, validate_bool_url_value, valid
 _HANDLER_NAME = 'checkbox'
 _DEFAULT_VALUE = False
 
-def handle_checkbox(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_checkbox(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> bool:
     """
     Handle checkbox widget URL state synchronization.
@@ -30,7 +30,7 @@ def handle_checkbox(url_key: str, url_value: Optional[List[str]], bound_args: in
     if url_value is None:
         default_value = bound_args.arguments.get('value', _DEFAULT_VALUE)
         init_url_value(url_key, compressor(to_url_value(default_value)))
-        return st.checkbox(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value) # [str, str], [], None
 
@@ -40,4 +40,4 @@ def handle_checkbox(url_key: str, url_value: Optional[List[str]], bound_args: in
 
     # Update widget state with URL value
     bound_args.arguments['value'] = url_value_bool
-    return st.checkbox(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

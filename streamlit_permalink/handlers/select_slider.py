@@ -7,7 +7,7 @@ from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'select_slider'
 
-def handle_select_slider(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_select_slider(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle select slider widget URL state synchronization.
@@ -55,7 +55,7 @@ def handle_select_slider(url_key: str, url_value: Optional[List[str]], bound_arg
 
     if not url_value:
         init_url_value(url_key, compressor(to_url_value(value)))
-        return st.select_slider(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
 
@@ -84,4 +84,4 @@ def handle_select_slider(url_key: str, url_value: Optional[List[str]], bound_arg
     
     # Update bound arguments with validated values
     bound_args.arguments['value'] = tuple(actual_url_values) if is_range_slider else actual_url_values[0]
-    return st.select_slider(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

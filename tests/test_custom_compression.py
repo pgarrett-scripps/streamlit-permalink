@@ -2,7 +2,7 @@ from streamlit.testing.v1 import AppTest
 from .utils import get_query_params, set_query_params
 
 def create_custom_compressed_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
     
     # Custom compression functions
     def custom_compressor(text):
@@ -14,7 +14,7 @@ def create_custom_compressed_app():
         return text
     
     # Checkbox with custom compression
-    st.checkbox("Custom Compressed", 
+    stp.checkbox("Custom Compressed", 
                key="custom_compressed",
                url_key="custom_compressed",
                compress=True,

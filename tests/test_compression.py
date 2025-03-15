@@ -2,10 +2,10 @@ from streamlit.testing.v1 import AppTest
 from .utils import get_query_params, set_query_params
 
 def create_compressed_checkbox_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
     
     # Simple checkbox with compression
-    st.checkbox("Compressed Checkbox", key="compressed", url_key="compressed", compress=True)
+    stp.checkbox("Compressed Checkbox", key="compressed", url_key="compressed", compress=True)
 
 def test_default_compression():
     """Test checkbox with default compression"""

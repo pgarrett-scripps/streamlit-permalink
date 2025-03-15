@@ -13,7 +13,7 @@ def option_menu(menu_title, options, default_index=0, menu_icon=None, icons=None
 _HANDLER_NAME = 'option_menu'
 _DEFAULT_VALUE = 0
 
-def handle_option_menu(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_option_menu(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle option menu widget URL state synchronization.
@@ -43,7 +43,7 @@ def handle_option_menu(url_key: str, url_value: Optional[List[str]], bound_args:
 
     if not url_value:
         init_url_value(url_key, compressor(to_url_value(value)))
-        return option_menu(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
 
@@ -59,4 +59,4 @@ def handle_option_menu(url_key: str, url_value: Optional[List[str]], bound_args:
     except KeyError:
         raise UrlParamError(f"Invalid value for {_HANDLER_NAME} parameter '{url_key}': {url_value_str}. Expected one of {options}.")
     
-    return option_menu(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

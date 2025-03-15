@@ -3,21 +3,21 @@ from packaging.version import parse as V
 from .utils import get_query_params, set_query_params
 
 def create_single_select_slider_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
-    st.select_slider("Single Select Slider", options=OPTIONS, value="M", url_key="select_slider")
+    stp.select_slider("Single Select Slider", options=OPTIONS, value="M", url_key="select_slider")
 
 def create_range_select_slider_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
-    st.select_slider("Range Select Slider", options=OPTIONS, value=("S", "L"), url_key="range_select")
+    stp.select_slider("Range Select Slider", options=OPTIONS, value=("S", "L"), url_key="range_select")
 
 def create_form_select_slider_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
-    form = st.form("test_form")
+    form = stp.form("test_form")
     with form:
         OPTIONS = ["XS", "S", "M", "L", "XL"]
         single = form.select_slider("Form Single Select", options=OPTIONS, value="M", url_key="form_select")
@@ -25,28 +25,28 @@ def create_form_select_slider_app():
         submitted = form.form_submit_button("Submit")
 
 def create_no_value_select_slider_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
-    st.select_slider("No Value Select Slider", options=OPTIONS, url_key="no_value_select")
+    stp.select_slider("No Value Select Slider", options=OPTIONS, url_key="no_value_select")
 
 def create_numeric_select_slider_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
     OPTIONS = [1, 2, 3, 4, 5]
-    st.select_slider("Numeric Select Slider", options=OPTIONS, value=3, url_key="numeric_select")
+    stp.select_slider("Numeric Select Slider", options=OPTIONS, value=3, url_key="numeric_select")
 
 def create_numeric_range_select_slider_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
     OPTIONS = [1, 2, 3, 4, 5]
-    st.select_slider("Numeric Range Select", options=OPTIONS, value=(2, 4), url_key="numeric_range")
+    stp.select_slider("Numeric Range Select", options=OPTIONS, value=(2, 4), url_key="numeric_range")
 
 def create_mixed_types_select_slider_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
     OPTIONS = [1, "2", 3.0, "four", False]
-    st.select_slider("Mixed Types Select", options=OPTIONS, value="2", url_key="mixed_types")
+    stp.select_slider("Mixed Types Select", options=OPTIONS, value="2", url_key="mixed_types")
 
 class TestSingleSelectSlider:
     def setup_method(self):

@@ -1,7 +1,8 @@
 from streamlit.testing.v1 import AppTest
 
 def create_on_change_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
+    import streamlit as st
     
     # Initialize counter
     if 'callback_count' not in st.session_state:
@@ -11,7 +12,7 @@ def create_on_change_app():
         st.session_state.callback_count += 1
     
     # Checkbox with on_change
-    st.checkbox("Checkbox with callback", 
+    stp.checkbox("Checkbox with callback", 
                key="callback", 
                url_key="callback_param",
                on_change=on_change_callback)

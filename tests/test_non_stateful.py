@@ -2,10 +2,10 @@ from streamlit.testing.v1 import AppTest
 from .utils import get_query_params, set_query_params
 
 def create_non_stateful_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp   
     
     # Non-stateful checkbox
-    st.checkbox("Non-stateful Checkbox", key="non_stateful", stateful=False)
+    stp.checkbox("Non-stateful Checkbox", key="non_stateful", stateful=False)
 
 def test_non_stateful_checkbox():
     """Test non-stateful checkbox doesn't update URL"""

@@ -8,7 +8,7 @@ from ..exceptions import UrlParamError
 _HANDLER_NAME = 'number_input'
 _DEFAULT_VALUE = 'min'
 
-def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_number_input(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> Union[int, float]:
     """
     Handle number input widget URL state synchronization.
@@ -64,7 +64,7 @@ def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args
             default_value = value if value is not None else (0 if input_type == int else 0.0)
         
         init_url_value(url_key, compressor(to_url_value(default_value)))
-        return st.number_input(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
     
@@ -92,4 +92,4 @@ def handle_number_input(url_key: str, url_value: Optional[List[str]], bound_args
             f"Expected {input_type.__name__} value. Error: {str(e)}"
         )
     
-    return st.number_input(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

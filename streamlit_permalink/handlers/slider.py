@@ -181,7 +181,7 @@ def _get_slider_type(min_value: Union[int, float, datetime, date, time, None],
     
     return slider_type
 
-def handle_slider(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_slider(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle slider widget URL state synchronization.
@@ -212,7 +212,7 @@ def handle_slider(url_key: str, url_value: Optional[List[str]], bound_args: insp
     # If no URL value, set it to the default value
     if not url_value:
         init_url_value(url_key, compressor(to_url_value(value)))
-        return st.slider(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
     
@@ -285,4 +285,4 @@ def handle_slider(url_key: str, url_value: Optional[List[str]], bound_args: insp
     
         bound_args.arguments['value'] = parsed_values[0]
 
-    return st.slider(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

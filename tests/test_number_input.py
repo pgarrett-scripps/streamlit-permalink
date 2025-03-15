@@ -3,21 +3,21 @@ from packaging.version import parse as V
 from .utils import get_query_params, set_query_params
 
 def create_number_input_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
-    st.number_input("Basic Number", value=5, url_key="num")
-    st.number_input("Float Number", value=3.14, step=0.01, url_key="float")
-    st.number_input("Limited Number", min_value=0, max_value=10, value=5, url_key="limited")
-    st.number_input("Stepped Number", value=0, step=5, url_key="stepped")
+    stp.number_input("Basic Number", value=5, url_key="num")
+    stp.number_input("Float Number", value=3.14, step=0.01, url_key="float")
+    stp.number_input("Limited Number", min_value=0, max_value=10, value=5, url_key="limited")
+    stp.number_input("Stepped Number", value=0, step=5, url_key="stepped")
     # Add test for "min" default value
-    st.number_input("Min Default", min_value=10, max_value=100, url_key="min_default")
+    stp.number_input("Min Default", min_value=10, max_value=100, url_key="min_default")
     # Add test for None value
-    st.number_input("None Value", value=None, url_key="none_value")
+    stp.number_input("None Value", value=None, url_key="none_value")
 
 def create_form_number_input_app():
-    import streamlit_permalink as st
+    import streamlit_permalink as stp
 
-    form = st.form("test_form")
+    form = stp.form("test_form")
     with form:
         num = form.number_input("Form Number", value=5, url_key="form_num")
         limited = form.number_input("Form Limited", min_value=0, max_value=10, value=5, url_key="form_limited")

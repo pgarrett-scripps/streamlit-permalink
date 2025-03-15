@@ -145,7 +145,7 @@ def _validate_date_values(url_key: str, value: Any, min_value: date, max_value: 
         if value[1] > max_value:
             raise ValueError(f"End date ({value[1]}) is after the maximum allowed date ({max_value}).")
 
-def handle_date_input(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_date_input(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> Any:
     """
     Handle date input widget URL state synchronization.
@@ -191,7 +191,7 @@ def handle_date_input(url_key: str, url_value: Optional[List[str]], bound_args: 
 
     if url_value is None:
         init_url_value(url_key, compressor(to_url_value(value)))
-        return st.date_input(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
         
@@ -199,4 +199,4 @@ def handle_date_input(url_key: str, url_value: Optional[List[str]], bound_args: 
     _check_date_bounds(url_key, url_value, min_value, max_value)
     bound_args.arguments['value'] = url_value
     
-    return st.date_input(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)

@@ -9,7 +9,7 @@ from ..exceptions import UrlParamError
 
 _HANDLER_NAME = 'text_area'
 
-def handle_text_area(url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
+def handle_text_area(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
                     compressor: Callable, decompressor: Callable, **kwargs) -> str:
     """
     Handle text area widget URL state synchronization.
@@ -35,7 +35,7 @@ def handle_text_area(url_key: str, url_value: Optional[List[str]], bound_args: i
         value = bound_args.arguments.get('value', None)
         # Compress the value if compress is True before storing in URL
         init_url_value(url_key, compressor(to_url_value(value)))
-        return st.text_area(**bound_args.arguments)
+        return base_widget(**bound_args.arguments)
     
     url_value = decompressor(url_value)
 
@@ -50,4 +50,4 @@ def handle_text_area(url_key: str, url_value: Optional[List[str]], bound_args: i
         )
 
     bound_args.arguments['value'] = value
-    return st.text_area(**bound_args.arguments)
+    return base_widget(**bound_args.arguments)
