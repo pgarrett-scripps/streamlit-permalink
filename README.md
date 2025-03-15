@@ -8,30 +8,30 @@ pip install streamlit-permalink
 
 ### Basic usage
 
-The `streamlit_permalink` namespace contains url-aware versions of almost all input widgets from Streamlit:
+The `streamlit_permalink` contains url-aware versions of almost all input widgets from Streamlit:
 
-* `st.checkbox`
-* `st.radio`
-* `st.selectbox`
-* `st.multiselect`
-* `st.slider`
-* `st.select_slider`
-* `st.text_input`
-* `st.number_input`
-* `st.text_area`
-* `st.date_input`
-* `st.time_input`
-* `st.color_picker`
-* `st.form_submit_button`
-* `st.pills`
-* `st.segmented_control`
-* `st.toggle`
+* `checkbox`
+* `radio`
+* `selectbox`
+* `multiselect`
+* `slider`
+* `select_slider`
+* `text_input`
+* `number_input`
+* `text_area`
+* `date_input`
+* `time_input`
+* `color_picker`
+* `form_submit_button`
+* `pills`
+* `segmented_control`
+* `toggle`
 
 In addition to standard input widgets, it also has an url-aware version of the [streamlit-option-menu](https://github.com/victoryhb/streamlit-option-menu) component: `st.option_menu`. For this to work, `streamlit-option-menu` must be installed separately.
 
 The `streamlit_permalink` namespace now includes all Streamlit functions, so you can completely replace `import streamlit as st` with `import streamlit_permalink as st` in your code.
 
-General usage of input widgets is described in [Streamlit docs](https://docs.streamlit.io/library/api-reference/widgets). streamlit_permalink widgets require a `key` to be provided:
+General usage of input widgets is described in [Streamlit docs](https://docs.streamlit.io/library/api-reference/widgets). streamlit_permalink widgets require a `key` to be provided. 
 
 ```python
 import streamlit_permalink as st
@@ -73,6 +73,61 @@ if form.form_submit_button('Submit'):
   # URL is updated only when users hit the submit button
   st.write(text)
 ```
+
+### Compression
+
+For widgets that may contain large amounts of text (like `text_area`), you can enable compression to reduce the URL length. 
+
+```python
+import streamlit_permalink as st
+
+# Enable compression for text area content
+long_text = st.text_area("Enter long text", key="essay", compress=True)
+# The text will be compressed before being added to the URL
+```
+
+By default, compression uses a built-in text compression algorithm. You can also provide custom compression and decompression functions:
+
+```python
+import streamlit_permalink as st
+import gzip
+import base64
+
+def custom_compress(value: str) -> str:
+    # Compress the string and encode the binary result as base64
+    compressed = gzip.compress(value.encode('utf-8'))
+    return base64.b64encode(compressed).decode('utf-8')
+
+def custom_decompress(value: str) -> str:
+    # Decode the base64 string back to binary and then decompress
+    binary_data = base64.b64decode(value.encode('utf-8'))
+    return gzip.decompress(binary_data).decode('utf-8')
+
+# Use custom compression for a text area
+long_text = st.text_area(
+    "Enter long text", 
+    key="essay", 
+    compress=True,
+    compressor=custom_compress,
+    decompressor=custom_decompress
+)
+```
+
+Compression also works with lists, such as in `multiselect` widgets, where each item in the list will be compressed individually.
+
+### Disabling URL-aware Statefulness
+
+In some cases, you might want to use a widget without URL-aware functionality. You can disable this by setting `stateful=False`:
+
+```python
+import streamlit_permalink as st
+
+# This widget will behave like a regular Streamlit widget
+# and won't update the URL or be controlled by URL parameters
+text = st.text_input("Enter text", key="non_url_text", stateful=False)
+```
+
+This is useful when you have widgets that should not affect the shareable state of your application.
 
 ### Development and Testing
 
