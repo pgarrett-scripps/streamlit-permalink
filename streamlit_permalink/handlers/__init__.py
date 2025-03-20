@@ -1,3 +1,7 @@
+"""
+This module contains handlers for the Streamlit widgets.
+"""
+
 import streamlit as st
 
 # Base handlers that are available in all Streamlit versions
@@ -15,48 +19,50 @@ from .color_picker import handle_color_picker
 
 # Initialize handlers dictionary with base widgets
 HANDLERS = {
-    'checkbox': handle_checkbox,
-    'radio': handle_radio,
-    'selectbox': handle_selectbox,
-    'multiselect': handle_multiselect,
-    'slider': handle_slider,
-    'text_input': handle_text_input,
-    'number_input': handle_number_input,
-    'text_area': handle_text_area,
-    'date_input': handle_date_input,
-    'time_input': handle_time_input,
-    'color_picker': handle_color_picker,
+    "checkbox": handle_checkbox,
+    "radio": handle_radio,
+    "selectbox": handle_selectbox,
+    "multiselect": handle_multiselect,
+    "slider": handle_slider,
+    "text_input": handle_text_input,
+    "number_input": handle_number_input,
+    "text_area": handle_text_area,
+    "date_input": handle_date_input,
+    "time_input": handle_time_input,
+    "color_picker": handle_color_picker,
 }
 
 # Conditionally add newer widget handlers
-if hasattr(st, 'toggle'):
+if hasattr(st, "toggle"):
     from .toggle import handle_toggle
-    HANDLERS['toggle'] = handle_toggle
 
-if hasattr(st, 'select_slider'):
+    HANDLERS["toggle"] = handle_toggle
+
+if hasattr(st, "select_slider"):
     from .select_slider import handle_select_slider
-    HANDLERS['select_slider'] = handle_select_slider
 
-if hasattr(st, 'option_menu'):
+    HANDLERS["select_slider"] = handle_select_slider
+
+if hasattr(st, "option_menu"):
     from .option_menu import handle_option_menu
-    HANDLERS['option_menu'] = handle_option_menu
 
-if hasattr(st, 'pills'):
+    HANDLERS["option_menu"] = handle_option_menu
+
+if hasattr(st, "pills"):
     from .pills import handle_pills
-    HANDLERS['pills'] = handle_pills
 
-if hasattr(st, 'segmented_control'):
+    HANDLERS["pills"] = handle_pills
+
+if hasattr(st, "segmented_control"):
     from .segmented_control import handle_segmented_control
-    HANDLERS['segmented_control'] = handle_segmented_control
+
+    HANDLERS["segmented_control"] = handle_segmented_control
 
 # option menu (from streamlit_option_menu import option_menu) not in st
 try:
     from streamlit_option_menu import option_menu
     from .option_menu import handle_option_menu
-    HANDLERS['option_menu'] = handle_option_menu
+
+    HANDLERS["option_menu"] = handle_option_menu
 except ImportError:
     pass
-
-
-
-

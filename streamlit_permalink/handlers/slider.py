@@ -1,17 +1,23 @@
+"""
+Handle slider widget URL state synchronization.
+"""
+
 from datetime import datetime, date, time, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union, Tuple
-
+from typing import Any, Callable, List, Optional, Union, Tuple
 import inspect
+
 import streamlit as st
 
 from ..utils import init_url_value, to_url_value
 from ..exceptions import UrlParamError
 
-_HANDLER_NAME = 'slider'
+_HANDLER_NAME = "slider"
+
 
 class SliderType(Enum):
     """Enumeration of supported slider types."""
+
     SINGLE_INT = "single-int"
     SINGLE_FLOAT = "single-float"
     SINGLE_DATETIME = "single-datetime"
@@ -23,17 +29,19 @@ class SliderType(Enum):
     MULTI_DATE = "multi-date"
     MULTI_TIME = "multi-time"
 
-    
-def _get_defaults(min_value: Union[int, float, datetime, date, time, None], 
-                  max_value: Union[int, float, datetime, date, time, None], 
-                  value: Union[int, float, datetime, date, time, list, tuple, None],
-                  step: Union[int, float, timedelta, None]) -> Tuple[Any, Any, Any, Any, SliderType]:
+
+def _get_defaults(
+    min_value: Union[int, float, datetime, date, time, None],
+    max_value: Union[int, float, datetime, date, time, None],
+    value: Union[int, float, datetime, date, time, list, tuple, None],
+    step: Union[int, float, timedelta, None],
+) -> Tuple[Any, Any, Any, Any, SliderType]:
     """
     Verify and initialize slider parameters.
-    
+
     Ensures min_value, max_value, value, and step are correct types and values,
     and initializes them with sensible defaults if needed.
-    
+
     Returns:
         Tuple of (min_value, max_value, value, step, slider_type)
     """
@@ -62,14 +70,14 @@ def _get_defaults(min_value: Union[int, float, datetime, date, time, None],
     elif min_value is None and value is None:
         min_value = 0
         value = 0
-        
+
     # Handle max
     if max_value is None:
         if isinstance(value, (list, tuple)):
             _value = value[0]
         else:
             _value = value
-    
+
         if slider_type in (SliderType.SINGLE_DATE, SliderType.MULTI_DATE):
             max_value = _value + timedelta(days=14)
         elif slider_type in (SliderType.SINGLE_DATETIME, SliderType.MULTI_DATETIME):
@@ -82,7 +90,7 @@ def _get_defaults(min_value: Union[int, float, datetime, date, time, None],
             max_value = max(_value, 1.0)
         else:
             raise ValueError(f"Unsupported slider type: {slider_type}")
-        
+
     # Handle step
     if step is None:
         if slider_type in (SliderType.SINGLE_INT, SliderType.MULTI_INT):
@@ -100,41 +108,57 @@ def _get_defaults(min_value: Union[int, float, datetime, date, time, None],
             step = timedelta(minutes=15)
         else:
             raise ValueError(f"Unsupported slider type: {slider_type}")
-        
-    return min_value, max_value, value, step, slider_type
-        
 
-def _validate_step(step: Union[int, float, timedelta, None], slider_type: SliderType) -> None:
+    return min_value, max_value, value, step, slider_type
+
+
+def _validate_step(
+    step: Union[int, float, timedelta, None], slider_type: SliderType
+) -> None:
     """Validate that the step value is appropriate for the slider type."""
     if step is not None:
         if slider_type in (SliderType.SINGLE_INT, SliderType.MULTI_INT):
             if not isinstance(step, int):
-                raise ValueError(f"Step must be an integer for single or multi int slider: {step}")
-        elif slider_type in (SliderType.SINGLE_FLOAT, SliderType.MULTI_FLOAT):
+                raise ValueError(
+                    f"Step must be an integer for single or multi int slider: {step}"
+                )
+        if slider_type in (SliderType.SINGLE_FLOAT, SliderType.MULTI_FLOAT):
             if not isinstance(step, float):
-                raise ValueError(f"Step must be a float for single or multi float slider: {step}")
-        elif slider_type in (SliderType.SINGLE_DATETIME, SliderType.MULTI_DATETIME, 
-                            SliderType.SINGLE_DATE, SliderType.MULTI_DATE,
-                            SliderType.SINGLE_TIME, SliderType.MULTI_TIME):
+                raise ValueError(
+                    f"Step must be a float for single or multi float slider: {step}"
+                )
+        if slider_type in (
+            SliderType.SINGLE_DATETIME,
+            SliderType.MULTI_DATETIME,
+            SliderType.SINGLE_DATE,
+            SliderType.MULTI_DATE,
+            SliderType.SINGLE_TIME,
+            SliderType.MULTI_TIME,
+        ):
             if not isinstance(step, timedelta):
-                raise ValueError(f"Step must be a timedelta for {slider_type.value} slider: {step}")
-        else:
-            raise ValueError(f"Step is not supported for slider type: {slider_type}")
+                raise ValueError(
+                    f"Step must be a timedelta for {slider_type.value} slider: {step}"
+                )
 
-def _get_slider_type(min_value: Union[int, float, datetime, date, time, None], 
-                     max_value: Union[int, float, datetime, date, time, None], 
-                     value: Union[int, float, datetime, date, time, None, list, tuple], 
-                     step: Union[int, float, timedelta, None]) -> SliderType:
+
+def _get_slider_type(
+    min_value: Union[int, float, datetime, date, time, None],
+    max_value: Union[int, float, datetime, date, time, None],
+    value: Union[int, float, datetime, date, time, None, list, tuple],
+    step: Union[int, float, timedelta, None],
+) -> SliderType:
     """
     Determine the slider type based on the provided parameters.
-    
+
     Returns:
         SliderType: The determined slider type
     """
     option_types = {type(min_value), type(max_value)}
     if isinstance(value, (list, tuple)):
         if len(value) != 2:
-            raise ValueError(f"Invalid value for slider parameter: {value}. Expected a list or tuple of length 2.")
+            raise ValueError(
+                f"Invalid value for slider parameter: {value}. Expected a list or tuple of length 2."
+            )
 
         for v in value:
             option_types.add(type(v))
@@ -175,47 +199,57 @@ def _get_slider_type(min_value: Union[int, float, datetime, date, time, None],
             else:
                 raise ValueError(f"Unsupported slider type: {option_type}")
     else:
-        raise ValueError(f"All slider parameters must be of the same type: {option_types}")
-            
+        raise ValueError(
+            f"All slider parameters must be of the same type: {option_types}"
+        )
+
     _validate_step(step, slider_type)
-    
+
     return slider_type
 
-def handle_slider(base_widget, url_key: str, url_value: Optional[List[str]], bound_args: inspect.BoundArguments,
-                    compressor: Callable, decompressor: Callable, **kwargs) -> Any:
+
+def handle_slider(
+    base_widget: st.delta_generator.DeltaGenerator,
+    url_key: str,
+    url_value: Optional[List[str]],
+    bound_args: inspect.BoundArguments,
+    compressor: Callable,
+    decompressor: Callable,
+) -> Any:
     """
     Handle slider widget URL state synchronization.
-    
-    Manages bidirectional sync between slider widget state and URL parameters,
-    supporting various types (int, float, date, datetime, time) in both single
-    and range modes. Handles validation, parsing, and bounds checking.
-    
+
     Args:
-        url_key: URL parameter key for this slider
-        url_value: Value(s) from URL, or None if not present
-        bound_args: Bound arguments for the slider widget
-        
+        base_widget: The base widget to handle
+        url_key: Parameter key in URL
+        url_value: Value(s) from URL parameter, None if not present
+        bound_args: Bound arguments for the base_widget call
+        compressor: Compressor function for url_value
+        decompressor: Decompressor function for url_value
+
     Returns:
         The slider widget's return value
-        
+
     Raises:
         UrlParamError: If URL values are invalid, out of bounds, or of wrong type
     """
     # Get slider parameters
-    min_value = bound_args.arguments.get('min_value')
-    max_value = bound_args.arguments.get('max_value')
-    value = bound_args.arguments.get('value')
-    step = bound_args.arguments.get('step')
+    min_value = bound_args.arguments.get("min_value")
+    max_value = bound_args.arguments.get("max_value")
+    value = bound_args.arguments.get("value")
+    step = bound_args.arguments.get("step")
 
-    min_value, max_value, value, step, slider_type = _get_defaults(min_value, max_value, value, step)
+    min_value, max_value, value, step, slider_type = _get_defaults(
+        min_value, max_value, value, step
+    )
 
     # If no URL value, set it to the default value
     if not url_value:
         init_url_value(url_key, compressor(to_url_value(value)))
         return base_widget(**bound_args.arguments)
-    
+
     url_value = decompressor(url_value)
-    
+
     # Determine if this is a range slider based on the initial value
     is_multi = isinstance(value, (list, tuple))
     expected_values = 2 if is_multi else 1
@@ -234,19 +268,21 @@ def handle_slider(base_widget, url_key: str, url_value: Optional[List[str]], bou
         elif slider_type in (SliderType.SINGLE_FLOAT, SliderType.MULTI_FLOAT):
             parsed_values = [float(v) for v in url_value]
         elif slider_type in (SliderType.SINGLE_DATE, SliderType.MULTI_DATE):
-            parsed_values = [datetime.strptime(v, '%Y-%m-%d').date() for v in url_value]
+            parsed_values = [datetime.strptime(v, "%Y-%m-%d").date() for v in url_value]
         elif slider_type in (SliderType.SINGLE_DATETIME, SliderType.MULTI_DATETIME):
-            parsed_values = [datetime.strptime(v, '%Y-%m-%dT%H:%M:%S') for v in url_value]
+            parsed_values = [
+                datetime.strptime(v, "%Y-%m-%dT%H:%M:%S") for v in url_value
+            ]
         elif slider_type in (SliderType.SINGLE_TIME, SliderType.MULTI_TIME):
-            parsed_values = [datetime.strptime(v, '%H:%M').time() for v in url_value]
+            parsed_values = [datetime.strptime(v, "%H:%M").time() for v in url_value]
         else:
             raise ValueError(f"Unsupported slider type: {slider_type}")
-    except ValueError as e:
+    except ValueError as err:
         raise UrlParamError(
             f"Invalid value(s) for {_HANDLER_NAME} parameter '{url_key}': {url_value}. "
-            f"Expected {slider_type.name} value(s). Error: {str(e)}"
-        )
-    
+            f"Expected {slider_type.name} value(s). Error: {str(err)}"
+        ) from err
+
     # Validate parsed values
     if is_multi:
         if len(parsed_values) != 2:
@@ -254,35 +290,35 @@ def handle_slider(base_widget, url_key: str, url_value: Optional[List[str]], bou
                 f"Invalid number of values for {_HANDLER_NAME} parameter '{url_key}': {len(parsed_values)}. "
                 "Expected 2 values for range slider."
             )
-        
+
         if parsed_values[0] > parsed_values[1]:
             raise UrlParamError(
                 f"Invalid range for {_HANDLER_NAME} parameter '{url_key}': "
                 f"start value {parsed_values[0]} is greater than end value {parsed_values[1]}."
             )
-        
+
         # Check that parsed values are within bounds
         if parsed_values[0] < min_value or parsed_values[1] > max_value:
             raise UrlParamError(
                 f"Invalid range for {_HANDLER_NAME} parameter '{url_key}': "
                 f"range values {parsed_values} are outside bounds [{min_value}, {max_value}]."
             )
-        
-        bound_args.arguments['value'] = tuple(parsed_values)
+
+        bound_args.arguments["value"] = tuple(parsed_values)
     else:
         if len(parsed_values) != 1:
             raise UrlParamError(
                 f"Invalid number of values for {_HANDLER_NAME} parameter '{url_key}': {len(parsed_values)}. "
                 "Expected 1 value for single slider."
             )
-        
+
         # Check that parsed value is within bounds
         if parsed_values[0] < min_value or parsed_values[0] > max_value:
             raise UrlParamError(
                 f"Invalid value for {_HANDLER_NAME} parameter '{url_key}': "
                 f"value {parsed_values[0]} is outside bounds [{min_value}, {max_value}]."
             )
-    
-        bound_args.arguments['value'] = parsed_values[0]
+
+        bound_args.arguments["value"] = parsed_values[0]
 
     return base_widget(**bound_args.arguments)

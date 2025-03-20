@@ -64,7 +64,6 @@ with st.echo('Form 2'):
     
     form2.caption(f'number_input_form2: {number_input_form2}')
     form2.caption(f'query_params: {st.query_params.get_all("number_input_form2")}')
-
     form2.form_submit_button('Submit')
 
 
@@ -268,5 +267,5 @@ if hasattr(st, 'segmented_control'):
         )
         st.caption(f'seg_multi: {seg_multi}')
         st.caption(f'query_params: {st.query_params.get_all("segmented_control_multi")}')
-        
+
 

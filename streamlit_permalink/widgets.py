@@ -1,17 +1,22 @@
+"""
+Widgets that are aware of URL parameters.
+"""
+
+from typing import Callable, Any, List, Optional, TypeVar, Union
 from functools import partial
-import streamlit as st
+import inspect
+
 from packaging.version import parse as V
-from typing import Callable, Any, Dict, List, Optional, Type, TypeVar, Union
+import streamlit as st
+
 from .utils import compress_text, decompress_text, to_url_value
-#from .core import form_state
 from .handlers import HANDLERS
 from .constants import _EMPTY, _NONE
-import inspect
-from streamlit.delta_generator import DeltaGenerator
 
 _active_form = None
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 # write a function that takes a callable and a list and runs it with each element of the list
 def _compress_list(func: Callable, l: Union[List[str], str]):
@@ -19,33 +24,38 @@ def _compress_list(func: Callable, l: Union[List[str], str]):
         return func(l)
     if isinstance(l, (list, tuple)):
         return [func(e) for e in l]
-    
+
+    raise ValueError(f"Invalid list type: {type(l)}")
+
+
 def _decompress_list(func: Callable, l: List[str]):
     l = [func(e) for e in l]
 
     if l == [_EMPTY]:
         return []
-    
+
     if l == [_NONE]:
         return None
-    
-    return l
 
+    return l
 
 
 class UrlAwareWidget:
     """A wrapper class that adds URL parameter awareness to Streamlit widgets.
-    
-    This class wraps standard Streamlit widgets to enable their values to be 
+
+    This class wraps standard Streamlit widgets to enable their values to be
     controlled via URL parameters, enabling permalink functionality.
-    
+
     Args:
         base_widget (Callable): The original Streamlit widget function to wrap
-        form (Optional[UrlAwareForm]): The form instance if this widget is part of a form
+        form (Optional[UrlAwareForm]): The form instaurlAwareFormwidget is part of a form
     """
-    def __init__(self, base_widget: Callable, form: Optional['UrlAwareForm'] = None) -> None:
+
+    def __init__(
+        self, base_widget: Callable, _form: Optional["UrlAwareForm"] = None
+    ) -> None:
         self.base_widget = base_widget
-        self.form = form
+        self.form = _form
         self.__module__ = base_widget.__module__
         self.__name__ = base_widget.__name__
         self.__qualname__ = base_widget.__qualname__
@@ -57,21 +67,21 @@ class UrlAwareWidget:
     #   with form:
     #       st.text_input(...)  # first way
     #   form.text_input(...)    # second, equivalent way
-    # For this second way, we need to know if UrlAwareWidget has been
+    # For this second way, we neurlAwareFormf UrlAwareWidget has been
     # called like a method on the form object. Therefore, we use the
     # descriptor protocol to attach the form object:
-    def __get__(self, form, _objtype=None):
-        assert isinstance(form, UrlAwareForm)
-        return UrlAwareWidget(getattr(form.base_form, self.base_widget.__name__), form)
-        
-    
+    def __get__(self, _form: "UrlAwareForm", _objtype=None):
+        return UrlAwareWidget(
+            getattr(_form.base_form, self.base_widget.__name__), _form
+        )
+
     def __call__(self, *args, **kwargs):
 
-        url_key = kwargs.pop('url_key', None)
-        compress = kwargs.pop('compress', False)
-        compressor = kwargs.pop('compressor', compress_text)
-        decompressor = kwargs.pop('decompressor', decompress_text)
-        stateful = kwargs.pop('stateful', True)
+        url_key = kwargs.pop("url_key", None)
+        compress = kwargs.pop("compress", False)
+        compressor = kwargs.pop("compressor", compress_text)
+        decompressor = kwargs.pop("decompressor", decompress_text)
+        stateful = kwargs.pop("stateful", True)
 
         if stateful is False:
             return self.base_widget(*args, **kwargs)
@@ -80,85 +90,135 @@ class UrlAwareWidget:
             compressor = lambda x: x
             decompressor = lambda x: x
 
-        #partial partial run_with_each_element for compressor and decompressor
+        # partial partial run_with_each_element for compressor and decompressor
         compressor = partial(_compress_list, compressor)
         decompressor = partial(_decompress_list, decompressor)
 
         signature = inspect.signature(self.base_widget)
         bound_args = signature.bind_partial(*args, **kwargs)
 
-        key = bound_args.arguments.get('key', None)
+        key = bound_args.arguments.get("key", None)
 
-        # sets url key or errors 
+        # sets url key or errors
         if url_key is None:
             if key is not None:
                 url_key = key
-            elif bound_args.arguments.get('label') is not None:
-                url_key = bound_args.arguments['label']
+            elif bound_args.arguments.get("label") is not None:
+                url_key = bound_args.arguments["label"]
             else:
                 raise ValueError("url_key or key is required")
 
-        bound_args.arguments['key'] = url_key
+        bound_args.arguments["key"] = url_key
 
         if _active_form is not None or self.form is not None:
-            return self.call_inside_form(self.form or _active_form, url_key, bound_args, compressor=compressor, decompressor=decompressor)
-        
-        if V(st.__version__) < V('1.30'):
+            return self.call_inside_form(
+                self.form or _active_form,
+                url_key,
+                bound_args,
+                compressor=compressor,
+                decompressor=decompressor,
+            )
+
+        if V(st.__version__) < V("1.30"):
             url = st.experimental_get_query_params()
 
         # if user provides on_change and its not None, we need to update the url when the widget changes
         user_supplied_change_handler = None
-        if 'on_change' in bound_args.arguments and bound_args.arguments['on_change'] is not None:
-            user_supplied_change_handler = bound_args.arguments.get('on_change')
+        if (
+            "on_change" in bound_args.arguments
+            and bound_args.arguments["on_change"] is not None
+        ):
+            user_supplied_change_handler = bound_args.arguments.get("on_change")
 
         def on_change(*args, **kwargs):
 
-            if V(st.__version__) < V('1.30'):
-                url[url_key] = compressor(to_url_value(getattr(st.session_state, bound_args.arguments['key'])))
+            if V(st.__version__) < V("1.30"):
+                url[url_key] = compressor(
+                    to_url_value(getattr(st.session_state, bound_args.arguments["key"]))
+                )
                 st.experimental_set_query_params(**url)
             else:
-                st.query_params[url_key] = compressor(to_url_value(getattr(st.session_state, bound_args.arguments['key'])))
+                st.query_params[url_key] = compressor(
+                    to_url_value(getattr(st.session_state, bound_args.arguments["key"]))
+                )
 
             if user_supplied_change_handler is not None:
                 user_supplied_change_handler(*args, **kwargs)
 
-        bound_args.arguments['on_change'] = on_change
-        if V(st.__version__) < V('1.30'):
+        bound_args.arguments["on_change"] = on_change
+        if V(st.__version__) < V("1.30"):
             url_value = url.get(url_key, None)
         else:
             url_value = st.query_params.get_all(url_key) or None
 
         handler = HANDLERS[self.base_widget.__name__]
-        result = handler(self.base_widget, url_key, url_value, bound_args, compressor=compressor, decompressor=decompressor)
+        result = handler(
+            self.base_widget,
+            url_key,
+            url_value,
+            bound_args,
+            compressor=compressor,
+            decompressor=decompressor,
+        )
         return result
 
-    def call_inside_form(self, form, url_key, bound_args, compressor, decompressor):
+    def call_inside_form(
+        self,
+        _form: "UrlAwareForm",
+        url_key: str,
+        bound_args: inspect.BoundArguments,
+        compressor: Callable,
+        decompressor: Callable,
+    ) -> Any:
+        """
+        Call the widget inside a form.
 
-        form.field_mapping[url_key] = bound_args.arguments['key']
+        Args:
+            _form: The form instance
+            url_key: The URL key
+            bound_args: The bound arguments
+            compressor: The compressor function
+            decompressor: The decompressor function
 
-        if V(st.__version__) < V('1.30'):
+        Returns:
+            The result of the widget call
+        """
+
+        _form.field_mapping[url_key] = bound_args.arguments["key"]
+
+        if V(st.__version__) < V("1.30"):
             url = st.experimental_get_query_params()
             url_value = url.get(url_key, None)
         else:
             url_value = st.query_params.get_all(url_key) or None
-            
+
         handler = HANDLERS[self.base_widget.__name__]
-        result = handler(self.base_widget, url_key, url_value, bound_args, compressor=compressor, decompressor=decompressor)
+        result = handler(
+            self.base_widget,
+            url_key,
+            url_value,
+            bound_args,
+            compressor=compressor,
+            decompressor=decompressor,
+        )
         return result
 
 
 class UrlAwareFormSubmitButton:
     """A wrapper class for Streamlit form submit buttons with URL parameter support.
-    
+
     Handles updating URL parameters when a form is submitted.
-    
+
     Args:
         base_widget (Callable): The original form submit button widget
         form (Optional[UrlAwareForm]): The form instance if this button is part of a form
     """
-    def __init__(self, base_widget: Callable, form: Optional['UrlAwareForm'] = None) -> None:
+
+    def __init__(
+        self, base_widget: Callable, _form: Optional["UrlAwareForm"] = None
+    ) -> None:
         self.base_widget = base_widget
-        self.form = form
+        self.form = _form
 
     # Widgets inside forms in Streamlit can be created in 2 ways:
     #   form = st.form('my_form')
@@ -168,40 +228,48 @@ class UrlAwareFormSubmitButton:
     # For this second way, we need to know if UrlAwareWidget has been
     # called like a method on the form object. Therefore, we use the
     # descriptor protocol to attach the form object:
-    def __get__(self, form, _objtype=None):
-        assert isinstance(form, UrlAwareForm)
-        return UrlAwareFormSubmitButton(getattr(form.base_form, self.base_widget.__name__), form)
-
+    def __get__(self, _form: "UrlAwareForm", _objtype=None):
+        return UrlAwareFormSubmitButton(
+            getattr(_form.base_form, self.base_widget.__name__), _form
+        )
 
     def __call__(self, *args, **kwargs):
         if _active_form is not None or self.form is not None:
             return self.call_inside_form(self.form or _active_form, *args, **kwargs)
         return self.base_widget(*args, **kwargs)
-        
 
-    def call_inside_form(self, form, *args, **kwargs):
-        if V(st.__version__) < V('1.30'):
+    def call_inside_form(self, _form: "UrlAwareForm", *args, **kwargs):
+        """
+        Call the form submit button inside a form.
+
+        Args:
+            _form: The form instance
+            *args: The arguments
+            **kwargs: The keyword arguments
+        """
+
+        if V(st.__version__) < V("1.30"):
             url = st.experimental_get_query_params()
-        user_supplied_click_handler = kwargs.get('on_click', lambda: None)
+        user_supplied_click_handler = kwargs.get("on_click", lambda: None)
 
         def on_click(*args, **kwargs):
-            for url_key, key in form.field_mapping.items():
+            for url_key, key in _form.field_mapping.items():
                 raw_value = getattr(st.session_state, key)
                 if raw_value is not None:
-                    if V(st.__version__) < V('1.30'):
+                    if V(st.__version__) < V("1.30"):
                         url[url_key] = to_url_value(raw_value)
                     else:
                         st.query_params[url_key] = to_url_value(raw_value)
-            if V(st.__version__) < V('1.30'):
+            if V(st.__version__) < V("1.30"):
                 st.experimental_set_query_params(**url)
             user_supplied_click_handler(*args, **kwargs)
 
-        kwargs['on_click'] = on_click
+        kwargs["on_click"] = on_click
         return self.base_widget(*args, **kwargs)
 
 
 checkbox = UrlAwareWidget(st.checkbox)
-if hasattr(st, 'toggle'):
+if hasattr(st, "toggle"):
     toggle = UrlAwareWidget(st.toggle)
 radio = UrlAwareWidget(st.radio)
 selectbox = UrlAwareWidget(st.selectbox)
@@ -214,33 +282,35 @@ text_area = UrlAwareWidget(st.text_area)
 date_input = UrlAwareWidget(st.date_input)
 time_input = UrlAwareWidget(st.time_input)
 color_picker = UrlAwareWidget(st.color_picker)
-if hasattr(st, 'pills'):
+if hasattr(st, "pills"):
     pills = UrlAwareWidget(st.pills)
-if hasattr(st, 'segmented_control'):
+if hasattr(st, "segmented_control"):
     segmented_control = UrlAwareWidget(st.segmented_control)
 form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
 
 try:
     import streamlit_option_menu
+
     option_menu = UrlAwareWidget(streamlit_option_menu.option_menu)
-    _has_option_menu = True
+    HAS_OPTION_MENU = True
 except ImportError:
-    _has_option_menu = False
+    HAS_OPTION_MENU = False
 
 
 class UrlAwareForm:
     """A wrapper class for Streamlit forms that adds URL parameter support.
-    
+
     Enables form fields to be controlled via URL parameters and updates the URL
     when the form is submitted.
-    
+
     Args:
         key (str): The unique key for the form
         *args: Additional positional arguments passed to st.form
         **kwargs: Additional keyword arguments passed to st.form
     """
+
     checkbox = UrlAwareWidget(st.checkbox)
-    if hasattr(st, 'toggle'):
+    if hasattr(st, "toggle"):
         toggle = UrlAwareWidget(st.toggle)
     radio = UrlAwareWidget(st.radio)
     selectbox = UrlAwareWidget(st.selectbox)
@@ -253,13 +323,13 @@ class UrlAwareForm:
     date_input = UrlAwareWidget(st.date_input)
     time_input = UrlAwareWidget(st.time_input)
     color_picker = UrlAwareWidget(st.color_picker)
-    if hasattr(st, 'pills'):
+    if hasattr(st, "pills"):
         pills = UrlAwareWidget(st.pills)
-    if hasattr(st, 'segmented_control'):
-        segmented_control = UrlAwareWidget(st.segmented_control)
+    if hasattr(st, "segmented_control"):
+        urlAwareFormontrol = UrlAwareWidget(st.segmented_control)
     form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
 
-    if _has_option_menu:
+    if HAS_OPTION_MENU:
         option_menu = UrlAwareWidget(streamlit_option_menu.option_menu)
 
     def __init__(self, key, *args, **kwargs):
@@ -283,8 +353,11 @@ class UrlAwareForm:
 
 form = UrlAwareForm
 
+
 def __getattr__(name: str) -> Any:
     try:
         return getattr(st, name)
-    except AttributeError as e:
-        raise AttributeError(str(e).replace('streamlit', 'streamlit_permalink')) 
+    except AttributeError as err:
+        raise AttributeError(
+            str(err).replace("streamlit", "streamlit_permalink")
+        ) from err
