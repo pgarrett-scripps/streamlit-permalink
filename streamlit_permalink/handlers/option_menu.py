@@ -5,11 +5,7 @@ from streamlit_option_menu import option_menu
 from ..utils import _validate_multi_options, init_url_value, to_url_value, validate_single_url_value
 from ..exceptions import UrlParamError
 
-"""
 
-def option_menu(menu_title, options, default_index=0, menu_icon=None, icons=None, orientation="vertical",
-                styles=None, manual_select=None, key=None, on_change=None):
-"""
 _HANDLER_NAME = 'option_menu'
 _DEFAULT_VALUE = 0
 

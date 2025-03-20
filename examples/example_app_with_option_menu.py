@@ -42,6 +42,7 @@ irrelevant = [
     "datetime",
     "date",
     "time",
+    
 ]
 for i in irrelevant:
     if i in loc:

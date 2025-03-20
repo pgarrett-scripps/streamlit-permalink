@@ -2,6 +2,7 @@ from datetime import date, time
 
 # Can simply replace "import streamlit as st" with "import streamlit_permalink as st" 
 import streamlit_permalink as stp
+import streamlit as st
 
 import gzip
 import base64
@@ -23,7 +24,9 @@ with stp.form('form'):
     is_checked = stp.checkbox('checkbox', url_key='checkbox')
     stp.form_submit_button('Submit')
     
-is_checked_default = stp.checkbox('checkbox default', value=True, url_key='checkbox_default')
+form2 = stp.form('form2')
+is_checked_default = form2.checkbox('checkbox default', value=True, url_key='checkbox_default')
+form2.form_submit_button('Submit')
 
 radio = stp.radio('radio', options=OPTIONS, url_key='radio')
 
@@ -100,6 +103,10 @@ irrelevant = [
     "datetime",
     "date",
     "time",
+    'custom_compress',
+    'custom_decompress',
+    'base64',
+    'gzip',
 ]
 for i in irrelevant:
     if i in loc:
