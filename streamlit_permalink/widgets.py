@@ -101,9 +101,6 @@ class UrlAwareWidget:
         if st.session_state.get("decompress_map") is None:
             st.session_state["decompress_map"] = {}
 
-        st.session_state["compress_map"][url_key] = compressor
-        st.session_state["decompress_map"][url_key] = decompressor
-
 
         signature = inspect.signature(self.base_widget)
         bound_args = signature.bind_partial(*args, **kwargs)
@@ -118,6 +115,11 @@ class UrlAwareWidget:
                 url_key = bound_args.arguments["label"]
             else:
                 raise ValueError("url_key or key is required")
+            
+
+        st.session_state["compress_map"][url_key] = compressor
+        st.session_state["decompress_map"][url_key] = decompressor
+
 
         bound_args.arguments["key"] = url_key
 
@@ -265,22 +267,16 @@ class UrlAwareFormSubmitButton:
 
         def on_click(*args, **kwargs):
 
-            if st.session_state.get("compress_map") is None:
-                st.session_state["compress_map"] = {}
-
-            if st.session_state.get("decompress_map") is None:
-                st.session_state["decompress_map"] = {}
-
             for url_key, key in _form.field_mapping.items():
                 raw_value = getattr(st.session_state, key)
 
-                compressor, decompressor = st.session_state["compress_map"][url_key], st.session_state["decompress_map"][url_key]
+                compressor, _ = st.session_state["compress_map"][url_key], st.session_state["decompress_map"][url_key]
                 
                 if raw_value is not None:
                     if V(st.__version__) < V("1.30"):
                         url[url_key] = compressor(to_url_value(raw_value))
                     else:
-                        st.query_params[url_key] = compressor(to_url_value(raw_value)  )
+                        st.query_params[url_key] = compressor(to_url_value(raw_value))
             if V(st.__version__) < V("1.30"):
                 st.experimental_set_query_params(**url)
             user_supplied_click_handler(*args, **kwargs)
