@@ -1,3 +1,14 @@
+# 1.1.0 Release Notes
+
+## Changes
+- Added support for `stp.data_editor`
+
+# 1.0.1 Release Notes
+
+## Changes
+- Bug fix for widget url compression in forms
+
+
 # 1.0.0 Release Notes
 
 ## Changes
