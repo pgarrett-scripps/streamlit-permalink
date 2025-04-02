@@ -306,3 +306,47 @@ def decompress_text(compressed_text: str) -> str:
     decoded = base64.urlsafe_b64decode(compressed_text)
     decompressed = zlib.decompress(decoded).decode("utf-8")
     return decompressed
+
+
+def fix_datetime_columns(df: pd.DataFrame, column_config: Optional[dict]) -> pd.DataFrame:
+    """
+    Fix datetime columns in a DataFrame based on column configuration.
+    """
+    if not column_config:
+        return df   
+    
+    for column_name, column_config in column_config.items():
+        col_type = column_config['type_config']['type']
+        if col_type == 'datetime':
+            # Convert milliseconds from epoch to datetime
+            df[column_name] = pd.to_datetime(df[column_name], unit='ms')
+        elif col_type == 'date':
+            # Convert milliseconds from epoch to date
+            df[column_name] = pd.to_datetime(df[column_name], unit='ms').dt.date
+        elif col_type == 'time':
+            # For time values that are already strings in HH:MM:SS format
+            if df[column_name].dtype == 'object':
+                df[column_name] = pd.to_datetime(df[column_name], format='%H:%M:%S').dt.time
+            else:
+                # For time values stored as milliseconds since midnight
+                df[column_name] = pd.to_datetime(df[column_name], unit='ms').dt.time
+
+    return df
+
+
+def update_data_editor(df: pd.DataFrame, df_updates: dict) -> pd.DataFrame:
+    """
+    Update a DataFrame based on the updates from the data editor.
+    """
+
+    for row_index, row_data in df_updates['edited_rows'].items():
+        for column_name, value in row_data.items():
+            df.at[int(row_index), column_name] = value
+
+    for row_data in df_updates['added_rows']:
+        df = pd.concat([df, pd.DataFrame([row_data])], ignore_index=True)
+
+    for row_index in df_updates['deleted_rows']:
+        df = df.drop(row_index)
+
+    return df

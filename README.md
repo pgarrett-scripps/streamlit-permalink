@@ -26,6 +26,7 @@ The `streamlit_permalink` (shorthand: stp) namespace contains url-aware versions
 * `stp.pills`
 * `stp.segmented_control`
 * `stp.toggle`
+* `stp.data_editor`
 
 In addition to standard input widgets, it also has an url-aware version of the [streamlit-option-menu](https://github.com/victoryhb/streamlit-option-menu) component: `st.option_menu`. For this to work, `streamlit-option-menu` must be installed separately.
 
@@ -41,6 +42,10 @@ text1 = stp.text_input('Type some text', key='secret')
 ```
 
 Once widget state is saved into the URL, it can be shared and whoever opens the URL will see the same widget state as the person that has shared it.
+
+### Note about Data Editor
+
+- Date, Datetime, and Time columns must be declared using the column configs or the values will be converted to the number of ms since epoch.
 
 ### Usage inside forms
 

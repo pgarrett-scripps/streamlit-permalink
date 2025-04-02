@@ -10,7 +10,7 @@ from packaging.version import parse as V
 import pandas as pd
 import streamlit as st
 
-from .utils import compress_text, decompress_text, to_url_value
+from .utils import compress_text, decompress_text, fix_datetime_columns, to_url_value, update_data_editor
 from .handlers import HANDLERS
 from .constants import _EMPTY, _NONE
 
@@ -169,28 +169,17 @@ class UrlAwareWidget:
             original_df = getattr(st.session_state, f'STREAMLIT_PERMALINK_DATA_EDITOR_{bound_args.arguments["key"]}')
             df_updates = getattr(st.session_state, bound_args.arguments["key"]) # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
 
-            #update original_df with df_updates
-            for row_index, row_data in df_updates['edited_rows'].items():
-                for column_name, value in row_data.items():
-                    original_df.at[int(row_index), column_name] = value
-
-            for row_data in df_updates['added_rows']:
-                original_df = pd.concat([original_df, pd.DataFrame([row_data])], ignore_index=True)
-
-            for row_index in df_updates['deleted_rows']:
-                original_df = original_df.drop(row_index)
-
+            updated_df = update_data_editor(original_df, df_updates)
 
             if V(st.__version__) < V("1.30"):
                 url[url_key] = compressor(
-                to_url_value(original_df)
+                to_url_value(updated_df)
                 )
                 st.experimental_set_query_params(**url)
             else:
                 st.query_params[url_key] = compressor(
-                    to_url_value(original_df)
+                    to_url_value(updated_df)
                 )
-
 
             if user_supplied_change_handler is not None:
                 user_supplied_change_handler(*args, **kwargs)
@@ -316,28 +305,21 @@ class UrlAwareFormSubmitButton:
                 if url_key in st.session_state["data_editor_keys"]:
 
                     original_df = getattr(st.session_state, f'STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}')
+                    column_config = getattr(st.session_state, f'STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{url_key}')
                     df_updates = getattr(st.session_state, url_key) # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
 
-                    #update original_df with df_updates
-                    for row_index, row_data in df_updates['edited_rows'].items():
-                        for column_name, value in row_data.items():
-                            original_df.at[int(row_index), column_name] = value
-
-                    for row_data in df_updates['added_rows']:
-                        original_df = pd.concat([original_df, pd.DataFrame([row_data])], ignore_index=True)
-
-                    for row_index in df_updates['deleted_rows']:
-                        original_df = original_df.drop(row_index)
-
-                    raw_value = original_df
+                    updated_df = update_data_editor(original_df, df_updates)
+                    raw_value = fix_datetime_columns(updated_df, column_config)
 
                 if raw_value is not None:
                     if V(st.__version__) < V("1.30"):
                         url[url_key] = compressor(to_url_value(raw_value))
                     else:
                         st.query_params[url_key] = compressor(to_url_value(raw_value))
+
             if V(st.__version__) < V("1.30"):
                 st.experimental_set_query_params(**url)
+
             user_supplied_click_handler(*args, **kwargs)
 
         kwargs["on_click"] = on_click

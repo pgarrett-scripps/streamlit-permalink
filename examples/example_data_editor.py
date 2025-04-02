@@ -74,6 +74,7 @@ example_df = pd.DataFrame({
 df = stp.data_editor(example_df, 
                      key='example_data_editor', 
                      num_rows='dynamic',
+                     compress=True,
                      column_config={
                          "widgets": st.column_config.TextColumn(
         "Widgets",
@@ -157,8 +158,6 @@ df = stp.data_editor(example_df,
     },
     hide_index=True,
     )
-
-print(df)
 
 
 with stp.form('example_form'):
