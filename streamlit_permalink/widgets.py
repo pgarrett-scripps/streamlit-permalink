@@ -7,6 +7,7 @@ from functools import partial
 import inspect
 
 from packaging.version import parse as V
+import pandas as pd
 import streamlit as st
 
 from .utils import compress_text, decompress_text, to_url_value
@@ -101,6 +102,9 @@ class UrlAwareWidget:
         if st.session_state.get("decompress_map") is None:
             st.session_state["decompress_map"] = {}
 
+        if st.session_state.get("data_editor_keys") is None:
+            st.session_state["data_editor_keys"] = []
+
 
         signature = inspect.signature(self.base_widget)
         bound_args = signature.bind_partial(*args, **kwargs)
@@ -120,6 +124,8 @@ class UrlAwareWidget:
         st.session_state["compress_map"][url_key] = compressor
         st.session_state["decompress_map"][url_key] = decompressor
 
+        if self.base_widget.__name__ == 'data_editor':
+            st.session_state["data_editor_keys"].append(url_key)
 
         bound_args.arguments["key"] = url_key
 
@@ -158,7 +164,42 @@ class UrlAwareWidget:
             if user_supplied_change_handler is not None:
                 user_supplied_change_handler(*args, **kwargs)
 
-        bound_args.arguments["on_change"] = on_change
+        def on_change_data_editor(*args, **kwargs):
+
+            original_df = getattr(st.session_state, f'STREAMLIT_PERMALINK_DATA_EDITOR_{bound_args.arguments["key"]}')
+            df_updates = getattr(st.session_state, bound_args.arguments["key"]) # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
+
+            #update original_df with df_updates
+            for row_index, row_data in df_updates['edited_rows'].items():
+                for column_name, value in row_data.items():
+                    original_df.at[int(row_index), column_name] = value
+
+            for row_data in df_updates['added_rows']:
+                original_df = pd.concat([original_df, pd.DataFrame([row_data])], ignore_index=True)
+
+            for row_index in df_updates['deleted_rows']:
+                original_df = original_df.drop(row_index)
+
+
+            if V(st.__version__) < V("1.30"):
+                url[url_key] = compressor(
+                to_url_value(original_df)
+                )
+                st.experimental_set_query_params(**url)
+            else:
+                st.query_params[url_key] = compressor(
+                    to_url_value(original_df)
+                )
+
+
+            if user_supplied_change_handler is not None:
+                user_supplied_change_handler(*args, **kwargs)
+
+        if self.base_widget.__name__ == 'data_editor':
+            bound_args.arguments["on_change"] = on_change_data_editor
+        else:
+            bound_args.arguments["on_change"] = on_change
+
         if V(st.__version__) < V("1.30"):
             url_value = url.get(url_key, None)
         else:
@@ -271,7 +312,25 @@ class UrlAwareFormSubmitButton:
                 raw_value = getattr(st.session_state, key)
 
                 compressor, _ = st.session_state["compress_map"][url_key], st.session_state["decompress_map"][url_key]
-                
+
+                if url_key in st.session_state["data_editor_keys"]:
+
+                    original_df = getattr(st.session_state, f'STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}')
+                    df_updates = getattr(st.session_state, url_key) # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
+
+                    #update original_df with df_updates
+                    for row_index, row_data in df_updates['edited_rows'].items():
+                        for column_name, value in row_data.items():
+                            original_df.at[int(row_index), column_name] = value
+
+                    for row_data in df_updates['added_rows']:
+                        original_df = pd.concat([original_df, pd.DataFrame([row_data])], ignore_index=True)
+
+                    for row_index in df_updates['deleted_rows']:
+                        original_df = original_df.drop(row_index)
+
+                    raw_value = original_df
+
                 if raw_value is not None:
                     if V(st.__version__) < V("1.30"):
                         url[url_key] = compressor(to_url_value(raw_value))
@@ -303,7 +362,11 @@ if hasattr(st, "pills"):
     pills = UrlAwareWidget(st.pills)
 if hasattr(st, "segmented_control"):
     segmented_control = UrlAwareWidget(st.segmented_control)
+if hasattr(st, "data_editor"):
+    data_editor = UrlAwareWidget(st.data_editor)
 form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
+
+
 
 try:
     import streamlit_option_menu
@@ -344,6 +407,8 @@ class UrlAwareForm:
         pills = UrlAwareWidget(st.pills)
     if hasattr(st, "segmented_control"):
         urlAwareFormontrol = UrlAwareWidget(st.segmented_control)
+    if hasattr(st, "data_editor"):
+        data_editor = UrlAwareWidget(st.data_editor)
     form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
 
     if HAS_OPTION_MENU:

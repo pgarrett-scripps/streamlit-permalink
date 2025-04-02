@@ -58,6 +58,11 @@ if hasattr(st, "segmented_control"):
 
     HANDLERS["segmented_control"] = handle_segmented_control
 
+if hasattr(st, "data_editor"):
+    from .data_editor import handle_data_editor
+
+    HANDLERS["data_editor"] = handle_data_editor
+
 # option menu (from streamlit_option_menu import option_menu) not in st
 try:
     from streamlit_option_menu import option_menu

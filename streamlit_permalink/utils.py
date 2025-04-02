@@ -4,12 +4,15 @@ Utility functions for streamlit_permalink.
 
 import base64
 from datetime import date, datetime, time
+import json
+import pickle
 import re
 from typing import Any, Iterable, List, Optional, Union
 import zlib
 import warnings
 
 from packaging.version import parse as V
+import pandas as pd
 import streamlit as st
 
 from .constants import _EMPTY, _NONE, TRUE_VALUE, TRUE_FALSE_VALUE
@@ -87,7 +90,9 @@ def to_url_value(result: Any) -> Union[str, List[str]]:
         return result.isoformat()
     if isinstance(result, time):
         return result.strftime("%H:%M")
-
+    if isinstance(result, pd.DataFrame):
+        # return as json string
+        return result.to_json(orient='records')
     try:
         return str(result)
     except Exception as err:
