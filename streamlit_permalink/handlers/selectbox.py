@@ -68,6 +68,13 @@ def handle_selectbox(
             actual_url_value = options_map[url_value]
             bound_args.arguments["index"] = options.index(actual_url_value)
         except KeyError as err:
+            if bound_args.arguments.get("accept_new_options", False):
+                bound_args.arguments.get("options").append(url_value)
+                bound_args.arguments["index"] = bound_args.arguments.get(
+                    "options"
+                ).index(url_value)
+                return base_widget(**bound_args.arguments)
+
             raise UrlParamError(
                 f"Invalid value for {_HANDLER_NAME} parameter '{url_key}': {url_value}. "
                 f"Expected one of {options}."

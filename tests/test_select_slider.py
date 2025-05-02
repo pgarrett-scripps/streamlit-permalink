@@ -2,17 +2,24 @@ from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
 from .utils import get_query_params, set_query_params
 
+
 def create_single_select_slider_app():
     import streamlit_permalink as stp
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
-    stp.select_slider("Single Select Slider", options=OPTIONS, value="M", url_key="select_slider")
+    stp.select_slider(
+        "Single Select Slider", options=OPTIONS, value="M", url_key="select_slider"
+    )
+
 
 def create_range_select_slider_app():
     import streamlit_permalink as stp
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
-    stp.select_slider("Range Select Slider", options=OPTIONS, value=("S", "L"), url_key="range_select")
+    stp.select_slider(
+        "Range Select Slider", options=OPTIONS, value=("S", "L"), url_key="range_select"
+    )
+
 
 def create_form_select_slider_app():
     import streamlit_permalink as stp
@@ -20,33 +27,53 @@ def create_form_select_slider_app():
     form = stp.form("test_form")
     with form:
         OPTIONS = ["XS", "S", "M", "L", "XL"]
-        single = form.select_slider("Form Single Select", options=OPTIONS, value="M", url_key="form_select")
-        range_select = form.select_slider("Form Range Select", options=OPTIONS, value=("S", "L"), url_key="form_range_select")
+        single = form.select_slider(
+            "Form Single Select", options=OPTIONS, value="M", url_key="form_select"
+        )
+        range_select = form.select_slider(
+            "Form Range Select",
+            options=OPTIONS,
+            value=("S", "L"),
+            url_key="form_range_select",
+        )
         submitted = form.form_submit_button("Submit")
+
 
 def create_no_value_select_slider_app():
     import streamlit_permalink as stp
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
-    stp.select_slider("No Value Select Slider", options=OPTIONS, url_key="no_value_select")
+    stp.select_slider(
+        "No Value Select Slider", options=OPTIONS, url_key="no_value_select"
+    )
+
 
 def create_numeric_select_slider_app():
     import streamlit_permalink as stp
 
     OPTIONS = [1, 2, 3, 4, 5]
-    stp.select_slider("Numeric Select Slider", options=OPTIONS, value=3, url_key="numeric_select")
+    stp.select_slider(
+        "Numeric Select Slider", options=OPTIONS, value=3, url_key="numeric_select"
+    )
+
 
 def create_numeric_range_select_slider_app():
     import streamlit_permalink as stp
 
     OPTIONS = [1, 2, 3, 4, 5]
-    stp.select_slider("Numeric Range Select", options=OPTIONS, value=(2, 4), url_key="numeric_range")
+    stp.select_slider(
+        "Numeric Range Select", options=OPTIONS, value=(2, 4), url_key="numeric_range"
+    )
+
 
 def create_mixed_types_select_slider_app():
     import streamlit_permalink as stp
 
     OPTIONS = [1, "2", 3.0, "four", False]
-    stp.select_slider("Mixed Types Select", options=OPTIONS, value="2", url_key="mixed_types")
+    stp.select_slider(
+        "Mixed Types Select", options=OPTIONS, value="2", url_key="mixed_types"
+    )
+
 
 class TestSingleSelectSlider:
     def setup_method(self):
@@ -58,7 +85,7 @@ class TestSingleSelectSlider:
         self.at.run()
 
         assert not self.at.exception
-        
+
         # Verify select slider exists and has default value
         assert len(self.at.select_slider) == 1
         assert self.at.select_slider[0].value == "M"
@@ -89,10 +116,11 @@ class TestSingleSelectSlider:
 
         # Change selection to new value
         self.at.select_slider[0].set_value("XL").run()
-        
+
         # Verify URL parameter was updated
         assert get_query_params(self.at)["select_slider"] == ["XL"]
         assert self.at.select_slider[0].value == "XL"
+
 
 class TestRangeSelectSlider:
     def setup_method(self):
@@ -107,7 +135,7 @@ class TestRangeSelectSlider:
 
         assert get_query_params(self.at)
         assert get_query_params(self.at)["range_select"] == ["S", "L"]
-        
+
         # Verify select slider exists and has default range
         assert len(self.at.select_slider) == 1
         assert self.at.select_slider[0].value == ("S", "L")
@@ -122,7 +150,7 @@ class TestRangeSelectSlider:
         assert not self.at.exception
         assert get_query_params(self.at)
         assert get_query_params(self.at)["range_select"] == ["XS", "XL"]
-        
+
         # Verify select slider reflects URL state
         assert self.at.select_slider[0].value == ("XS", "XL")
 
@@ -136,10 +164,11 @@ class TestRangeSelectSlider:
 
         # Change range to new values
         self.at.select_slider[0].set_range("M", "XL").run()
-        
+
         # Verify URL parameters were updated
         assert get_query_params(self.at)["range_select"] == ["M", "XL"]
         assert self.at.select_slider[0].value == ("M", "XL")
+
 
 class TestFormSelectSlider:
     def setup_method(self):
@@ -163,10 +192,9 @@ class TestFormSelectSlider:
 
     def test_form_select_sliders_url_param(self):
         """Test form select sliders with URL parameters set"""
-        set_query_params(self.at, {
-            "form_select": "L",
-            "form_range_select": ["XS", "M"]
-        })
+        set_query_params(
+            self.at, {"form_select": "L", "form_range_select": ["XS", "M"]}
+        )
         self.at.run()
 
         assert not self.at.exception
@@ -191,18 +219,18 @@ class TestFormSelectSlider:
         self.at.select_slider[1].set_range("S", "XL")
         # Submit the form
         self.at.button[0].click().run()
-        
+
         # Verify URL parameters were updated after submission
         params = get_query_params(self.at)
         assert params["form_select"] == ["XL"]
         assert params["form_range_select"] == ["S", "XL"]
-        
+
         # Change selections again
         self.at.select_slider[0].set_value("XS")
         self.at.select_slider[1].set_range("XS", "M")
         # Submit again
         self.at.button[0].click().run()
-        
+
         # Verify URL parameters were updated
         params = get_query_params(self.at)
         assert params["form_select"] == ["XS"]
@@ -220,12 +248,12 @@ class TestFormSelectSlider:
         # Change selections without submitting
         self.at.select_slider[0].set_value("L")
         self.at.select_slider[1].set_range("M", "XL").run()
-        
+
         # Verify URL parameters haven't changed
-        
+
         # Submit the form
         self.at.button[0].click().run()
-        
+
         # Verify URL parameters updated after submission
         params = get_query_params(self.at)
         assert params["form_select"] == ["L"]
@@ -234,7 +262,7 @@ class TestFormSelectSlider:
     def test_form_select_slider_multiple_changes_before_submit(self):
         """Test that only the final selections before submission are saved to URL"""
         self.at.run()
-        
+
         # Make multiple changes to selections
         self.at.select_slider[0].set_value("S")
         self.at.select_slider[0].set_value("L")
@@ -242,14 +270,15 @@ class TestFormSelectSlider:
         self.at.select_slider[1].set_range("XS", "M")
         self.at.select_slider[1].set_range("S", "XL")
         self.at.select_slider[1].set_range("M", "L")
-        
+
         # Submit the form
         self.at.button[0].click().run()
-        
+
         # Verify only final selections are in URL
         params = get_query_params(self.at)
         assert params["form_select"] == ["M"]
         assert params["form_range_select"] == ["M", "L"]
+
 
 class TestNoValueSelectSlider:
     def setup_method(self):
@@ -261,7 +290,7 @@ class TestNoValueSelectSlider:
         self.at.run()
 
         assert not self.at.exception
-        
+
         # Verify select slider exists and defaults to first option
         assert len(self.at.select_slider) == 1
         assert self.at.select_slider[0].value == "XS"
@@ -274,7 +303,7 @@ class TestNoValueSelectSlider:
         # Try to set multiple values for single select slider
         set_query_params(self.at, {"no_value_select": ["XS", "M"]})
         self.at.run()
-        
+
         # Verify error is raised
         assert self.at.exception
 
@@ -283,9 +312,10 @@ class TestNoValueSelectSlider:
         # Set invalid option value
         set_query_params(self.at, {"no_value_select": ["XXL"]})
         self.at.run()
-        
+
         # Verify error is raised
         assert self.at.exception
+
 
 class TestNumericSelectSlider:
     def setup_method(self):
@@ -297,7 +327,7 @@ class TestNumericSelectSlider:
         self.at.run()
 
         assert not self.at.exception
-        
+
         # Verify select slider exists and has default value
         assert len(self.at.select_slider) == 1
         assert self.at.select_slider[0].value == 3
@@ -328,10 +358,11 @@ class TestNumericSelectSlider:
 
         # Change selection to new value
         self.at.select_slider[0].set_value(4).run()
-        
+
         # Verify URL parameter was updated
         assert get_query_params(self.at)["numeric_select"] == ["4"]
         assert self.at.select_slider[0].value == 4
+
 
 class TestNumericRangeSelectSlider:
     def setup_method(self):
@@ -346,7 +377,7 @@ class TestNumericRangeSelectSlider:
 
         assert get_query_params(self.at)
         assert get_query_params(self.at)["numeric_range"] == ["2", "4"]
-        
+
         # Verify select slider exists and has default range
         assert len(self.at.select_slider) == 1
         assert self.at.select_slider[0].value == (2, 4)
@@ -360,10 +391,11 @@ class TestNumericRangeSelectSlider:
         assert not self.at.exception
         assert get_query_params(self.at)
         assert get_query_params(self.at)["numeric_range"] == ["1", "5"]
-        
+
         # Verify select slider reflects URL state
         assert self.at.select_slider[0].value == (1, 5)
-        
+
+
 class TestMixedTypesSelectSlider:
     def setup_method(self):
         self.at = AppTest.from_function(create_mixed_types_select_slider_app)
@@ -374,7 +406,7 @@ class TestMixedTypesSelectSlider:
         self.at.run()
 
         assert not self.at.exception
-        
+
         # Verify select slider exists and has default value
         assert len(self.at.select_slider) == 1
         assert self.at.select_slider[0].value == "2"
@@ -394,7 +426,7 @@ class TestMixedTypesSelectSlider:
 
         # Verify select slider reflects URL state
         assert self.at.select_slider[0].value == "four"
-        
+
     def test_mixed_types_select_slider_boolean_option(self):
         """Test mixed types select slider with boolean option"""
         # Set initial URL parameter to boolean value
@@ -407,7 +439,7 @@ class TestMixedTypesSelectSlider:
 
         # Verify select slider reflects URL state
         assert self.at.select_slider[0].value == False
-        
+
     def test_mixed_types_select_slider_numeric_options(self):
         """Test mixed types select slider with numeric options"""
         # Set initial URL parameter to numeric value
@@ -420,11 +452,11 @@ class TestMixedTypesSelectSlider:
 
         # Verify select slider reflects URL state
         assert self.at.select_slider[0].value == 1
-        
+
         # Try float value
         set_query_params(self.at, {"mixed_types": "3.0"})
         self.at.run()
-        
+
         assert not self.at.exception
         assert get_query_params(self.at)["mixed_types"] == ["3.0"]
         assert self.at.select_slider[0].value == 3.0

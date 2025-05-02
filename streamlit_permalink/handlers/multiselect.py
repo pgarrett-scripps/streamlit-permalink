@@ -7,10 +7,11 @@ import inspect
 
 import streamlit as st
 
+from ..exceptions import UrlParamError
+
 from ..utils import (
     _validate_multi_default,
     _validate_multi_options,
-    _validate_multi_url_values,
     init_url_value,
     to_url_value,
 )
@@ -58,12 +59,25 @@ def handle_multiselect(
         init_url_value(url_key, compressor(to_url_value(default)))
         return base_widget(**bound_args.arguments)
 
-    url_value = decompressor(url_value)
+    url_values = decompressor(url_value)
 
-    # Validate URL values against options
-    url_values: List[str] = _validate_multi_url_values(
-        url_key, url_value, str_options, _HANDLER_NAME
-    )
+    # Handle special case for empty selection
+    if url_values is None:
+        return []
+
+    # Validate all values are in options
+    invalid_values = [v for v in url_values if v not in str_options]
+
+    if bound_args.arguments.get("accept_new_options", False):
+        # add invalid values to options
+        options.extend(invalid_values)
+        bound_args.arguments["options"] = options
+    else:
+        if invalid_values:
+            raise UrlParamError(
+                f"Invalid {_HANDLER_NAME.capitalize()} selection for '{url_key}': {invalid_values}. "
+                f"Valid options are: {str_options}"
+            )
 
     # Convert string values back to original option values
     options_map = {str(v): v for v in options}

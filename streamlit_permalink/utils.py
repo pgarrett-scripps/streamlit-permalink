@@ -4,14 +4,13 @@ Utility functions for streamlit_permalink.
 
 import base64
 from datetime import date, datetime, time
-import json
-import pickle
 import re
 from typing import Any, Iterable, List, Optional, Union
 import zlib
 import warnings
-
+from urllib.parse import quote_plus
 from packaging.version import parse as V
+
 import pandas as pd
 import streamlit as st
 
@@ -92,7 +91,7 @@ def to_url_value(result: Any) -> Union[str, List[str]]:
         return result.strftime("%H:%M")
     if isinstance(result, pd.DataFrame):
         # return as json string
-        return result.to_json(orient='records')
+        return result.to_json(orient="records")
     try:
         return str(result)
     except Exception as err:
@@ -308,28 +307,32 @@ def decompress_text(compressed_text: str) -> str:
     return decompressed
 
 
-def fix_datetime_columns(df: pd.DataFrame, column_config: Optional[dict]) -> pd.DataFrame:
+def fix_datetime_columns(
+    df: pd.DataFrame, column_config: Optional[dict]
+) -> pd.DataFrame:
     """
     Fix datetime columns in a DataFrame based on column configuration.
     """
     if not column_config:
-        return df   
-    
+        return df
+
     for column_name, column_config in column_config.items():
-        col_type = column_config['type_config']['type']
-        if col_type == 'datetime':
+        col_type = column_config["type_config"]["type"]
+        if col_type == "datetime":
             # Convert milliseconds from epoch to datetime
-            df[column_name] = pd.to_datetime(df[column_name], unit='ms')
-        elif col_type == 'date':
+            df[column_name] = pd.to_datetime(df[column_name], unit="ms")
+        elif col_type == "date":
             # Convert milliseconds from epoch to date
-            df[column_name] = pd.to_datetime(df[column_name], unit='ms').dt.date
-        elif col_type == 'time':
+            df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.date
+        elif col_type == "time":
             # For time values that are already strings in HH:MM:SS format
-            if df[column_name].dtype == 'object':
-                df[column_name] = pd.to_datetime(df[column_name], format='%H:%M:%S').dt.time
+            if df[column_name].dtype == "object":
+                df[column_name] = pd.to_datetime(
+                    df[column_name], format="%H:%M:%S"
+                ).dt.time
             else:
                 # For time values stored as milliseconds since midnight
-                df[column_name] = pd.to_datetime(df[column_name], unit='ms').dt.time
+                df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.time
 
     return df
 
@@ -339,14 +342,101 @@ def update_data_editor(df: pd.DataFrame, df_updates: dict) -> pd.DataFrame:
     Update a DataFrame based on the updates from the data editor.
     """
 
-    for row_index, row_data in df_updates['edited_rows'].items():
+    for row_index, row_data in df_updates["edited_rows"].items():
         for column_name, value in row_data.items():
             df.at[int(row_index), column_name] = value
 
-    for row_data in df_updates['added_rows']:
+    for row_data in df_updates["added_rows"]:
         df = pd.concat([df, pd.DataFrame([row_data])], ignore_index=True)
 
-    for row_index in df_updates['deleted_rows']:
+    for row_index in df_updates["deleted_rows"]:
         df = df.drop(row_index)
 
     return df
+
+
+def to_list(value: Any) -> List:
+    """Convert a value to a list if it's not already one."""
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def get_query_params_url(params_dict: dict) -> str:
+    """
+    Create URL query string from a dictionary of parameters.
+
+    Args:
+        params_dict (dict): A dictionary with parameter names as keys and values.
+
+    Returns:
+        str: A URL query string starting with '?'
+    """
+    params = []
+    for key, values in params_dict.items():
+        for value in to_list(values):
+            params.append(f"{key}={quote_plus(str(value))}")
+
+    return "?" + "&".join(params)
+
+
+def requires_streamlit_version(min_version: str):
+    """
+    Decorator to check if the current Streamlit version meets the minimum requirement.
+
+    Args:
+        min_version (str): Minimum required Streamlit version
+
+    Returns:
+        function: Wrapped function that checks version before execution
+
+    Example:
+        @requires_streamlit_version("1.45.0")
+        def my_function():
+            # Function implementation
+    """
+
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            if V(st.__version__) < V(min_version):
+                raise RuntimeError(
+                    f"{func.__name__} requires Streamlit {min_version} or newer. "
+                    f"Current version: {st.__version__}"
+                )
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def get_query_params() -> dict[str, List]:
+    """
+    Get the current query parameters from the URL.
+
+    Returns:
+        dict: Dictionary of query parameters
+    """
+
+    if st.__version__ < "1.30":
+        url_params = {
+            k: st.experimental_get_query_params[k]
+            for k in st.experimental_get_query_params.keys()
+        }
+
+    url_params = {k: st.query_params.get_all(k) for k in st.query_params.keys()}
+    return url_params
+
+
+@requires_streamlit_version("1.45.0")
+def get_page_url() -> str:
+    """
+    Get the current page URL including query parameters.
+
+    Returns:
+        str: Complete URL with query parameters
+    """
+    url_params = get_query_params()
+    return f"{st.context.url}{get_query_params_url(url_params)}"

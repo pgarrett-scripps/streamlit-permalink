@@ -2,13 +2,9 @@
 Handle dataeditor widget URL state synchronization.
 """
 
-import base64
 from io import StringIO
-import json
-import pickle
 from typing import Callable, List, Optional
 import inspect
-import ast
 
 import streamlit as st
 import pandas as pd
@@ -21,6 +17,7 @@ from ..utils import (
 )
 
 _HANDLER_NAME = "data_editor"
+
 
 def handle_data_editor(
     base_widget: st.delta_generator.DeltaGenerator,
@@ -35,23 +32,28 @@ def handle_data_editor(
     """
 
     # TODO: URL VALIDATION FOR COLUM CONFIGS
-    st.session_state[f'STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{url_key}'] = bound_args.arguments.get("column_config")
+    st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{url_key}"] = (
+        bound_args.arguments.get("column_config")
+    )
 
     # Initialize from default when no URL value exists
     if url_value is None:
         #  SAVE ORIGINAL DF
-        st.session_state[f'STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}'] = bound_args.arguments.get("data")
-        init_url_value(url_key, compressor(to_url_value(bound_args.arguments.get("data"))))
+        st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}"] = (
+            bound_args.arguments.get("data")
+        )
+        init_url_value(
+            url_key, compressor(to_url_value(bound_args.arguments.get("data")))
+        )
         return base_widget(**bound_args.arguments)
 
     url_value = decompressor(url_value)  # [str, str], [], None
 
     # Process URL value: ensure single value and convert to boolean
     validated_value = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
-    df = pd.read_json(StringIO(validated_value), orient='records')
+    df = pd.read_json(StringIO(validated_value), orient="records")
     df = fix_datetime_columns(df, bound_args.arguments.get("column_config"))
-    st.session_state[f'STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}'] = df
+    st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}"] = df
 
     bound_args.arguments["data"] = df
     return base_widget(**bound_args.arguments)
-

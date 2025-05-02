@@ -1,17 +1,16 @@
 from datetime import date, datetime, time
-from typing import Any
 
-# Can simply replace "import streamlit as st" with "import streamlit_permalink as st" 
 import streamlit_permalink as stp
 import streamlit as st
 
 import pandas as pd
 
-example_df = pd.DataFrame({
-    "widgets": ["st.selectbox", "st.number_input", "st.text_area", "st.button"],
-    "price": [20, 950, 250, 500],
-    "favorite": [True, False, False, True],
-    "category": [
+example_df = pd.DataFrame(
+    {
+        "widgets": ["st.selectbox", "st.number_input", "st.text_area", "st.button"],
+        "price": [20, 950, 250, 500],
+        "favorite": [True, False, False, True],
+        "category": [
             "📊 Data Exploration",
             "📈 Data Visualization",
             "🤖 LLM",
@@ -65,19 +64,21 @@ example_df = pd.DataFrame({
             [10, 20, 80, 80, 70, 0],
             [10, 100, 20, 100, 30, 100],
         ],
-})
+    }
+)
 
 # drop appointment column
-#example_df = example_df.drop(columns=['appointment (datetime)', 'appointment (time)', 'birthday'])
+# example_df = example_df.drop(columns=['appointment (datetime)', 'appointment (time)', 'birthday'])
 
 
-df = stp.data_editor(example_df, 
-                     key='example_data_editor', 
-                     num_rows='dynamic',
-                     compress=True,
-                     column_config={
-                         "widgets": st.column_config.TextColumn(
-        "Widgets",
+df = stp.data_editor(
+    example_df,
+    key="example_data_editor",
+    num_rows="dynamic",
+    compress=True,
+    column_config={
+        "widgets": st.column_config.TextColumn(
+            "Widgets",
             help="Streamlit **widget** commands 🎈",
             default="st.",
             max_chars=50,
@@ -143,7 +144,7 @@ df = stp.data_editor(example_df,
             help="The top trending Streamlit apps",
             validate=r"^https://[a-z]+\.streamlit\.app$",
             max_chars=100,
-            display_text=r"https://(.*?)\.streamlit\.app"
+            display_text=r"https://(.*?)\.streamlit\.app",
         ),
         "images": st.column_config.ImageColumn(
             "Preview Image", help="Streamlit app preview screenshots"
@@ -154,14 +155,12 @@ df = stp.data_editor(example_df,
             help="The sales volume in the last 6 months",
             y_min=0,
             y_max=100,
-         ),              
+        ),
     },
     hide_index=True,
-    )
+)
 
 
-with stp.form('example_form'):
-    stp.data_editor(example_df, key='example_data_editor_form', num_rows='dynamic')
-    stp.form_submit_button('Submit')
-
-
+with stp.form("example_form"):
+    stp.data_editor(example_df, key="example_data_editor_form", num_rows="dynamic")
+    stp.form_submit_button("Submit")

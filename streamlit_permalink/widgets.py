@@ -10,7 +10,13 @@ from packaging.version import parse as V
 import pandas as pd
 import streamlit as st
 
-from .utils import compress_text, decompress_text, fix_datetime_columns, to_url_value, update_data_editor
+from .utils import (
+    compress_text,
+    decompress_text,
+    fix_datetime_columns,
+    to_url_value,
+    update_data_editor,
+)
 from .handlers import HANDLERS
 from .constants import _EMPTY, _NONE
 
@@ -105,7 +111,6 @@ class UrlAwareWidget:
         if st.session_state.get("data_editor_keys") is None:
             st.session_state["data_editor_keys"] = []
 
-
         signature = inspect.signature(self.base_widget)
         bound_args = signature.bind_partial(*args, **kwargs)
 
@@ -119,12 +124,11 @@ class UrlAwareWidget:
                 url_key = bound_args.arguments["label"]
             else:
                 raise ValueError("url_key or key is required")
-            
 
         st.session_state["compress_map"][url_key] = compressor
         st.session_state["decompress_map"][url_key] = decompressor
 
-        if self.base_widget.__name__ == 'data_editor':
+        if self.base_widget.__name__ == "data_editor":
             st.session_state["data_editor_keys"].append(url_key)
 
         bound_args.arguments["key"] = url_key
@@ -166,25 +170,26 @@ class UrlAwareWidget:
 
         def on_change_data_editor(*args, **kwargs):
 
-            original_df = getattr(st.session_state, f'STREAMLIT_PERMALINK_DATA_EDITOR_{bound_args.arguments["key"]}')
-            df_updates = getattr(st.session_state, bound_args.arguments["key"]) # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
+            original_df = getattr(
+                st.session_state,
+                f'STREAMLIT_PERMALINK_DATA_EDITOR_{bound_args.arguments["key"]}',
+            )
+            df_updates = getattr(
+                st.session_state, bound_args.arguments["key"]
+            )  # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
 
             updated_df = update_data_editor(original_df, df_updates)
 
             if V(st.__version__) < V("1.30"):
-                url[url_key] = compressor(
-                to_url_value(updated_df)
-                )
+                url[url_key] = compressor(to_url_value(updated_df))
                 st.experimental_set_query_params(**url)
             else:
-                st.query_params[url_key] = compressor(
-                    to_url_value(updated_df)
-                )
+                st.query_params[url_key] = compressor(to_url_value(updated_df))
 
             if user_supplied_change_handler is not None:
                 user_supplied_change_handler(*args, **kwargs)
 
-        if self.base_widget.__name__ == 'data_editor':
+        if self.base_widget.__name__ == "data_editor":
             bound_args.arguments["on_change"] = on_change_data_editor
         else:
             bound_args.arguments["on_change"] = on_change
@@ -300,13 +305,23 @@ class UrlAwareFormSubmitButton:
             for url_key, key in _form.field_mapping.items():
                 raw_value = getattr(st.session_state, key)
 
-                compressor, _ = st.session_state["compress_map"][url_key], st.session_state["decompress_map"][url_key]
+                compressor, _ = (
+                    st.session_state["compress_map"][url_key],
+                    st.session_state["decompress_map"][url_key],
+                )
 
                 if url_key in st.session_state["data_editor_keys"]:
 
-                    original_df = getattr(st.session_state, f'STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}')
-                    column_config = getattr(st.session_state, f'STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{url_key}')
-                    df_updates = getattr(st.session_state, url_key) # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
+                    original_df = getattr(
+                        st.session_state, f"STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}"
+                    )
+                    column_config = getattr(
+                        st.session_state,
+                        f"STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{url_key}",
+                    )
+                    df_updates = getattr(
+                        st.session_state, url_key
+                    )  # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
 
                     updated_df = update_data_editor(original_df, df_updates)
                     raw_value = fix_datetime_columns(updated_df, column_config)
@@ -347,7 +362,6 @@ if hasattr(st, "segmented_control"):
 if hasattr(st, "data_editor"):
     data_editor = UrlAwareWidget(st.data_editor)
 form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
-
 
 
 try:

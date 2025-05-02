@@ -1,3 +1,9 @@
+# 1.2.0 Release Notes
+
+## Changes (for streamlit v1.45)
+- Added support for `accept_new_options` to multiselect and selectbox
+- added functions: `get_query_params` and `get_page_url`
+
 # 1.1.0 Release Notes
 
 ## Changes
