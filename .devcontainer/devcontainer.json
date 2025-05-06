@@ -1,0 +1,13 @@
+{
+	"image": "mcr.microsoft.com/devcontainers/universal:2",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"GitHub.copilot-chat",
+				"GitHub.copilot",
+				"ms-azuretools.vscode-docker",
+				"ms-python.python"
+			]
+		}
+	}
+}

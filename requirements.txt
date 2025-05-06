@@ -1,0 +1,5 @@
+packaging==25.0
+pandas==2.2.3
+streamlit==1.45.0
+streamlit_option_menu==0.4.0
+pytest==8.3.5

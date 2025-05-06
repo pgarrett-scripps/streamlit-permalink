@@ -1,0 +1,9 @@
+"""
+Constants for streamlit_permalink.
+"""
+
+_EMPTY = "_STREAMLIT_PERMALINK_EMPTY"
+_NONE = "_STREAMLIT_PERMALINK_NONE"
+TRUE_VALUE = "True"
+FALSE_VALUE = "False"
+TRUE_FALSE_VALUE = {TRUE_VALUE, FALSE_VALUE}
