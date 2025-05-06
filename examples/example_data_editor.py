@@ -73,7 +73,7 @@ example_df = pd.DataFrame(
 
 df = stp.data_editor(
     example_df,
-    key="example_data_editor",
+    url_key="example_data_editor1",
     num_rows="dynamic",
     compress=True,
     column_config={
@@ -162,5 +162,92 @@ df = stp.data_editor(
 
 
 with stp.form("example_form"):
-    stp.data_editor(example_df, key="example_data_editor_form", num_rows="dynamic")
+    df = stp.data_editor(
+        example_df,
+        url_key="example_data_editor2",
+        num_rows="dynamic",
+        compress=True,
+        column_config={
+            "widgets": st.column_config.TextColumn(
+                "Widgets",
+                help="Streamlit **widget** commands 🎈",
+                default="st.",
+                max_chars=50,
+                validate=r"^st\.[a-z_]+$",
+            ),
+            "price": st.column_config.NumberColumn(
+                "Price (in USD)",
+                help="The price of the product in USD",
+                min_value=0,
+                max_value=1000,
+                step=1,
+                format="$%d",
+            ),
+            "favorite": st.column_config.CheckboxColumn(
+                "Your favorite?",
+                help="Select your **favorite** widgets",
+                default=False,
+            ),
+            "category": st.column_config.SelectboxColumn(
+                "App Category",
+                help="The category of the app",
+                width="medium",
+                options=[
+                    "📊 Data Exploration",
+                    "📈 Data Visualization",
+                    "🤖 LLM",
+                ],
+                required=True,
+            ),
+            "appointment (datetime)": st.column_config.DatetimeColumn(
+                "Appointment (datetime)",
+                min_value=datetime(2023, 6, 1),
+                max_value=datetime(2025, 1, 1),
+                format="D MMM YYYY, h:mm a",
+                step=60,
+            ),
+            "birthday": st.column_config.DateColumn(
+                "Birthday",
+                min_value=date(1900, 1, 1),
+                max_value=date(2005, 1, 1),
+                format="DD.MM.YYYY",
+                step=1,
+            ),
+            "appointment (time)": st.column_config.TimeColumn(
+                "Appointment (time)",
+                min_value=time(8, 0, 0),
+                max_value=time(19, 0, 0),
+                format="hh:mm a",
+                step=60,
+            ),
+            "json": st.column_config.JsonColumn(
+                "JSON Data",
+                help="JSON strings or objects",
+                width="large",
+            ),
+            "sales": st.column_config.ListColumn(
+                "Sales (last 6 months)",
+                help="The sales volume in the last 6 months",
+                width="medium",
+            ),
+            "links": st.column_config.LinkColumn(
+                "Trending apps",
+                help="The top trending Streamlit apps",
+                validate=r"^https://[a-z]+\.streamlit\.app$",
+                max_chars=100,
+                display_text=r"https://(.*?)\.streamlit\.app",
+            ),
+            "images": st.column_config.ImageColumn(
+                "Preview Image", help="Streamlit app preview screenshots"
+            ),
+            "sales (area)": st.column_config.AreaChartColumn(
+                "Sales (last 6 months)",
+                width="medium",
+                help="The sales volume in the last 6 months",
+                y_min=0,
+                y_max=100,
+            ),
+        },
+        hide_index=True,
+    )
     stp.form_submit_button("Submit")

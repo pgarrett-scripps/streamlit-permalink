@@ -316,8 +316,8 @@ def fix_datetime_columns(
     if not column_config:
         return df
 
-    for column_name, column_config in column_config.items():
-        col_type = column_config["type_config"]["type"]
+    for column_name, config in column_config.items():
+        col_type = config["type_config"]["type"]
         if col_type == "datetime":
             # Convert milliseconds from epoch to datetime
             df[column_name] = pd.to_datetime(df[column_name], unit="ms")

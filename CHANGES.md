@@ -3,6 +3,7 @@
 ## Changes (for streamlit v1.45)
 - Added support for `accept_new_options` to multiselect and selectbox
 - Added functions: `get_query_params` (returns all query params) and `get_page_url` (returns url with query params included)
+- Revert docs & examples to use `url_key` for widget creation.
 
 # 1.1.0 Release Notes
 
@@ -33,8 +34,9 @@
 - Statefulness can be disabled by passing `stateful=False`
 
 ## Future Roadmap
-- Add test coverage for `pills` and `segmented_control` widgets once testing functions become available
-- Refactor and enhance test cases for improved reliability and maintainability
-- Implement configurable initialization of default values
-- Evaluate the necessity of both `_EMPTY` and `_NONE` constants
+- Add test coverage for `pills`, `segmented_control` & `data_editor` widgets once testing functions become available
+- Remove support for `st.option_menu`?
+- Make url value validation optional
+- Make default url value upon widget init optional 
+- Add `data_editor` url value validation
 

@@ -7,7 +7,6 @@ from functools import partial
 import inspect
 
 from packaging.version import parse as V
-import pandas as pd
 import streamlit as st
 
 from .utils import (
@@ -402,7 +401,7 @@ class UrlAwareForm:
     if hasattr(st, "pills"):
         pills = UrlAwareWidget(st.pills)
     if hasattr(st, "segmented_control"):
-        urlAwareFormontrol = UrlAwareWidget(st.segmented_control)
+        segmented_control = UrlAwareWidget(st.segmented_control)
     if hasattr(st, "data_editor"):
         data_editor = UrlAwareWidget(st.data_editor)
     form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
