@@ -2,7 +2,7 @@
 
 ## Changes (for streamlit v1.45)
 - Added support for `accept_new_options` to multiselect and selectbox
-- added functions: `get_query_params` and `get_page_url`
+- Added functions: `get_query_params` (returns all query params) and `get_page_url` (returns url with query params included)
 
 # 1.1.0 Release Notes
 
@@ -13,7 +13,6 @@
 
 ## Changes
 - Bug fix for widget url compression in forms
-
 
 # 1.0.0 Release Notes
 
@@ -36,7 +35,6 @@
 ## Future Roadmap
 - Add test coverage for `pills` and `segmented_control` widgets once testing functions become available
 - Refactor and enhance test cases for improved reliability and maintainability
-- Implement configurable initialization of default values, with special consideration for form components
-- Evaluate the necessity of both `_EMPTY` and `_NONE` constants, ensuring consistent usage across all widgets
-- Consider adding optional synchronization of additional parameters (e.g., `max_chars`, `options`) with URL state
+- Implement configurable initialization of default values
+- Evaluate the necessity of both `_EMPTY` and `_NONE` constants
 
