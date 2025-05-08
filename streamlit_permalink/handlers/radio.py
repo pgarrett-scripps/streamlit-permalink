@@ -3,9 +3,7 @@ from typing import Optional
 from .handler import HandleWidget
 from ..utils import (
     _validate_multi_options,
-    validate_single_url_value,
 )
-from ..exceptions import UrlParamError
 
 
 class HandlerRadio(HandleWidget):
@@ -18,10 +16,11 @@ class HandlerRadio(HandleWidget):
         self.options = self.bound_args.arguments.get("options")
         self.str_options = _validate_multi_options(self.options, self.handler_name)
 
-
     def update_bound_args(self) -> None:
 
-        str_value: Optional[str] = self.validate_single_url_value(allow_none=True)
+        str_value: Optional[str] = self.validate_single_url_value(
+            self.url_value, allow_none=True
+        )
 
         if str_value is None:
             self.bound_args.arguments["index"] = None

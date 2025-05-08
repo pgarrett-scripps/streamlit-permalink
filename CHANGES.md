@@ -1,21 +1,14 @@
-# 1.2.0 Release Notes
+# 1.3.0 Release Notes
 
 ## Changes (for streamlit v1.45)
 - Added support for `accept_new_options` to multiselect and selectbox
 - Added functions: `get_query_params` (returns all query params) and `get_page_url` (returns url with query params included)
 - Revert docs & examples to use `url_key` for widget creation.
-
-# 1.1.0 Release Notes
-
-## Changes
 - Added support for `stp.data_editor`
+- refactor / major code cleanup
+- Made default url value upon widget init optional 
 
-# 1.0.1 Release Notes
-
-## Changes
-- Bug fix for widget url compression in forms
-
-# 1.0.0 Release Notes
+# 1.2.0 Release Notes
 
 ## Changes
 - Improved code organization
@@ -36,7 +29,5 @@
 ## Future Roadmap
 - Add test coverage for `pills`, `segmented_control` & `data_editor` widgets once testing functions become available
 - Remove support for `st.option_menu`?
-- Make url value validation optional
-- Make default url value upon widget init optional 
 - Add `data_editor` url value validation
 

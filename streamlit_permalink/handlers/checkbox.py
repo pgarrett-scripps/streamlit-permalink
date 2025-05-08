@@ -1,14 +1,24 @@
 from .handler import HandleWidget
 
+
 class HandlerCheckbox(HandleWidget):
+
+    def validate_bool(self, value: str) -> bool:
+        """
+        Validate that the value is a boolean.
+        """
+        value = value.capitalize()
+        if value not in ["True", "False"]:
+            self.raise_url_error(
+                f"Invalid value for checkbox: '{value}'. Expected 'True' or 'False'."
+            )
+
+        return value == "True"
 
     def update_bound_args(self) -> None:
 
-        str_value = self.validate_single_url_value(allow_none=False).capitalize()
-        
-        if str_value not in ["True", "False"]:
-            self.raise_url_error(
-                f"Invalid value for checkbox: '{str_value}'. Expected 'True' or 'False'."
-            )
-
-        self.bound_args.arguments["value"] = str_value == "True"
+        str_value: str = self.validate_single_url_value(
+            self.url_value, allow_none=False
+        ).capitalize()
+        bool_value: bool = self.validate_bool(str_value)
+        self.bound_args.arguments["value"] = bool_value

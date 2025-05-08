@@ -2,8 +2,7 @@ from types import NoneType
 from typing import Any
 
 from .handler import HandleWidget
-from ..exceptions import UrlParamError
-from ..utils import validate_single_url_value
+
 
 class HandlerNumberInput(HandleWidget):
 
@@ -41,7 +40,7 @@ class HandlerNumberInput(HandleWidget):
     def update_bound_args(self) -> None:
 
         # Parse the URL value
-        str_value = self.validate_single_url_value(allow_none=True)
+        str_value = self.validate_single_url_value(self.url_value, allow_none=True)
 
         if str_value is None:
 
@@ -63,11 +62,14 @@ class HandlerNumberInput(HandleWidget):
                 except (ValueError, TypeError):
                     parsed_value = float(str_value)
         except (ValueError, TypeError) as err:
-            type_name = "int" if self.value_type == int else "float" if self.value_type == float else "int, float"
+            type_name = (
+                "int"
+                if self.value_type == int
+                else "float" if self.value_type == float else "int, float"
+            )
             self.raise_url_error(f"Expected {type_name} value.", err)
 
         # Validate the parsed value against min and max bounds
         self.validate_bounds(parsed_value)
 
         self.bound_args.arguments["value"] = parsed_value
-        

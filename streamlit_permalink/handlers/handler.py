@@ -40,7 +40,6 @@ class HandleWidget:
         compressor: Callable,
         decompressor: Callable,
         init_url: bool,
-        validate_url: bool,
     ):
         self.base_widget = base_widget
         self.url_key = url_key
@@ -49,7 +48,6 @@ class HandleWidget:
         self.compressor = compressor
         self.decompressor = decompressor
         self.init_url = init_url
-        self.validate_url = validate_url
 
         self.url_value = None
         if self.has_url_value:
@@ -100,8 +98,7 @@ class HandleWidget:
 
         return self.base_widget(**self.bound_args.arguments)
 
-
-    def raise_url_error(self, message: str, err = None) -> None:
+    def raise_url_error(self, message: str, err=None) -> None:
         """
         Raise an error with the given message.
         """
@@ -115,56 +112,61 @@ class HandleWidget:
             ) from err
 
         raise UrlParamError(
-                message=message,
-                url_key=self.url_key,
-                url_value=self.url_value,
-                handler=self.handler_name,
-            )
-
+            message=message,
+            url_key=self.url_key,
+            url_value=self.url_value,
+            handler=self.handler_name,
+        )
 
     def validate_single_url_value(
         self,
+        url_value: Optional[List[str]] = None,
         allow_none: bool = False,
     ) -> Optional[str]:
         """
         Validate single value from URL parameter.
         """
-        if self.url_value is None:
+        if url_value is None:
 
             if not allow_none:
                 self.raise_url_error("None value is not allowed.")
- 
+
             return None
 
-        if not (isinstance(self.url_value, (list, tuple)) and len(self.url_value) == 1):
+        if not (isinstance(url_value, (list, tuple)) and len(url_value) == 1):
             self.raise_url_error("Expected a single value, but got multiple values.")
-        
-        return self.url_value[0]
-    
 
-    def validate_multi_url_values(self,
+        return self.url_value[0]
+
+    def validate_multi_url_values(
+        self,
+        url_values: Optional[List[str]] = None,
         min_values: Optional[int] = None,
         max_values: Optional[int] = None,
         allow_none: bool = False,
-        ) -> List[str]:
+    ) -> List[str]:
         """
         Validate that all multiselect values are in the options list.
         """
         # Handle special case for empty selection
-        if self.url_value is None:
+        if url_values is None:
 
             if not allow_none:
                 self.raise_url_error("None value is not allowed.")
 
             return []
 
-        if not isinstance(self.url_value, (list, tuple)):
+        if not isinstance(url_values, (list, tuple)):
             self.raise_url_error("Expected a list of values.")
-  
-        if min_values != None and len(self.url_value) < min_values:
-            self.raise_url_error(f"Expected at least {min_values} values, but got {len(self.url_value)}.")
 
-        if max_values != None and len(self.url_value) > max_values:
-            self.raise_url_error(f"Expected at most {max_values} values, but got {len(self.url_value)}.")
+        if min_values != None and len(url_values) < min_values:
+            self.raise_url_error(
+                f"Expected at least {min_values} values, but got {len(url_values)}."
+            )
 
-        return self.url_value
+        if max_values != None and len(url_values) > max_values:
+            self.raise_url_error(
+                f"Expected at most {max_values} values, but got {len(url_values)}."
+            )
+
+        return url_values

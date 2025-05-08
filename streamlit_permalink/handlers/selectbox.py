@@ -5,6 +5,7 @@ from ..utils import (
     _validate_multi_options,
 )
 
+
 class HandlerSelectbox(HandleWidget):
 
     def __init__(self, *args, **kwargs):
@@ -14,10 +15,15 @@ class HandlerSelectbox(HandleWidget):
         super().__init__(*args, **kwargs)
         self.options = self.bound_args.arguments.get("options")
         self.str_options = _validate_multi_options(self.options, self.handler_name)
-        
-        self.accept_new_options = self.bound_args.arguments.get("accept_new_options", False)
+
+        self.accept_new_options = self.bound_args.arguments.get(
+            "accept_new_options", False
+        )
+
     def update_bound_args(self) -> None:
-        str_value: Optional[str] = self.validate_single_url_value(allow_none=True)
+        str_value: Optional[str] = self.validate_single_url_value(
+            self.url_value, allow_none=True
+        )
 
         if str_value is None:
             self.bound_args.arguments["index"] = None

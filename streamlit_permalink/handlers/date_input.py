@@ -1,10 +1,8 @@
 from datetime import datetime
-from typing import Any, Union, Optional, List, Tuple
+from typing import Any, Union, Tuple
 from datetime import date
 
-from ..utils import _validate_multi_url_values, validate_single_url_value
 from .handler import HandleWidget
-from ..exceptions import UrlParamError
 
 
 DateValue = Union[None, date, Tuple[date, ...]]
@@ -23,8 +21,10 @@ def get_date_value(value: Any) -> DateValue:
     elif value is None:
         return None
     else:
-        raise UrlParamError(f"Invalid date value: {value}. Expected a date or 'today'.")
-    
+        raise ValueError(
+            f"Invalid value type for date input: {type(value)}. Expected str, datetime.date, datetime.datetime, or None."
+        )
+
 
 class HandlerDateInput(HandleWidget):
 
@@ -34,9 +34,6 @@ class HandlerDateInput(HandleWidget):
             self.bound_args.arguments.get("value", "today"), (list, tuple)
         )
 
-        """
-        ("today", datetime.date, datetime.datetime, str, or None)
-        """
         self.min_value = get_date_value(self.bound_args.arguments.get("min_value"))
         self.max_value = get_date_value(self.bound_args.arguments.get("max_value"))
 
@@ -54,7 +51,7 @@ class HandlerDateInput(HandleWidget):
 
         if not self.is_range:
 
-            str_value = self.validate_single_url_value(allow_none=True)
+            str_value = self.validate_single_url_value(self.url_value, allow_none=True)
 
             if str_value is None:
                 self.bound_args.arguments["value"] = None
@@ -63,25 +60,29 @@ class HandlerDateInput(HandleWidget):
             try:
                 date_value = date.fromisoformat(str_value)
             except Exception as err:
-                self.raise_url_error(f"Invalid date format. Expected format: YYYY-MM-DD.", err)
+                self.raise_url_error(
+                    f"Invalid date format. Expected format: YYYY-MM-DD.", err
+                )
 
             self.validate_bounds(date_value)
 
             self.bound_args.arguments["value"] = date_value
 
         else:
-            str_values = self.validate_multi_url_values(min_values=0, max_values=2, allow_none=True)
+            str_values = self.validate_multi_url_values(
+                self.url_value, min_values=0, max_values=2, allow_none=True
+            )
             try:
                 date_values = tuple(date.fromisoformat(v) for v in str_values)
             except Exception as err:
-                self.raise_url_error(f"Invalid date format. Expected format: YYYY-MM-DD.", err)
-                
+                self.raise_url_error(
+                    f"Invalid date format. Expected format: YYYY-MM-DD.", err
+                )
+
             if len(date_values) == 2:
                 start, end = date_values
                 if start > end:
-                    self.raise_url_error(
-                        "Start date must be before end date."
-                    )
+                    self.raise_url_error("Start date must be before end date.")
 
             for date_value in date_values:
                 self.validate_bounds(date_value)

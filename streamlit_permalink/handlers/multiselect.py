@@ -1,10 +1,8 @@
 from typing import List
 
 from .handler import HandleWidget
-from ..exceptions import UrlParamError
 from ..utils import (
     _validate_multi_options,
-    _validate_multi_url_values,
 )
 
 
@@ -20,10 +18,14 @@ class HandlerMultiSelect(HandleWidget):
             self.options, self.handler_name
         )
 
-        self.accept_new_options = self.bound_args.arguments.get("accept_new_options", False)
+        self.accept_new_options = self.bound_args.arguments.get(
+            "accept_new_options", False
+        )
 
     def update_bound_args(self) -> None:
-        str_values = self.validate_multi_url_values(min_values=None, max_values=None, allow_none=True)
+        str_values = self.validate_multi_url_values(
+            self.url_value, min_values=None, max_values=None, allow_none=True
+        )
 
         # Validate all values are in options
         invalid_str_values = [v for v in str_values if v not in self.str_options]

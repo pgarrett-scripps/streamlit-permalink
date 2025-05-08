@@ -1,15 +1,11 @@
-"""
-Handle slider widget URL state synchronization.
-"""
-
 from datetime import datetime, date, time
 from typing import Any
 
-from ..utils import _validate_multi_url_values, validate_single_url_value
 from .handler import HandleWidget
 
 
 VALID_TYPES = {int, float, datetime, date, time}
+
 
 class HandlerSlider(HandleWidget):
     """
@@ -58,7 +54,6 @@ class HandlerSlider(HandleWidget):
                 f"Expected one of: {VALID_TYPES}"
             )
 
-                
     def parse_value(self, value: Any) -> Any:
 
         if self.value_type == int:
@@ -75,15 +70,19 @@ class HandlerSlider(HandleWidget):
             raise ValueError(
                 f"Unsupported value type: {self.value_type}. Expected one of: {VALID_TYPES}"
             )
-        
+
     def check_bounds(self, value: Any) -> None:
         """
         Check if the value is within the bounds of min_value and max_value.
         """
         if self.min_value is not None and value < self.min_value:
-            self.raise_url_error(f"Value {value} is less than min_value {self.min_value}.")
+            self.raise_url_error(
+                f"Value {value} is less than min_value {self.min_value}."
+            )
         if self.max_value is not None and value > self.max_value:
-            self.raise_url_error(f"Value {value} is greater than max_value {self.max_value}.")
+            self.raise_url_error(
+                f"Value {value} is greater than max_value {self.max_value}."
+            )
 
     def update_bound_args(self) -> None:
         """
@@ -91,19 +90,23 @@ class HandlerSlider(HandleWidget):
         """
 
         if self.is_range:
-            str_values = self.validate_multi_url_values(min_values=2, max_values=2, allow_none=False)
+            str_values = self.validate_multi_url_values(
+                self.url_value, min_values=2, max_values=2, allow_none=False
+            )
             parsed_values = [self.parse_value(v) for v in str_values]
 
             for v in parsed_values:
                 self.check_bounds(v)
 
             if parsed_values[0] > parsed_values[1]:
-                self.raise_url_error(f"Start value {parsed_values[0]} is greater than end value {parsed_values[1]}.")
+                self.raise_url_error(
+                    f"Start value {parsed_values[0]} is greater than end value {parsed_values[1]}."
+                )
 
             self.bound_args.arguments["value"] = parsed_values
 
         else:
-            str_value = self.validate_single_url_value(allow_none=False)
+            str_value = self.validate_single_url_value(self.url_value, allow_none=False)
             parsed_value = self.parse_value(str_value)
             self.check_bounds(parsed_value)
             self.bound_args.arguments["value"] = parsed_value

@@ -12,11 +12,11 @@ import streamlit as st
 from .utils import (
     compress_text,
     decompress_text,
-    fix_datetime_columns,
     to_url_value,
     update_data_editor,
 )
 from .handlers import HANDLERS
+from .handlers.data_editor import fix_datetime_columns
 from .constants import _EMPTY, _NONE
 
 _active_form = None
@@ -89,7 +89,6 @@ class UrlAwareWidget:
         decompressor = kwargs.pop("decompressor", decompress_text)
         stateful = kwargs.pop("stateful", True)
         init_url = kwargs.pop("init_url", True)
-        validate_url = kwargs.pop("validate_url", True)
 
         if stateful is False:
             return self.base_widget(*args, **kwargs)
@@ -142,7 +141,6 @@ class UrlAwareWidget:
                 compressor=compressor,
                 decompressor=decompressor,
                 init_url=init_url,
-                validate_url=validate_url,
             )
 
         if V(st.__version__) < V("1.30"):
@@ -211,7 +209,6 @@ class UrlAwareWidget:
             compressor=compressor,
             decompressor=decompressor,
             init_url=init_url,
-            validate_url=validate_url,
         ).run()
         return result
 
@@ -223,7 +220,6 @@ class UrlAwareWidget:
         compressor: Callable,
         decompressor: Callable,
         init_url: bool = True,
-        validate_url: bool = True,
     ) -> Any:
         """
         Call the widget inside a form.
@@ -256,7 +252,6 @@ class UrlAwareWidget:
             compressor=compressor,
             decompressor=decompressor,
             init_url=init_url,
-            validate_url=validate_url,
         ).run()
         return result
 

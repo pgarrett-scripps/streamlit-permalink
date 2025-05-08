@@ -1,12 +1,10 @@
 from typing import List
 
 from .handler import HandleWidget
-from ..exceptions import UrlParamError
 
 from ..utils import (
     _validate_selection_mode,
     _validate_multi_options,
-    _validate_multi_url_values,
 )
 
 
@@ -29,7 +27,9 @@ class HandlerPills(HandleWidget):
     def update_bound_args(self) -> None:
 
         # Validate URL values against options
-        str_values: List[str] = self.validate_multi_url_values(min_values=None, max_values=None, allow_none=True)
+        str_values: List[str] = self.validate_multi_url_values(
+            self.url_value, min_values=None, max_values=None, allow_none=True
+        )
 
         if self.selection_mode == "single" and len(str_values) > 1:
             self.raise_url_error("Multiple values provided for single selection mode.")

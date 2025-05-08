@@ -5,7 +5,7 @@ Utility functions for streamlit_permalink.
 import base64
 from datetime import date, datetime, time
 import re
-from typing import Any, Iterable, List, Optional, Union
+from typing import Any, Iterable, List, Union
 import zlib
 import warnings
 from urllib.parse import quote_plus
@@ -14,8 +14,7 @@ from packaging.version import parse as V
 import pandas as pd
 import streamlit as st
 
-from .constants import _EMPTY, _NONE, TRUE_VALUE, TRUE_FALSE_VALUE
-from .exceptions import UrlParamError
+from .constants import _EMPTY, _NONE
 
 
 class TypedValue:
@@ -110,70 +109,6 @@ def init_url_value(url_key: str, url_value: str):
         st.query_params[url_key] = url_value
 
 
-def parse_time(time_str: str) -> time:
-    """
-    Parse a time string into a time object.
-    """
-    return datetime.strptime(time_str, "%H:%M").time()
-
-
-def validate_single_url_value(
-    url_key: str, url_value: Optional[List[str]], handler_name: str, allow_none: bool = True
-) -> Optional[str]:
-    """
-    Validate single value from URL parameter.
-    """
-    if url_value is None:
-
-        if not allow_none:
-            msg = f"None value is not allowed."
-            raise UrlParamError(message=msg, url_key=url_key, url_value=url_value, handler=handler_name)
-
-        return None
-
-    if not (isinstance(url_value, (list, tuple)) and len(url_value) == 1):
-        msg = "Expected a single value, but got multiple values."
-        raise UrlParamError(message=msg, url_key=url_key, url_value=url_value, handler=handler_name)
-    
-    return url_value[0]
-
-
-def validate_bool_url_value(url_key: str, url_value: str, handler_name: str) -> bool:
-    """
-    Validate boolean value from URL parameter.
-    """
-    url_value = url_value.capitalize()  # Case insensitive
-    if url_value not in TRUE_FALSE_VALUE:
-        msg = f"Expected a {TRUE_FALSE_VALUE}"
-        raise UrlParamError(message=msg, url_key=url_key, url_value=url_value, handler=handler_name)
-    return url_value == TRUE_VALUE
-
-
-def validate_color_url_value(url_key: str, url_value: str, handler_name: str) -> str:
-    """
-    Validate color value from URL parameter.
-    """
-    if not re.match(r"^#([0-9a-fA-F]{6})$", url_value):
-        raise UrlParamError(
-            f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. "
-            "Expected a valid hex color code (e.g., #RRGGBB)."
-        )
-    return url_value
-
-
-def validate_date_url_value(url_key: str, url_value: str, handler_name: str) -> str:
-    """
-    Validate date value from URL parameter.
-    """
-    try:
-        return datetime.strptime(url_value, "%Y-%m-%d").date()
-    except ValueError as err:
-        raise UrlParamError(
-            f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. "
-            "Expected a valid date (e.g., 2023-01-01)."
-        ) from err
-
-
 def _validate_multi_options(options: Iterable[Any], widget_name: str) -> List[str]:
     """
     Validate multiselect options and convert to strings.
@@ -243,42 +178,6 @@ def _validate_multi_default(
     return list(map(str, default))
 
 
-def _validate_multi_url_values(
-    url_key: str,
-    url_values: Optional[List[str]],
-    widget_name: str,
-    min_values: Optional[int] = None,
-    max_values: Optional[int] = None,
-) -> List[str]:
-    """
-    Validate that all multiselect values are in the options list.
-    """
-    # Handle special case for empty selection
-    if url_values is None:
-        url_values = []
-
-    if not isinstance(url_values, (list, tuple)):
-        raise UrlParamError(message="Expected a list of values.", url_key=url_key, url_value=url_values, handler=widget_name)
-    
-    if min_values != None and len(url_values) < min_values:
-        raise UrlParamError(
-            message=f"Expected at least {min_values} values, but got {len(url_values)}.",
-            url_key=url_key,
-            url_value=url_values,
-            handler=widget_name,
-        )
-    
-    if max_values != None and len(url_values) > max_values:
-        raise UrlParamError(
-            message=f"Expected at most {max_values} values, but got {len(url_values)}.",
-            url_key=url_key,
-            url_value=url_values,
-            handler=widget_name,
-        )
-
-    return url_values
-
-
 def _validate_selection_mode(selection_mode: str) -> str:
     """
     Validate selection mode and convert to string.
@@ -320,36 +219,6 @@ def decompress_text(compressed_text: str) -> str:
     decoded = base64.urlsafe_b64decode(compressed_text)
     decompressed = zlib.decompress(decoded).decode("utf-8")
     return decompressed
-
-
-def fix_datetime_columns(
-    df: pd.DataFrame, column_config: Optional[dict]
-) -> pd.DataFrame:
-    """
-    Fix datetime columns in a DataFrame based on column configuration.
-    """
-    if not column_config:
-        return df
-
-    for column_name, config in column_config.items():
-        col_type = config["type_config"]["type"]
-        if col_type == "datetime":
-            # Convert milliseconds from epoch to datetime
-            df[column_name] = pd.to_datetime(df[column_name], unit="ms")
-        elif col_type == "date":
-            # Convert milliseconds from epoch to date
-            df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.date
-        elif col_type == "time":
-            # For time values that are already strings in HH:MM:SS format
-            if df[column_name].dtype == "object":
-                df[column_name] = pd.to_datetime(
-                    df[column_name], format="%H:%M:%S"
-                ).dt.time
-            else:
-                # For time values stored as milliseconds since midnight
-                df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.time
-
-    return df
 
 
 def update_data_editor(df: pd.DataFrame, df_updates: dict) -> pd.DataFrame:

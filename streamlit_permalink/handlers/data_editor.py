@@ -1,13 +1,40 @@
+from typing import Any, Optional
+from io import StringIO
+
 import streamlit as st
 import pandas as pd
-from typing import Any
-from io import StringIO
+
 from .handler import HandleWidget
 
-from ..utils import (
-    fix_datetime_columns,
-    validate_single_url_value,
-)
+
+def fix_datetime_columns(
+    df: pd.DataFrame, column_config: Optional[dict]
+) -> pd.DataFrame:
+    """
+    Fix datetime columns in a DataFrame based on column configuration.
+    """
+    if not column_config:
+        return df
+
+    for column_name, config in column_config.items():
+        col_type = config["type_config"]["type"]
+        if col_type == "datetime":
+            # Convert milliseconds from epoch to datetime
+            df[column_name] = pd.to_datetime(df[column_name], unit="ms")
+        elif col_type == "date":
+            # Convert milliseconds from epoch to date
+            df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.date
+        elif col_type == "time":
+            # For time values that are already strings in HH:MM:SS format
+            if df[column_name].dtype == "object":
+                df[column_name] = pd.to_datetime(
+                    df[column_name], format="%H:%M:%S"
+                ).dt.time
+            else:
+                # For time values stored as milliseconds since midnight
+                df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.time
+
+    return df
 
 
 class HandlerDataEditor(HandleWidget):
@@ -37,7 +64,7 @@ class HandlerDataEditor(HandleWidget):
     def update_bound_args(self) -> None:
 
         # Process URL value: ensure single value and convert to boolean
-        parsed_value = self.validate_single_url_value(allow_none=False)
+        parsed_value = self.validate_single_url_value(self.url_value, allow_none=False)
         df = pd.read_json(StringIO(parsed_value), orient="records")
         df = fix_datetime_columns(df, self.bound_args.arguments.get("column_config"))
         st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{self.url_key}"] = df
