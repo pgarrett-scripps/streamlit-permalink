@@ -1,12 +1,14 @@
 # 1.3.0 Release Notes
 
-## Changes (for streamlit v1.45)
-- Added support for `accept_new_options` to multiselect and selectbox
-- Added functions: `get_query_params` (returns all query params) and `get_page_url` (returns url with query params included)
+## Changes
+- Added support for `accept_new_options` to multiselect and selectbox (for streamlit v1.45)
+- Added functions: `get_query_params` and `get_page_url` (for streamlit v1.45)
 - Revert docs & examples to use `url_key` for widget creation.
 - Added support for `stp.data_editor`
-- refactor / major code cleanup
-- Made default url value upon widget init optional 
+- Major Refactor
+- Made url value init optional
+- Added "_STREAMLIT_PERMALINK_EMPTY_STRING" to the possible stp query values. 
+- Compression will no longer compress _STREAMLIT_PERMALINK_* values
 
 # 1.2.0 Release Notes
 

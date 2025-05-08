@@ -41,12 +41,7 @@ class TestTextArea:
 
         # Verify URL parameters are initialized with default values
         params = get_query_params(self.at)
-        assert params  # Should not be empty
-        # Note: The following assertions might not work in the test environment
-        # but the functionality works in actual Streamlit apps
-        # assert params["area"] == [""]
-        # assert params["limited_area"] == [""]
-        # assert params["default_area"] == ["default text"]
+        assert params 
 
     def test_text_area_url_params(self):
         """Test text areas with URL parameters set"""
@@ -130,7 +125,11 @@ class TestFormTextArea:
         assert self.at.text_area[0].value == ""
         assert self.at.text_area[1].value == ""
         # Verify URL parameters are empty (forms don't initialize URL params until submitted)
-        assert not get_query_params(self.at)
+        assert get_query_params(self.at)
+        assert get_query_params(self.at)["form_area"] == ['_STREAMLIT_PERMALINK_EMPTY_STRING']
+        assert get_query_params(self.at)["form_limited_area"] == ['_STREAMLIT_PERMALINK_EMPTY_STRING']
+
+
 
     def test_form_text_area_url_params(self):
         """Test form text areas with URL parameters set"""

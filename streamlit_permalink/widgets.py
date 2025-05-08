@@ -17,7 +17,7 @@ from .utils import (
 )
 from .handlers import HANDLERS
 from .handlers.data_editor import fix_datetime_columns
-from .constants import _EMPTY, _NONE
+from .constants import _EMPTY, _NONE, _EMPTY_STRING
 
 _active_form = None
 
@@ -26,6 +26,16 @@ T = TypeVar("T")
 
 # write a function that takes a callable and a list and runs it with each element of the list
 def _compress_list(func: Callable, l: Union[List[str], str]):
+
+    if l == _EMPTY:
+        return [_EMPTY]
+    
+    if l == _NONE:
+        return [_NONE]
+
+    if l == "":
+        return [_EMPTY_STRING]
+
     if isinstance(l, str):
         return func(l)
     if isinstance(l, (list, tuple)):
@@ -35,13 +45,17 @@ def _compress_list(func: Callable, l: Union[List[str], str]):
 
 
 def _decompress_list(func: Callable, l: List[str]):
-    l = [func(e) for e in l]
 
     if l == [_EMPTY]:
         return []
 
     if l == [_NONE]:
         return None
+
+    if l == [_EMPTY_STRING]:
+        return [""]
+
+    l = [func(e) for e in l]
 
     return l
 
