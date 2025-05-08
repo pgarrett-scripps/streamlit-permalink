@@ -1,3 +1,5 @@
+from datetime import datetime
+import pandas as pd
 import streamlit as st
 
 
@@ -344,6 +346,77 @@ if hasattr(st, "segmented_control"):
         st.caption(
             f'query_params: {st.query_params.get_all("segmented_control_multi")}'
         )
+
+# Add data editor widget if available
+if hasattr(st, "data_editor"):
+    st.header("Data Editor", divider=True)
+    with st.echo("Data Editor"):
+        example_df = pd.DataFrame(
+            {
+                "widgets": ["st.selectbox", "st.number_input", "st.text_area", "st.button"],
+                "price": [20, 950, 250, 500],
+                "favorite": [True, False, False, True],
+                "category": [
+                    "📊 Data Exploration",
+                    "📈 Data Visualization",
+                    "🤖 LLM",
+                    "📊 Data Exploration",
+                ],
+                "appointment (datetime)": [
+                    datetime(2024, 2, 5, 12, 30),
+                    datetime(2023, 11, 10, 18, 0),
+                    datetime(2024, 3, 11, 20, 10),
+                    datetime(2023, 9, 12, 3, 0),
+                ],
+            }
+        )
+        df = stp.data_editor(
+            example_df,
+            url_key="example_data_editor1",
+            num_rows="dynamic",
+            compress=True,
+            hide_index=True,
+            column_config={
+                "widgets": st.column_config.TextColumn(
+                    "Widgets",
+                    help="Streamlit **widget** commands 🎈",
+                    default="st.",
+                    max_chars=50,
+                    validate=r"^st\.[a-z_]+$",
+                ),
+                "price": st.column_config.NumberColumn(
+                    "Price (in USD)",
+                    help="The price of the product in USD",
+                    min_value=0,
+                    max_value=1000,
+                    step=1,
+                    format="$%d",
+                ),
+                "favorite": st.column_config.CheckboxColumn(
+                    "Your favorite?",
+                    help="Select your **favorite** widgets",
+                    default=False,
+                ),
+                "category": st.column_config.SelectboxColumn(
+                    "App Category",
+                    help="The category of the app",
+                    width="medium",
+                    options=[
+                        "📊 Data Exploration",
+                        "📈 Data Visualization",
+                        "🤖 LLM",
+                    ],
+                    required=True,
+                ),
+                "appointment (datetime)": st.column_config.DatetimeColumn(
+                    "Appointment (datetime)",
+                    min_value=datetime(2023, 6, 1),
+                    max_value=datetime(2025, 1, 1),
+                    format="D MMM YYYY, h:mm a",
+                    step=60,
+                ),
+            })
+
 
 
 st.header("Page Link", divider=True)

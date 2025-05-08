@@ -1,88 +1,41 @@
-"""
-Handle multiselect widget URL state synchronization.
-"""
+from typing import List
 
-from typing import Any, Callable, List, Optional
-import inspect
-
-import streamlit as st
-
+from .handler import HandleWidget
 from ..exceptions import UrlParamError
-
 from ..utils import (
-    _validate_multi_default,
     _validate_multi_options,
-    init_url_value,
-    to_url_value,
+    _validate_multi_url_values,
 )
 
-_HANDLER_NAME = "multiselect"
-_DEFAULT_VALUE = None
 
+class HandlerMultiSelect(HandleWidget):
 
-def handle_multiselect(
-    base_widget: st.delta_generator.DeltaGenerator,
-    url_key: str,
-    url_value: Optional[List[str]],
-    bound_args: inspect.BoundArguments,
-    compressor: Callable,
-    decompressor: Callable,
-) -> Any:
-    """
-    Handle multiselect widget URL state synchronization.
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the HandlerMultiSelect instance.
+        """
+        super().__init__(*args, **kwargs)
+        self.options = self.bound_args.arguments.get("options")
+        self.str_options: List[str] = _validate_multi_options(
+            self.options, self.handler_name
+        )
 
-    Args:
-        base_widget: The base widget to handle
-        url_key: Parameter key in URL
-        url_value: Value(s) from URL parameter, None if not present
-        bound_args: Bound arguments for the base_widget call
-        compressor: Compressor function for url_value
-        decompressor: Decompressor function for url_value
+        self.accept_new_options = self.bound_args.arguments.get("accept_new_options", False)
 
-    Returns:
-        The multiselect widget's return value (list of selected options)
+    def update_bound_args(self) -> None:
+        str_values = self.validate_multi_url_values(min_values=None, max_values=None, allow_none=True)
 
-    Raises:
-        ValueError: If options are invalid
-        UrlParamError: If URL values are invalid
-    """
-    # Get and validate options
-    options = bound_args.arguments.get("options")
-    str_options: List[str] = _validate_multi_options(options, _HANDLER_NAME)
+        # Validate all values are in options
+        invalid_str_values = [v for v in str_values if v not in self.str_options]
 
-    # Get and validate default values
-    default = bound_args.arguments.get("default", _DEFAULT_VALUE)
-    _ = _validate_multi_default(default, options, _HANDLER_NAME)
+        if self.accept_new_options:
+            self.options.extend(invalid_str_values)
+            self.bound_args.arguments["options"] = self.options
+        else:
+            if invalid_str_values:
+                self.raise_url_error(f"Invalid values: {invalid_str_values}")
 
-    # If no URL value is provided, initialize with default value
-    if url_value is None:
-        init_url_value(url_key, compressor(to_url_value(default)))
-        return base_widget(**bound_args.arguments)
-
-    url_values = decompressor(url_value)
-
-    # Handle special case for empty selection
-    if url_values is None:
-        return []
-
-    # Validate all values are in options
-    invalid_values = [v for v in url_values if v not in str_options]
-
-    if bound_args.arguments.get("accept_new_options", False):
-        # add invalid values to options
-        options.extend(invalid_values)
-        bound_args.arguments["options"] = options
-    else:
-        if invalid_values:
-            raise UrlParamError(
-                f"Invalid {_HANDLER_NAME.capitalize()} selection for '{url_key}': {invalid_values}. "
-                f"Valid options are: {str_options}"
-            )
-
-    # Convert string values back to original option values
-    options_map = {str(v): v for v in options}
-    actual_url_values = [options_map[v] for v in url_values]
-
-    # Update bound arguments with validated values
-    bound_args.arguments["default"] = actual_url_values
-    return base_widget(**bound_args.arguments)
+        # Convert string values back to original option values
+        options_map = {str(v): v for v in self.options}
+        actual_values = [options_map[v] for v in str_values]
+        self.bound_args.arguments["default"] = actual_values

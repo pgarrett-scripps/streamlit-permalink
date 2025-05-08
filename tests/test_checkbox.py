@@ -1,6 +1,6 @@
 from streamlit.testing.v1 import AppTest
 from .utils import get_query_params, set_query_params
-from streamlit_permalink.handlers.checkbox import _DEFAULT_VALUE
+
 
 
 def create_checkbox_app():
@@ -25,7 +25,7 @@ class TestCheckbox:
         assert self.at.checkbox[0].value is False
         # Verify URL parameters are initialized
         assert get_query_params(self.at)
-        assert get_query_params(self.at)["check"] == [f"{_DEFAULT_VALUE}"]
+        assert get_query_params(self.at)["check"] == ["False"]
 
     def test_checkbox_url_param_true(self):
         """Test checkbox with URL parameter set to True"""
@@ -153,7 +153,7 @@ class TestFormCheckbox:
         assert self.at.checkbox[0].value is False
         # Verify URL parameters are initialized
         assert get_query_params(self.at)
-        assert get_query_params(self.at)["form_check"] == [f"{_DEFAULT_VALUE}"]
+        assert get_query_params(self.at)["form_check"] == ["False"]
 
     def test_form_checkbox_url_param_true(self):
         """Test form checkbox with URL parameter set to True"""

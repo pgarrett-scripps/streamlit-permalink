@@ -362,7 +362,7 @@ class TestFormSlider:
         self.at.run()
 
         # Move sliders without submitting
-        self.at.slider[0].set_value(75)
+        self.at.slider[0].set_value(75).run()
         self.at.slider[1].set_range(40, 60).run()
 
         # Verify URL hasn't changed before submission
@@ -381,9 +381,9 @@ class TestFormSlider:
         self.at.run()
 
         # Make multiple changes
-        self.at.slider[0].set_value(20)
-        self.at.slider[0].set_value(30)
-        self.at.slider[1].set_range(10, 90)
+        self.at.slider[0].set_value(20).run()
+        self.at.slider[0].set_value(30).run()
+        self.at.slider[1].set_range(10, 90).run()
         self.at.slider[1].set_range(20, 80).run()
 
         # Submit form

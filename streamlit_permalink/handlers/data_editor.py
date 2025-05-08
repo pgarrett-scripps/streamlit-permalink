@@ -1,59 +1,44 @@
-"""
-Handle dataeditor widget URL state synchronization.
-"""
-
-from io import StringIO
-from typing import Callable, List, Optional
-import inspect
-
 import streamlit as st
 import pandas as pd
+from typing import Any
+from io import StringIO
+from .handler import HandleWidget
 
 from ..utils import (
     fix_datetime_columns,
-    init_url_value,
-    to_url_value,
     validate_single_url_value,
 )
 
-_HANDLER_NAME = "data_editor"
 
+class HandlerDataEditor(HandleWidget):
 
-def handle_data_editor(
-    base_widget: st.delta_generator.DeltaGenerator,
-    url_key: str,
-    url_value: Optional[List[str]],
-    bound_args: inspect.BoundArguments,
-    compressor: Callable,
-    decompressor: Callable,
-) -> bool:
-    """
-    Handle data_editor widget URL state synchronization.
-    """
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the HandlerPills instance.
+        """
+        super().__init__(*args, **kwargs)
 
-    # TODO: URL VALIDATION FOR COLUM CONFIGS
-    st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{url_key}"] = (
-        bound_args.arguments.get("column_config")
-    )
+        # Add column_config to to session state, sinec it is not part of the data
+        st.session_state[
+            f"STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{self.url_key}"
+        ] = self.bound_args.arguments.get("column_config")
 
-    # Initialize from default when no URL value exists
-    if url_value is None:
-        #  SAVE ORIGINAL DF
-        st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}"] = (
-            bound_args.arguments.get("data")
+    # Override the url_init method to set the initial fromt he data rather than return
+    def url_init(self, widget_value: Any) -> None:
+        """
+        Initialize the URL value(s) in the query params.
+        """
+        st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{self.url_key}"] = (
+            self.bound_args.arguments.get("data")
         )
-        init_url_value(
-            url_key, compressor(to_url_value(bound_args.arguments.get("data")))
-        )
-        return base_widget(**bound_args.arguments)
+        if self.init_url:
+            self.update_url_param(self.bound_args.arguments.get("data"))
 
-    url_value = decompressor(url_value)  # [str, str], [], None
+    def update_bound_args(self) -> None:
 
-    # Process URL value: ensure single value and convert to boolean
-    validated_value = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
-    df = pd.read_json(StringIO(validated_value), orient="records")
-    df = fix_datetime_columns(df, bound_args.arguments.get("column_config"))
-    st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}"] = df
-
-    bound_args.arguments["data"] = df
-    return base_widget(**bound_args.arguments)
+        # Process URL value: ensure single value and convert to boolean
+        parsed_value = self.validate_single_url_value(allow_none=False)
+        df = pd.read_json(StringIO(parsed_value), orient="records")
+        df = fix_datetime_columns(df, self.bound_args.arguments.get("column_config"))
+        st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{self.url_key}"] = df
+        self.bound_args.arguments["data"] = df

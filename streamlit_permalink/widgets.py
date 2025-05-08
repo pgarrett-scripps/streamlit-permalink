@@ -88,6 +88,8 @@ class UrlAwareWidget:
         compressor = kwargs.pop("compressor", compress_text)
         decompressor = kwargs.pop("decompressor", decompress_text)
         stateful = kwargs.pop("stateful", True)
+        init_url = kwargs.pop("init_url", True)
+        validate_url = kwargs.pop("validate_url", True)
 
         if stateful is False:
             return self.base_widget(*args, **kwargs)
@@ -139,6 +141,8 @@ class UrlAwareWidget:
                 bound_args,
                 compressor=compressor,
                 decompressor=decompressor,
+                init_url=init_url,
+                validate_url=validate_url,
             )
 
         if V(st.__version__) < V("1.30"):
@@ -206,7 +210,9 @@ class UrlAwareWidget:
             bound_args,
             compressor=compressor,
             decompressor=decompressor,
-        )
+            init_url=init_url,
+            validate_url=validate_url,
+        ).run()
         return result
 
     def call_inside_form(
@@ -216,6 +222,8 @@ class UrlAwareWidget:
         bound_args: inspect.BoundArguments,
         compressor: Callable,
         decompressor: Callable,
+        init_url: bool = True,
+        validate_url: bool = True,
     ) -> Any:
         """
         Call the widget inside a form.
@@ -247,7 +255,9 @@ class UrlAwareWidget:
             bound_args,
             compressor=compressor,
             decompressor=decompressor,
-        )
+            init_url=init_url,
+            validate_url=validate_url,
+        ).run()
         return result
 
 

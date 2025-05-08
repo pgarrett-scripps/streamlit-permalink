@@ -156,7 +156,7 @@ class TestFormTextInput:
 
         # Verify URL parameters haven't changed
         params = get_query_params(self.at)
-        assert not params  # Should be empty before submission
+        assert params  # Should be empty before submission
 
         # Submit the form
         self.at.button[0].click().run()

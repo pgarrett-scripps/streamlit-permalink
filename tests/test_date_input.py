@@ -366,7 +366,7 @@ class TestFormDateInput:
         assert params["form_date_range"] == ["2024-09-01", "2024-09-30"]
 
         # Change dates as str
-        self.at.date_input[0].set_value("2024-08-15")
+        self.at.date_input[0].set_value("2024-08-15").run()
         # Submit again
         self.at.button[0].click().run()
 
@@ -383,7 +383,7 @@ class TestFormDateInput:
         initial_params = get_query_params(self.at)
 
         # Change dates without submitting
-        self.at.date_input[0].set_value(date(2024, 10, 1))
+        self.at.date_input[0].set_value(date(2024, 10, 1)).run()
         self.at.date_input[1].set_value((date(2024, 11, 1), date(2024, 11, 30))).run()
 
         # Verify URL parameter values haven't changed from initial

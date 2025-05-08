@@ -2,60 +2,38 @@
 Handle text area widget URL state synchronization.
 """
 
-from typing import Callable, List, Optional
-import inspect
 
-import streamlit as st
-
-from ..utils import init_url_value, to_url_value, validate_single_url_value
+from .handler import HandleWidget
+from ..utils import validate_single_url_value
 from ..exceptions import UrlParamError
 
-_HANDLER_NAME = "text_area"
 
-
-def handle_text_area(
-    base_widget: st.delta_generator.DeltaGenerator,
-    url_key: str,
-    url_value: Optional[List[str]],
-    bound_args: inspect.BoundArguments,
-    compressor: Callable,
-    decompressor: Callable,
-) -> str:
+class HandlerTextArea(HandleWidget):
     """
-    Handle text area widget URL state synchronization.
-
-    Args:
-        base_widget: The base widget to handle
-        url_key: Parameter key in URL
-        url_value: Value(s) from URL parameter, None if not present
-        bound_args: Bound arguments for the base_widget call
-        compressor: Compressor function for url_value
-        decompressor: Decompressor function for url_value
-
-    Returns:
-        The text area widget's return value (string content)
-
-    Raises:
-        UrlParamError: If URL value exceeds maximum allowed characters
+    Handler for text area widget URL state synchronization.
     """
 
-    if not url_value:
-        value = bound_args.arguments.get("value", None)
-        # Compress the value if compress is True before storing in URL
-        init_url_value(url_key, compressor(to_url_value(value)))
-        return base_widget(**bound_args.arguments)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_chars = self.bound_args.arguments.get("max_chars", None)
 
-    url_value = decompressor(url_value)
 
-    value = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
+    def update_bound_args(self) -> None:
 
-    max_chars = bound_args.arguments.get("max_chars")
+        # Get the validated single URL value
+        value = self.validate_single_url_value(allow_none=True)
 
-    if max_chars is not None and len(value) > max_chars:
-        raise UrlParamError(
-            f"Invalid value for {_HANDLER_NAME} parameter '{url_key}': "
-            f"length ({len(value)}) exceeds maximum allowed characters ({max_chars})."
-        )
+        if value is None:
+            # If no URL value is provided, set value to None
+            self.bound_args.arguments["value"] = None
+            return
 
-    bound_args.arguments["value"] = value
-    return base_widget(**bound_args.arguments)
+        # Check if the value exceeds the maximum characters limit
+        
+        if self.max_chars is not None and len(value) > self.max_chars:
+            self.raise_url_error(
+                f"Text exceeds maximum allowed characters: {len(value)} characters provided, but limit is {self.max_chars}"
+            )
+
+        # Update bound arguments with validated value
+        self.bound_args.arguments["value"] = value

@@ -118,19 +118,23 @@ def parse_time(time_str: str) -> time:
 
 
 def validate_single_url_value(
-    url_key: str, url_value: Optional[List[str]], handler_name: str
+    url_key: str, url_value: Optional[List[str]], handler_name: str, allow_none: bool = True
 ) -> Optional[str]:
     """
     Validate single value from URL parameter.
     """
     if url_value is None:
+
+        if not allow_none:
+            msg = f"None value is not allowed."
+            raise UrlParamError(message=msg, url_key=url_key, url_value=url_value, handler=handler_name)
+
         return None
 
     if not (isinstance(url_value, (list, tuple)) and len(url_value) == 1):
-        raise UrlParamError(
-            f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. Expected a single value."
-        )
-
+        msg = "Expected a single value, but got multiple values."
+        raise UrlParamError(message=msg, url_key=url_key, url_value=url_value, handler=handler_name)
+    
     return url_value[0]
 
 
@@ -140,9 +144,8 @@ def validate_bool_url_value(url_key: str, url_value: str, handler_name: str) -> 
     """
     url_value = url_value.capitalize()  # Case insensitive
     if url_value not in TRUE_FALSE_VALUE:
-        raise UrlParamError(
-            f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. Expected a {TRUE_FALSE_VALUE}."
-        )
+        msg = f"Expected a {TRUE_FALSE_VALUE}"
+        raise UrlParamError(message=msg, url_key=url_key, url_value=url_value, handler=handler_name)
     return url_value == TRUE_VALUE
 
 
@@ -203,7 +206,7 @@ def _validate_multi_options(options: Iterable[Any], widget_name: str) -> List[st
             f"String options: {str_options}"
         )
 
-    # provide warning is normla sets are different lengths
+    # provide warning when sets are different lengths
     if len(set(map(StringHashableValue, options))) != len(options):
         warnings.warn(
             f"Duplicate values detected in {widget_name} options: {options}. "
@@ -243,22 +246,34 @@ def _validate_multi_default(
 def _validate_multi_url_values(
     url_key: str,
     url_values: Optional[List[str]],
-    str_options: List[str],
     widget_name: str,
+    min_values: Optional[int] = None,
+    max_values: Optional[int] = None,
 ) -> List[str]:
     """
     Validate that all multiselect values are in the options list.
     """
     # Handle special case for empty selection
     if url_values is None:
-        return []
+        url_values = []
 
-    # Validate all values are in options
-    invalid_values = [v for v in url_values if v not in str_options]
-    if invalid_values:
+    if not isinstance(url_values, (list, tuple)):
+        raise UrlParamError(message="Expected a list of values.", url_key=url_key, url_value=url_values, handler=widget_name)
+    
+    if min_values != None and len(url_values) < min_values:
         raise UrlParamError(
-            f"Invalid {widget_name.capitalize()} selection for '{url_key}': {invalid_values}. "
-            f"Valid options are: {str_options}"
+            message=f"Expected at least {min_values} values, but got {len(url_values)}.",
+            url_key=url_key,
+            url_value=url_values,
+            handler=widget_name,
+        )
+    
+    if max_values != None and len(url_values) > max_values:
+        raise UrlParamError(
+            message=f"Expected at most {max_values} values, but got {len(url_values)}.",
+            url_key=url_key,
+            url_value=url_values,
+            handler=widget_name,
         )
 
     return url_values
