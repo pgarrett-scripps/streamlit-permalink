@@ -58,18 +58,17 @@ class HandlerSlider(HandleWidget):
 
         if self.value_type == int:
             return int(value)
-        elif self.value_type == float:
+        if self.value_type == float:
             return float(value)
-        elif self.value_type == datetime:
+        if self.value_type == datetime:
             return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
-        elif self.value_type == date:
+        if self.value_type == date:
             return datetime.strptime(value, "%Y-%m-%d").date()
-        elif self.value_type == time:
+        if self.value_type == time:
             return datetime.strptime(value, "%H:%M").time()
-        else:
-            raise ValueError(
-                f"Unsupported value type: {self.value_type}. Expected one of: {VALID_TYPES}"
-            )
+        raise ValueError(
+            f"Unsupported value type: {self.value_type}. Expected one of: {VALID_TYPES}"
+        )
 
     def check_bounds(self, value: Any) -> None:
         """

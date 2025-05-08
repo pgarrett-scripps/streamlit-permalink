@@ -1,4 +1,3 @@
-from types import NoneType
 from typing import Any
 
 from .handler import HandleWidget
@@ -18,7 +17,7 @@ class HandlerNumberInput(HandleWidget):
         self.value_type = type(self.value)
 
         # Validate input value type
-        if self.value_type not in (int, float, NoneType):
+        if self.value_type not in (int, float, type(None)):
             self.raise_url_error("Expected int, float or None value.")
 
         self.min_value = self.bound_args.arguments.get("min_value", None)
@@ -44,7 +43,7 @@ class HandlerNumberInput(HandleWidget):
 
         if str_value is None:
 
-            if self.value_type != NoneType:
+            if self.value_type != type(None):
                 self.raise_url_error("None value is not allowed.")
 
             self.bound_args.arguments["value"] = None
@@ -55,7 +54,7 @@ class HandlerNumberInput(HandleWidget):
                 parsed_value = int(str_value)
             elif self.value_type == float:
                 parsed_value = float(str_value)
-            elif self.value_type == NoneType:
+            elif self.value_type == type(None):
                 # For None type, try float first, then int if that fails, or keep as None
                 try:
                     parsed_value = int(str_value)

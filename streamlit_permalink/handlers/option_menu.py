@@ -24,4 +24,4 @@ class HandlerOptionMenu(HandleWidget):
             )
 
         actual_value = options_map[str_value]
-        self.bound_args.arguments["default_value"] = actual_value
+        self.bound_args.arguments["default_index"] = self.options.index(actual_value)

@@ -4,7 +4,6 @@ Utility functions for streamlit_permalink.
 
 import base64
 from datetime import date, datetime, time
-import re
 from typing import Any, Iterable, List, Union
 import zlib
 import warnings
@@ -305,12 +304,9 @@ def get_query_params() -> dict[str, List]:
     """
 
     if st.__version__ < "1.30":
-        url_params = {
-            k: st.experimental_get_query_params[k]
-            for k in st.experimental_get_query_params.keys()
-        }
-
-    url_params = {k: st.query_params.get_all(k) for k in st.query_params.keys()}
+        url_params = st.experimental_get_query_params()
+    else:
+        url_params = {k: st.query_params.get_all(k) for k in st.query_params.keys()}
     return url_params
 
 

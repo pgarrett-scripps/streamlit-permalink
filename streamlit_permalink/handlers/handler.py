@@ -159,12 +159,12 @@ class HandleWidget:
         if not isinstance(url_values, (list, tuple)):
             self.raise_url_error("Expected a list of values.")
 
-        if min_values != None and len(url_values) < min_values:
+        if min_values is not None and len(url_values) < min_values:
             self.raise_url_error(
                 f"Expected at least {min_values} values, but got {len(url_values)}."
             )
 
-        if max_values != None and len(url_values) > max_values:
+        if max_values is not None and len(url_values) > max_values:
             self.raise_url_error(
                 f"Expected at most {max_values} values, but got {len(url_values)}."
             )

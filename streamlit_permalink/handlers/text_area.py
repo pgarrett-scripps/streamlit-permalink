@@ -19,12 +19,12 @@ class HandlerTextArea(HandleWidget):
             # If no URL value is provided, set value to None
             self.bound_args.arguments["value"] = None
             return
-        
-        # Check if the value exceeds the maximum characters limit
 
+        # Check if the value exceeds the maximum characters limit
         if self.max_chars is not None and len(value) > self.max_chars:
             self.raise_url_error(
-                f"Text exceeds maximum allowed characters: {len(value)} characters provided, but limit is {self.max_chars}"
+                f"Text exceeds maximum allowed characters: {len(value)} " \
+                f"characters provided, but limit is {self.max_chars}"
             )
 
         # Update bound arguments with validated value

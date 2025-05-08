@@ -16,14 +16,13 @@ def get_date_value(value: Any) -> DateValue:
         if value == "today":
             return date.today()
         return date.fromisoformat(value)
-    elif isinstance(value, (date, datetime)):
+    if isinstance(value, (date, datetime)):
         return value
-    elif value is None:
+    if value is None:
         return None
-    else:
-        raise ValueError(
-            f"Invalid value type for date input: {type(value)}. Expected str, datetime.date, datetime.datetime, or None."
-        )
+    raise ValueError(
+        f"Invalid value type for date input: {type(value)}. Expected str, datetime.date, datetime.datetime, or None."
+    )
 
 
 class HandlerDateInput(HandleWidget):
@@ -61,7 +60,7 @@ class HandlerDateInput(HandleWidget):
                 date_value = date.fromisoformat(str_value)
             except Exception as err:
                 self.raise_url_error(
-                    f"Invalid date format. Expected format: YYYY-MM-DD.", err
+                    f"Invalid date format. Expected format: {str_value} YYYY-MM-DD.", err
                 )
 
             self.validate_bounds(date_value)
@@ -76,7 +75,7 @@ class HandlerDateInput(HandleWidget):
                 date_values = tuple(date.fromisoformat(v) for v in str_values)
             except Exception as err:
                 self.raise_url_error(
-                    f"Invalid date format. Expected format: YYYY-MM-DD.", err
+                    f"Invalid date format: {str_values}. Expected format: YYYY-MM-DD.", err
                 )
 
             if len(date_values) == 2:

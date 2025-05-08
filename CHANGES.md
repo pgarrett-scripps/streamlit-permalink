@@ -5,10 +5,11 @@
 - Added functions: `get_query_params` and `get_page_url` (for streamlit v1.45)
 - Revert docs & examples to use `url_key` for widget creation.
 - Added support for `stp.data_editor`
-- Major Refactor
-- Made url value init optional
+- Added handler base class, and refactored handlers to use this
+- Url value init now optional
 - Added "_STREAMLIT_PERMALINK_EMPTY_STRING" to the possible stp query values. 
 - Compression will no longer compress _STREAMLIT_PERMALINK_* values
+- Created docs_app.py (interractive documentation)
 
 # 1.2.0 Release Notes
 

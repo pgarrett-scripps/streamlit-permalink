@@ -39,7 +39,7 @@ with st.echo("Form 1"):
             label="checkbox_form1", url_key="checkbox_form1"
         )
         st.caption(f"checkbox_form1: {is_checked_form1}")
-        st.caption(f'query_params: {st.query_params.get_all("checkbox_form1")}')
+        st.caption(f'query_params: {stp.get_query_params().get("checkbox_form1")}')
 
         text_input_form1 = stp.text_input(
             label="text_input_form1",
@@ -48,7 +48,7 @@ with st.echo("Form 1"):
             url_key="text_input_form1",
         )
         st.caption(f"text_input_form1: {text_input_form1}")
-        st.caption(f'query_params: {st.query_params.get_all("text_input_form1")}')
+        st.caption(f'query_params: {stp.get_query_params().get("text_input_form1")}')
 
         stp.form_submit_button("Submit")
 
@@ -60,7 +60,7 @@ with st.echo("Form 2"):
         label="is_checked_form2", value=True, url_key="is_checked_form2"
     )
     form2.caption(f"is_checked_form2: {is_checked_form2}")
-    form2.caption(f'query_params: {st.query_params.get_all("is_checked_form2")}')
+    form2.caption(f'query_params: {stp.get_query_params().get("is_checked_form2")}')
 
     number_input_form2 = form2.number_input(
         label="number_input_form2",
@@ -71,7 +71,7 @@ with st.echo("Form 2"):
     )
 
     form2.caption(f"number_input_form2: {number_input_form2}")
-    form2.caption(f'query_params: {st.query_params.get_all("number_input_form2")}')
+    form2.caption(f'query_params: {stp.get_query_params().get("number_input_form2")}')
     form2.form_submit_button("Submit")
 
 
@@ -79,7 +79,7 @@ st.header("Checkbox", divider=True)
 with st.echo("Checkbox"):
     is_checked = stp.checkbox(label="checkbox", url_key="checkbox")
     st.caption(f"is_checked: {is_checked}")
-    st.caption(f'query_params: {st.query_params.get_all("checkbox")}')
+    st.caption(f'query_params: {stp.get_query_params().get("checkbox")}')
 
 
 # if toggle is available, use it
@@ -88,20 +88,20 @@ if hasattr(st, "toggle"):
     with st.echo("Toggle"):
         toggle = stp.toggle(label="toggle", url_key="toggle")
         st.caption(f"toggle: {toggle}")
-        st.caption(f'query_params: {st.query_params.get_all("toggle")}')
+        st.caption(f'query_params: {stp.get_query_params().get("toggle")}')
 
 
 st.header("Radio", divider=True)
 with st.echo("Radio"):
     radio = stp.radio(label="radio", options=OPTIONS, url_key="radio")
     st.caption(f"radio: {radio}")
-    st.caption(f'query_params: {st.query_params.get_all("radio")}')
+    st.caption(f'query_params: {stp.get_query_params().get("radio")}')
 
 st.header("Selectbox", divider=True)
 with st.echo("Selectbox"):
     selectbox = stp.selectbox(label="selectbox", options=OPTIONS, url_key="selectbox")
     st.caption(f"selectbox: {selectbox}")
-    st.caption(f'query_params: {st.query_params.get_all("selectbox")}')
+    st.caption(f'query_params: {stp.get_query_params().get("selectbox")}')
 
     # selectbox with accept_new_options if streamlit version is 1.45.0 or higher
     if st.__version__ >= "1.45.0":
@@ -112,7 +112,7 @@ with st.echo("Selectbox"):
             url_key="selectbox_accept_new",
         )
         st.caption(f"selectbox_accept_new: {selectbox_accept_new}")
-        st.caption(f'query_params: {st.query_params.get_all("selectbox_accept_new")}')
+        st.caption(f'query_params: {stp.get_query_params().get("selectbox_accept_new")}')
 
 st.header("Multiselect", divider=True)
 with st.echo("Multiselect"):
@@ -123,7 +123,7 @@ with st.echo("Multiselect"):
         url_key="multiselect",
     )
     st.caption(f"multiselect: {multiselect}")
-    st.caption(f'query_params: {st.query_params.get_all("multiselect")}')
+    st.caption(f'query_params: {stp.get_query_params().get("multiselect")}')
 
     # multiselect with accept_new_options if streamlit version is 1.45.0 or higher
     if st.__version__ >= "1.45.0":
@@ -135,7 +135,7 @@ with st.echo("Multiselect"):
             url_key="multiselect_accept_new",
         )
         st.caption(f"multiselect_accept_new: {multiselect_accept_new}")
-        st.caption(f'query_params: {st.query_params.get_all("multiselect_accept_new")}')
+        st.caption(f'query_params: {stp.get_query_params().get("multiselect_accept_new")}')
 
 st.header("Number Sliders", divider=True)
 with st.echo("Number Sliders"):
@@ -149,7 +149,7 @@ with st.echo("Number Sliders"):
         url_key="single_slider",
     )
     st.caption(f"single_slider: {single_slider}")
-    st.caption(f'query_params: {st.query_params.get_all("single_slider")}')
+    st.caption(f'query_params: {stp.get_query_params().get("single_slider")}')
 
     multi_slider = stp.slider(
         label="multi_slider",
@@ -160,7 +160,7 @@ with st.echo("Number Sliders"):
         url_key="multi_slider",
     )
     st.caption(f"multi_slider: {multi_slider}")
-    st.caption(f'query_params: {st.query_params.get_all("multi_slider")}')
+    st.caption(f'query_params: {stp.get_query_params().get("multi_slider")}')
 
 st.header("Date Sliders", divider=True)
 with st.echo("Date Sliders"):
@@ -173,7 +173,7 @@ with st.echo("Date Sliders"):
         url_key="single_date_slider",
     )
     st.caption(f"single_date_slider: {single_date_slider}")
-    st.caption(f'query_params: {st.query_params.get_all("single_date_slider")}')
+    st.caption(f'query_params: {stp.get_query_params().get("single_date_slider")}')
 
     multi_date_slider = stp.slider(
         label="multi_date_slider",
@@ -184,7 +184,7 @@ with st.echo("Date Sliders"):
     )
 
     st.caption(f"multi_date_slider: {multi_date_slider}")
-    st.caption(f'query_params: {st.query_params.get_all("multi_date_slider")}')
+    st.caption(f'query_params: {stp.get_query_params().get("multi_date_slider")}')
 
 st.header("Time Sliders", divider=True)
 with st.echo("Time Sliders"):
@@ -197,7 +197,7 @@ with st.echo("Time Sliders"):
         url_key="single_time_slider",
     )
     st.caption(f"single_time_slider: {single_time_slider}")
-    st.caption(f'query_params: {st.query_params.get_all("single_time_slider")}')
+    st.caption(f'query_params: {stp.get_query_params().get("single_time_slider")}')
 
     multi_time_slider = stp.slider(
         label="multi_time_slider",
@@ -207,7 +207,7 @@ with st.echo("Time Sliders"):
         url_key="multi_time_slider",
     )
     st.caption(f"multi_time_slider: {multi_time_slider}")
-    st.caption(f'query_params: {st.query_params.get_all("multi_time_slider")}')
+    st.caption(f'query_params: {stp.get_query_params().get("multi_time_slider")}')
 
 
 st.header("Select Sliders", divider=True)
@@ -220,7 +220,7 @@ with st.echo("Select Sliders"):
         url_key="single_select_slider",
     )
     st.caption(f"select_slider: {select_slider}")
-    st.caption(f'query_params: {st.query_params.get_all("single_select_slider")}')
+    st.caption(f'query_params: {stp.get_query_params().get("single_select_slider")}')
 
     range_select_slider = stp.select_slider(
         label="range_select_slider",
@@ -229,7 +229,7 @@ with st.echo("Select Sliders"):
         url_key="range_select_slider",
     )
     st.caption(f"range_select_slider: {range_select_slider}")
-    st.caption(f'query_params: {st.query_params.get_all("range_select_slider")}')
+    st.caption(f'query_params: {stp.get_query_params().get("range_select_slider")}')
 
 
 st.header("Text Input", divider=True)
@@ -238,7 +238,7 @@ with st.echo("Text Input"):
         label="text_input", value="xxx", max_chars=25, url_key="text_input"
     )
     st.caption(f"text_input: {text_input}")
-    st.caption(f'query_params: {st.query_params.get_all("text_input")}')
+    st.caption(f'query_params: {stp.get_query_params().get("text_input")}')
 
 st.header("Number Input", divider=True)
 with st.echo("Number Input"):
@@ -251,19 +251,19 @@ with st.echo("Number Input"):
         url_key="number_input",
     )
     st.caption(f"number_input: {number_input}")
-    st.caption(f'query_params: {st.query_params.get_all("number_input")}')
+    st.caption(f'query_params: {stp.get_query_params().get("number_input")}')
 
 st.header("Text Area", divider=True)
 with st.echo("Text Area"):
     text_area = stp.text_area(label="text_area", url_key="text_area")
     st.caption(f"text_area: {text_area}")
-    st.caption(f'query_params: {st.query_params.get_all("text_area")}')
+    st.caption(f'query_params: {stp.get_query_params().get("text_area")}')
 
     text_area_compress = stp.text_area(
         label="text_area_compress", compress=True, url_key="text_area_compress"
     )
     st.caption(f"text_area_compress: {text_area_compress}")
-    st.caption(f'query_params: {st.query_params.get_all("text_area_compress")}')
+    st.caption(f'query_params: {stp.get_query_params().get("text_area_compress")}')
 
     text_area_compress_custom = stp.text_area(
         label="text_area_compress_custom",
@@ -273,14 +273,14 @@ with st.echo("Text Area"):
         url_key="text_area_compress_custom",
     )
     st.caption(f"text_area_compress_custom: {text_area_compress_custom}")
-    st.caption(f'query_params: {st.query_params.get_all("text_area_compress_custom")}')
+    st.caption(f'query_params: {stp.get_query_params().get("text_area_compress_custom")}')
 
 st.header("Date Input", divider=True)
 with st.echo("Date Input"):
     # single and multi date inputs
     date_input = stp.date_input(label="date_input", url_key="date_input")
     st.caption(f"date_input: {date_input}")
-    st.caption(f'query_params: {st.query_params.get_all("date_input")}')
+    st.caption(f'query_params: {stp.get_query_params().get("date_input")}')
 
     multi_date_input = stp.date_input(
         label="multi_date_input",
@@ -288,14 +288,14 @@ with st.echo("Date Input"):
         url_key="multi_date_input",
     )
     st.caption(f"multi_date_input: {multi_date_input}")
-    st.caption(f'query_params: {st.query_params.get_all("multi_date_input")}')
+    st.caption(f'query_params: {stp.get_query_params().get("multi_date_input")}')
 
 st.header("Time Input", divider=True)
 with st.echo("Time Input"):
     # single and multi time inputs
     time_input = stp.time_input(label="time_input", url_key="time_input")
     st.caption(f"time_input: {time_input}")
-    st.caption(f'query_params: {st.query_params.get_all("time_input")}')
+    st.caption(f'query_params: {stp.get_query_params().get("time_input")}')
 
 st.header("Color Picker", divider=True)
 with st.echo("Color Picker"):
@@ -303,7 +303,7 @@ with st.echo("Color Picker"):
         label="color_picker", value="#00EEFF", url_key="color_picker"
     )
     st.caption(f"color_picker: {color_picker}")
-    st.caption(f'query_params: {st.query_params.get_all("color_picker")}')
+    st.caption(f'query_params: {stp.get_query_params().get("color_picker")}')
 
 if hasattr(st, "pills"):
     st.header("Pills", divider=True)
@@ -312,7 +312,7 @@ if hasattr(st, "pills"):
             label="pills_single", options=OPTIONS, url_key="pills_single"
         )
         st.caption(f"pills_single: {pills_single}")
-        st.caption(f'query_params: {st.query_params.get_all("pills_single")}')
+        st.caption(f'query_params: {stp.get_query_params().get("pills_single")}')
 
         pills_multi = stp.pills(
             label="pills_multi",
@@ -321,7 +321,7 @@ if hasattr(st, "pills"):
             url_key="pills_multi",
         )
         st.caption(f"pills_multi: {pills_multi}")
-        st.caption(f'query_params: {st.query_params.get_all("pills_multi")}')
+        st.caption(f'query_params: {stp.get_query_params().get("pills_multi")}')
 
 # Add segmented control widgets if available
 if hasattr(st, "segmented_control"):
@@ -334,7 +334,7 @@ if hasattr(st, "segmented_control"):
         )
         st.caption(f"seg_single: {seg_single}")
         st.caption(
-            f'query_params: {st.query_params.get_all("segmented_control_single")}'
+            f'query_params: {stp.get_query_params().get("segmented_control_single")}'
         )
 
         seg_multi = stp.segmented_control(
@@ -344,7 +344,7 @@ if hasattr(st, "segmented_control"):
         )
         st.caption(f"seg_multi: {seg_multi}")
         st.caption(
-            f'query_params: {st.query_params.get_all("segmented_control_multi")}'
+            f'query_params: {stp.get_query_params().get("segmented_control_multi")}'
         )
 
 # Add data editor widget if available
@@ -418,14 +418,10 @@ if hasattr(st, "data_editor"):
             })
 
 
-
-st.header("Page Link", divider=True)
-with st.echo("Page Link"):
-    st.info("Requires streamlit 1.45.0 or higher to parse the URL")
-    st.caption("This page is linked to the following URL:")
-    st.caption(stp.get_page_url())
-    st.caption("The query parameters are:")
-    st.caption(stp.get_query_params())
-    st.caption(
-        "The query parameters are also available in the URL bar of your browser."
-    )
+# if streamlit version is 1.45.0 or higher
+if st.__version__ >= "1.45.0":
+    st.header("Page Link", divider=True)
+    with st.echo("Page Link"):
+        st.info("Requires streamlit 1.45.0 or higher to parse the URL")
+        st.caption("This page is linked to the following URL:")
+        st.caption(stp.get_page_url())
