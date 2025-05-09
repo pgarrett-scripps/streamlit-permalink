@@ -73,7 +73,7 @@ class TestTimeInput:
         self.at.run()
 
         # Set new values
-        self.at.time_input[0].set_value(time(14, 30, 1)).run()  # ignore seconds
+        self.at.time_input[0].set_value(time(14, 30)).run()  # ignore seconds
 
         # Verify URL parameters were updated
         params = get_query_params(self.at)

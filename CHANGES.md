@@ -1,21 +1,17 @@
-# 1.2.0 Release Notes
-
-## Changes (for streamlit v1.45)
-- Added support for `accept_new_options` to multiselect and selectbox
-- added functions: `get_query_params` and `get_page_url`
-
-# 1.1.0 Release Notes
+# 1.3.0 Release Notes
 
 ## Changes
+- Added support for `accept_new_options` to multiselect and selectbox (for streamlit v1.45)
+- Added functions: `get_query_params` and `get_page_url` (for streamlit v1.45)
+- Revert docs & examples to use `url_key` for widget creation.
 - Added support for `stp.data_editor`
+- Added handler base class, and refactored handlers to use this
+- Url value init now optional
+- Added "_STREAMLIT_PERMALINK_EMPTY_STRING" to the possible stp query values. 
+- Compression will no longer compress _STREAMLIT_PERMALINK_* values
+- Created docs_app.py (interractive documentation)
 
-# 1.0.1 Release Notes
-
-## Changes
-- Bug fix for widget url compression in forms
-
-
-# 1.0.0 Release Notes
+# 1.2.0 Release Notes
 
 ## Changes
 - Improved code organization
@@ -34,9 +30,7 @@
 - Statefulness can be disabled by passing `stateful=False`
 
 ## Future Roadmap
-- Add test coverage for `pills` and `segmented_control` widgets once testing functions become available
-- Refactor and enhance test cases for improved reliability and maintainability
-- Implement configurable initialization of default values, with special consideration for form components
-- Evaluate the necessity of both `_EMPTY` and `_NONE` constants, ensuring consistent usage across all widgets
-- Consider adding optional synchronization of additional parameters (e.g., `max_chars`, `options`) with URL state
+- Add test coverage for `pills`, `segmented_control` & `data_editor` widgets once testing functions become available
+- Remove support for `st.option_menu`?
+- Add `data_editor` url value validation
 

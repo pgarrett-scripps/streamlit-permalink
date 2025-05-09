@@ -86,7 +86,7 @@ class TestMultiselect:
         assert not self.at.exception
         assert len(self.at.multiselect) == 1
         assert self.at.multiselect[0].value == []
-        assert get_query_params(self.at)["multi"] == [_NONE]
+        assert get_query_params(self.at)["multi"] == [_EMPTY]
 
     def test_multiselect_url_param(self):
         """Test multiselect with URL parameters set"""
@@ -100,7 +100,7 @@ class TestMultiselect:
         self.at.run()
 
         # Test initial state
-        assert get_query_params(self.at)["multi"] == [_NONE]
+        assert get_query_params(self.at)["multi"] == [_EMPTY]
         assert self.at.multiselect[0].value == []
         assert self.at.multiselect[0].indices == []
 
@@ -144,7 +144,7 @@ class TestFormMultiselect:
         assert not self.at.exception
         assert len(self.at.multiselect) == 1
         assert self.at.multiselect[0].value == []
-        assert get_query_params(self.at)["form_multi"] == [_NONE]
+        assert get_query_params(self.at)["form_multi"] == [_EMPTY]
 
     def test_form_multiselect_url_param(self):
         """Test form multiselect with URL parameters set"""

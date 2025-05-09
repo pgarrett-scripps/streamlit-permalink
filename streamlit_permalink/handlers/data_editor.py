@@ -1,59 +1,71 @@
-"""
-Handle dataeditor widget URL state synchronization.
-"""
-
+from typing import Any, Optional
 from io import StringIO
-from typing import Callable, List, Optional
-import inspect
 
 import streamlit as st
 import pandas as pd
 
-from ..utils import (
-    fix_datetime_columns,
-    init_url_value,
-    to_url_value,
-    validate_single_url_value,
-)
-
-_HANDLER_NAME = "data_editor"
+from .handler import HandleWidget
 
 
-def handle_data_editor(
-    base_widget: st.delta_generator.DeltaGenerator,
-    url_key: str,
-    url_value: Optional[List[str]],
-    bound_args: inspect.BoundArguments,
-    compressor: Callable,
-    decompressor: Callable,
-) -> bool:
+def fix_datetime_columns(
+    df: pd.DataFrame, column_config: Optional[dict]
+) -> pd.DataFrame:
     """
-    Handle data_editor widget URL state synchronization.
+    Fix datetime columns in a DataFrame based on column configuration.
     """
+    if not column_config:
+        return df
 
-    # TODO: URL VALIDATION FOR COLUM CONFIGS
-    st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{url_key}"] = (
-        bound_args.arguments.get("column_config")
-    )
+    for column_name, config in column_config.items():
+        col_type = config["type_config"]["type"]
+        if col_type == "datetime":
+            # Convert milliseconds from epoch to datetime
+            df[column_name] = pd.to_datetime(df[column_name], unit="ms")
+        elif col_type == "date":
+            # Convert milliseconds from epoch to date
+            df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.date
+        elif col_type == "time":
+            # For time values that are already strings in HH:MM:SS format
+            if df[column_name].dtype == "object":
+                df[column_name] = pd.to_datetime(
+                    df[column_name], format="%H:%M:%S"
+                ).dt.time
+            else:
+                # For time values stored as milliseconds since midnight
+                df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.time
 
-    # Initialize from default when no URL value exists
-    if url_value is None:
-        #  SAVE ORIGINAL DF
-        st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}"] = (
-            bound_args.arguments.get("data")
+    return df
+
+
+class HandlerDataEditor(HandleWidget):
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the HandlerPills instance.
+        """
+        super().__init__(*args, **kwargs)
+
+        # Add column_config to to session state, sinec it is not part of the data
+        st.session_state[
+            f"STREAMLIT_PERMALINK_DATA_EDITOR_COLUMN_CONFIG_{self.url_key}"
+        ] = self.bound_args.arguments.get("column_config")
+
+    # Override the url_init method to set the initial fromt he data rather than return
+    def url_init(self, widget_value: Any) -> None:
+        """
+        Initialize the URL value(s) in the query params.
+        """
+        st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{self.url_key}"] = (
+            self.bound_args.arguments.get("data")
         )
-        init_url_value(
-            url_key, compressor(to_url_value(bound_args.arguments.get("data")))
-        )
-        return base_widget(**bound_args.arguments)
+        if self.init_url:
+            self.update_url_param(self.bound_args.arguments.get("data"))
 
-    url_value = decompressor(url_value)  # [str, str], [], None
+    def update_bound_args(self) -> None:
 
-    # Process URL value: ensure single value and convert to boolean
-    validated_value = validate_single_url_value(url_key, url_value, _HANDLER_NAME)
-    df = pd.read_json(StringIO(validated_value), orient="records")
-    df = fix_datetime_columns(df, bound_args.arguments.get("column_config"))
-    st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{url_key}"] = df
-
-    bound_args.arguments["data"] = df
-    return base_widget(**bound_args.arguments)
+        # Process URL value: ensure single value and convert to boolean
+        parsed_value = self.validate_single_url_value(self.url_value, allow_none=False)
+        df = pd.read_json(StringIO(parsed_value), orient="records")
+        df = fix_datetime_columns(df, self.bound_args.arguments.get("column_config"))
+        st.session_state[f"STREAMLIT_PERMALINK_DATA_EDITOR_{self.url_key}"] = df
+        self.bound_args.arguments["data"] = df

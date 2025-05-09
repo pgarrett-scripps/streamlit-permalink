@@ -1,5 +1,6 @@
 from streamlit.testing.v1 import AppTest
 from packaging.version import parse as V
+
 from .utils import get_query_params, set_query_params
 
 
@@ -58,7 +59,7 @@ class TestNumberInput:
         assert params["limited"] == ["5"]
         assert params["stepped"] == ["0"]
         assert params["min_default"] == ["10"]
-        assert params["none_value"] == ["0.0"]
+        assert params["none_value"] == ['_STREAMLIT_PERMALINK_NONE']
 
     def test_number_input_url_params(self):
         """Test number inputs with URL parameters set"""
@@ -102,7 +103,7 @@ class TestNumberInput:
         assert get_query_params(self.at)["limited"] == ["5"]
         assert get_query_params(self.at)["stepped"] == ["0"]
         assert get_query_params(self.at)["min_default"] == ["10"]
-        assert get_query_params(self.at)["none_value"] == ["0.0"]
+        assert get_query_params(self.at)["none_value"] == ["_STREAMLIT_PERMALINK_NONE"]
 
         # Verify number inputs reflect URL state
         assert self.at.number_input[0].value == 5
@@ -123,7 +124,7 @@ class TestNumberInput:
         assert get_query_params(self.at)["limited"] == ["5"]
         assert get_query_params(self.at)["stepped"] == ["0"]
         assert get_query_params(self.at)["min_default"] == ["10"]
-        assert get_query_params(self.at)["none_value"] == ["0.0"]
+        assert get_query_params(self.at)["none_value"] == ["_STREAMLIT_PERMALINK_NONE"]
 
         # Verify number inputs reflect URL state
         assert self.at.number_input[0].value == 42
@@ -143,7 +144,7 @@ class TestNumberInput:
         assert get_query_params(self.at)["limited"] == ["5"]
         assert get_query_params(self.at)["stepped"] == ["0"]
         assert get_query_params(self.at)["min_default"] == ["10"]
-        assert get_query_params(self.at)["none_value"] == ["0.0"]
+        assert get_query_params(self.at)["none_value"] == ["_STREAMLIT_PERMALINK_NONE"]
 
         # Verify number inputs reflect URL state
         assert self.at.number_input[0].value == 5
@@ -167,7 +168,7 @@ class TestNumberInput:
         assert get_query_params(self.at)["limited"] == ["4"]
         assert get_query_params(self.at)["stepped"] == ["5"]
         assert get_query_params(self.at)["min_default"] == ["10"]
-        assert get_query_params(self.at)["none_value"] == ["0.0"]
+        assert get_query_params(self.at)["none_value"] == ["_STREAMLIT_PERMALINK_NONE"]
 
         # Verify number inputs reflect URL state
         assert self.at.number_input[0].value == 6

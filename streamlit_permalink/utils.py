@@ -4,8 +4,7 @@ Utility functions for streamlit_permalink.
 
 import base64
 from datetime import date, datetime, time
-import re
-from typing import Any, Iterable, List, Optional, Union
+from typing import Any, Iterable, List, Union
 import zlib
 import warnings
 from urllib.parse import quote_plus
@@ -14,8 +13,7 @@ from packaging.version import parse as V
 import pandas as pd
 import streamlit as st
 
-from .constants import _EMPTY, _NONE, TRUE_VALUE, TRUE_FALSE_VALUE
-from .exceptions import UrlParamError
+from .constants import _EMPTY, _NONE
 
 
 class TypedValue:
@@ -110,67 +108,6 @@ def init_url_value(url_key: str, url_value: str):
         st.query_params[url_key] = url_value
 
 
-def parse_time(time_str: str) -> time:
-    """
-    Parse a time string into a time object.
-    """
-    return datetime.strptime(time_str, "%H:%M").time()
-
-
-def validate_single_url_value(
-    url_key: str, url_value: Optional[List[str]], handler_name: str
-) -> Optional[str]:
-    """
-    Validate single value from URL parameter.
-    """
-    if url_value is None:
-        return None
-
-    if not (isinstance(url_value, (list, tuple)) and len(url_value) == 1):
-        raise UrlParamError(
-            f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. Expected a single value."
-        )
-
-    return url_value[0]
-
-
-def validate_bool_url_value(url_key: str, url_value: str, handler_name: str) -> bool:
-    """
-    Validate boolean value from URL parameter.
-    """
-    url_value = url_value.capitalize()  # Case insensitive
-    if url_value not in TRUE_FALSE_VALUE:
-        raise UrlParamError(
-            f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. Expected a {TRUE_FALSE_VALUE}."
-        )
-    return url_value == TRUE_VALUE
-
-
-def validate_color_url_value(url_key: str, url_value: str, handler_name: str) -> str:
-    """
-    Validate color value from URL parameter.
-    """
-    if not re.match(r"^#([0-9a-fA-F]{6})$", url_value):
-        raise UrlParamError(
-            f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. "
-            "Expected a valid hex color code (e.g., #RRGGBB)."
-        )
-    return url_value
-
-
-def validate_date_url_value(url_key: str, url_value: str, handler_name: str) -> str:
-    """
-    Validate date value from URL parameter.
-    """
-    try:
-        return datetime.strptime(url_value, "%Y-%m-%d").date()
-    except ValueError as err:
-        raise UrlParamError(
-            f"Invalid value for {handler_name} parameter '{url_key}': {url_value}. "
-            "Expected a valid date (e.g., 2023-01-01)."
-        ) from err
-
-
 def _validate_multi_options(options: Iterable[Any], widget_name: str) -> List[str]:
     """
     Validate multiselect options and convert to strings.
@@ -203,7 +140,7 @@ def _validate_multi_options(options: Iterable[Any], widget_name: str) -> List[st
             f"String options: {str_options}"
         )
 
-    # provide warning is normla sets are different lengths
+    # provide warning when sets are different lengths
     if len(set(map(StringHashableValue, options))) != len(options):
         warnings.warn(
             f"Duplicate values detected in {widget_name} options: {options}. "
@@ -238,30 +175,6 @@ def _validate_multi_default(
         )
 
     return list(map(str, default))
-
-
-def _validate_multi_url_values(
-    url_key: str,
-    url_values: Optional[List[str]],
-    str_options: List[str],
-    widget_name: str,
-) -> List[str]:
-    """
-    Validate that all multiselect values are in the options list.
-    """
-    # Handle special case for empty selection
-    if url_values is None:
-        return []
-
-    # Validate all values are in options
-    invalid_values = [v for v in url_values if v not in str_options]
-    if invalid_values:
-        raise UrlParamError(
-            f"Invalid {widget_name.capitalize()} selection for '{url_key}': {invalid_values}. "
-            f"Valid options are: {str_options}"
-        )
-
-    return url_values
 
 
 def _validate_selection_mode(selection_mode: str) -> str:
@@ -305,36 +218,6 @@ def decompress_text(compressed_text: str) -> str:
     decoded = base64.urlsafe_b64decode(compressed_text)
     decompressed = zlib.decompress(decoded).decode("utf-8")
     return decompressed
-
-
-def fix_datetime_columns(
-    df: pd.DataFrame, column_config: Optional[dict]
-) -> pd.DataFrame:
-    """
-    Fix datetime columns in a DataFrame based on column configuration.
-    """
-    if not column_config:
-        return df
-
-    for column_name, column_config in column_config.items():
-        col_type = column_config["type_config"]["type"]
-        if col_type == "datetime":
-            # Convert milliseconds from epoch to datetime
-            df[column_name] = pd.to_datetime(df[column_name], unit="ms")
-        elif col_type == "date":
-            # Convert milliseconds from epoch to date
-            df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.date
-        elif col_type == "time":
-            # For time values that are already strings in HH:MM:SS format
-            if df[column_name].dtype == "object":
-                df[column_name] = pd.to_datetime(
-                    df[column_name], format="%H:%M:%S"
-                ).dt.time
-            else:
-                # For time values stored as milliseconds since midnight
-                df[column_name] = pd.to_datetime(df[column_name], unit="ms").dt.time
-
-    return df
 
 
 def update_data_editor(df: pd.DataFrame, df_updates: dict) -> pd.DataFrame:
@@ -421,12 +304,9 @@ def get_query_params() -> dict[str, List]:
     """
 
     if st.__version__ < "1.30":
-        url_params = {
-            k: st.experimental_get_query_params[k]
-            for k in st.experimental_get_query_params.keys()
-        }
-
-    url_params = {k: st.query_params.get_all(k) for k in st.query_params.keys()}
+        url_params = st.experimental_get_query_params()
+    else:
+        url_params = {k: st.query_params.get_all(k) for k in st.query_params.keys()}
     return url_params
 
 

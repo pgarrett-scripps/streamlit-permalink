@@ -3,7 +3,6 @@ from packaging.version import parse as V
 import streamlit_permalink as st
 import pytest
 from .utils import get_query_params, set_query_params
-from streamlit_permalink.handlers.toggle import _DEFAULT_VALUE
 
 
 def create_toggle_app():
@@ -40,7 +39,7 @@ class TestToggle:
         assert self.at.toggle[0].value is False
         # Verify URL parameters are initialized
         assert get_query_params(self.at)
-        assert get_query_params(self.at)["toggle"] == [f"{_DEFAULT_VALUE}"]
+        assert get_query_params(self.at)["toggle"] == ["False"]
 
     def test_toggle_url_param_true(self):
         """Test toggle with URL parameter set to True"""
@@ -160,7 +159,7 @@ class TestFormToggle:
         assert self.at.toggle[0].value is False
         # Verify URL parameters are initialized
         assert get_query_params(self.at)
-        assert get_query_params(self.at)["form_toggle"] == [f"{_DEFAULT_VALUE}"]
+        assert get_query_params(self.at)["form_toggle"] == ["False"]
 
     def test_form_toggle_url_param_true(self):
         """Test form toggle with URL parameter set to True"""

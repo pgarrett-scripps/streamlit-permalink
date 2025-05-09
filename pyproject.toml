@@ -10,7 +10,7 @@ authors = [
     { name = "Franciszek Piszcz", email = "franciszek.piszcz@rtbhouse.com"},
     { name = "Patrick Garrett", email = "pgarrett@scripps.edu"}
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "streamlit>=1.4.0",
     "packaging>=15.0",

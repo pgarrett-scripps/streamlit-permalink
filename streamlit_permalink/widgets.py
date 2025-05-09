@@ -7,18 +7,17 @@ from functools import partial
 import inspect
 
 from packaging.version import parse as V
-import pandas as pd
 import streamlit as st
 
 from .utils import (
     compress_text,
     decompress_text,
-    fix_datetime_columns,
     to_url_value,
     update_data_editor,
 )
 from .handlers import HANDLERS
-from .constants import _EMPTY, _NONE
+from .handlers.data_editor import fix_datetime_columns
+from .constants import _EMPTY, _NONE, _EMPTY_STRING
 
 _active_form = None
 
@@ -27,6 +26,16 @@ T = TypeVar("T")
 
 # write a function that takes a callable and a list and runs it with each element of the list
 def _compress_list(func: Callable, l: Union[List[str], str]):
+
+    if l == _EMPTY:
+        return [_EMPTY]
+    
+    if l == _NONE:
+        return [_NONE]
+
+    if l == "":
+        return [_EMPTY_STRING]
+
     if isinstance(l, str):
         return func(l)
     if isinstance(l, (list, tuple)):
@@ -36,13 +45,17 @@ def _compress_list(func: Callable, l: Union[List[str], str]):
 
 
 def _decompress_list(func: Callable, l: List[str]):
-    l = [func(e) for e in l]
 
     if l == [_EMPTY]:
         return []
 
     if l == [_NONE]:
         return None
+
+    if l == [_EMPTY_STRING]:
+        return [""]
+
+    l = [func(e) for e in l]
 
     return l
 
@@ -89,6 +102,7 @@ class UrlAwareWidget:
         compressor = kwargs.pop("compressor", compress_text)
         decompressor = kwargs.pop("decompressor", decompress_text)
         stateful = kwargs.pop("stateful", True)
+        init_url = kwargs.pop("init_url", True)
 
         if stateful is False:
             return self.base_widget(*args, **kwargs)
@@ -140,6 +154,7 @@ class UrlAwareWidget:
                 bound_args,
                 compressor=compressor,
                 decompressor=decompressor,
+                init_url=init_url,
             )
 
         if V(st.__version__) < V("1.30"):
@@ -207,7 +222,8 @@ class UrlAwareWidget:
             bound_args,
             compressor=compressor,
             decompressor=decompressor,
-        )
+            init_url=init_url,
+        ).run()
         return result
 
     def call_inside_form(
@@ -217,6 +233,7 @@ class UrlAwareWidget:
         bound_args: inspect.BoundArguments,
         compressor: Callable,
         decompressor: Callable,
+        init_url: bool = True,
     ) -> Any:
         """
         Call the widget inside a form.
@@ -248,7 +265,8 @@ class UrlAwareWidget:
             bound_args,
             compressor=compressor,
             decompressor=decompressor,
-        )
+            init_url=init_url,
+        ).run()
         return result
 
 
@@ -402,7 +420,7 @@ class UrlAwareForm:
     if hasattr(st, "pills"):
         pills = UrlAwareWidget(st.pills)
     if hasattr(st, "segmented_control"):
-        urlAwareFormontrol = UrlAwareWidget(st.segmented_control)
+        segmented_control = UrlAwareWidget(st.segmented_control)
     if hasattr(st, "data_editor"):
         data_editor = UrlAwareWidget(st.data_editor)
     form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)

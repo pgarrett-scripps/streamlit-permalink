@@ -1,85 +1,44 @@
-"""
-Handle selectbox widget URL state synchronization.
-"""
+from typing import Optional
 
-from typing import Callable, List, Optional
-import inspect
-
-import streamlit as st
-
+from .handler import HandleWidget
 from ..utils import (
     _validate_multi_options,
-    init_url_value,
-    to_url_value,
-    validate_single_url_value,
 )
-from ..exceptions import UrlParamError
-
-_HANDLER_NAME = "selectbox"
 
 
-def handle_selectbox(
-    base_widget: st.delta_generator.DeltaGenerator,
-    url_key: str,
-    url_value: Optional[List[str]],
-    bound_args: inspect.BoundArguments,
-    compressor: Callable,
-    decompressor: Callable,
-):
-    """
-    Handle selectbox widget URL state.
+class HandlerSelectbox(HandleWidget):
 
-    Args:
-        base_widget: The base widget to handle
-        url_key: Parameter key in URL
-        url_value: Value(s) from URL parameter, None if not present
-        bound_args: Bound arguments for the base_widget call
-        compressor: Compressor function for url_value
-        decompressor: Decompressor function for url_value
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the HandlerSelectbox instance.
+        """
+        super().__init__(*args, **kwargs)
+        self.options = self.bound_args.arguments.get("options")
+        self.str_options = _validate_multi_options(self.options, self.handler_name)
 
-    Returns:
-        The selectbox widget's return value
+        self.accept_new_options = self.bound_args.arguments.get(
+            "accept_new_options", False
+        )
 
-    Raises:
-        UrlParamError: If URL value is invalid
-    """
+    def update_bound_args(self) -> None:
+        str_value: Optional[str] = self.validate_single_url_value(
+            self.url_value, allow_none=True
+        )
 
-    options = bound_args.arguments.get("options")
-    _ = _validate_multi_options(options, _HANDLER_NAME)
+        if str_value is None:
+            self.bound_args.arguments["index"] = None
+            return
 
-    index = bound_args.arguments.get("index", 0)
-    bound_args.arguments["index"] = index
+        if str_value not in self.str_options:
 
-    value = options[index]
+            if not self.accept_new_options:
+                self.raise_url_error(
+                    f"Invalid value for selectbox: '{str_value}'. Expected one of: {self.str_options}"
+                )
 
-    if not url_value:
-        init_url_value(url_key, compressor(to_url_value(value)))
-        return base_widget(**bound_args.arguments)
+            self.options.append(str_value)
+            self.str_options.append(str_value)
 
-    url_value = decompressor(url_value)
-
-    url_value: Optional[str] = validate_single_url_value(
-        url_key, url_value, _HANDLER_NAME
-    )
-
-    if url_value is not None:
-        try:
-            options_map = {str(v): v for v in options}
-            actual_url_value = options_map[url_value]
-            bound_args.arguments["index"] = options.index(actual_url_value)
-        except KeyError as err:
-            if bound_args.arguments.get("accept_new_options", False):
-                bound_args.arguments.get("options").append(url_value)
-                bound_args.arguments["index"] = bound_args.arguments.get(
-                    "options"
-                ).index(url_value)
-                return base_widget(**bound_args.arguments)
-
-            raise UrlParamError(
-                f"Invalid value for {_HANDLER_NAME} parameter '{url_key}': {url_value}. "
-                f"Expected one of {options}."
-            ) from err
-    else:
-        bound_args.arguments["index"] = None
-
-    return base_widget(**bound_args.arguments)
+        options_map = {str(v): v for v in self.options}
+        actual_value = options_map[str_value]
+        self.bound_args.arguments["index"] = self.options.index(actual_value)
