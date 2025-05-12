@@ -18,8 +18,6 @@ class CheckboxHandler(WidgetHandler):
 
     def sync_query_params(self) -> None:
 
-        str_value: str = self.validate_single_url_value(
-            self.url_value, allow_none=False
-        ).capitalize()
+        str_value: str = self.validate_single_url_value(self.url_value, allow_none=False)
         bool_value: bool = self.validate_bool(str_value)
         self.bound_args.arguments["value"] = bool_value
