@@ -3,7 +3,7 @@
 ### Installation
 
 ```bash
-pip install streamlit-permalink
+pip install streamlit-permalink-pg
 ```
 
 ### Basic usage
