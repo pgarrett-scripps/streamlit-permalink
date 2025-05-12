@@ -2,7 +2,7 @@
 requires = ["setuptools"]
 
 [project]
-name = "streamlit-permalink"
+name = "streamlit-permalink-pg"
 dynamic = ["version"]
 description = "Effortless permalinks in Streamlit apps"
 readme = "README.md"

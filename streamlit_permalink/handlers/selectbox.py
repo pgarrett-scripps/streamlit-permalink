@@ -1,12 +1,12 @@
 from typing import Optional
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 from ..utils import (
     _validate_multi_options,
 )
 
 
-class HandlerSelectbox(HandleWidget):
+class SelectboxHandler(WidgetHandler):
 
     def __init__(self, *args, **kwargs):
         """

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Union, Tuple
 from datetime import date
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 
 DateValue = Union[None, date, Tuple[date, ...]]
@@ -25,7 +25,7 @@ def get_date_value(value: Any) -> DateValue:
     )
 
 
-class HandlerDateInput(HandleWidget):
+class DateInputHandler(WidgetHandler):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

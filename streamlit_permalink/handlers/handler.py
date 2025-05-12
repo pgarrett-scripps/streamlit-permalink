@@ -10,7 +10,7 @@ from ..utils import (
 )
 
 
-class HandleWidget:
+class WidgetHandler:
     """
     Base class for handling Streamlit widgets.
     This class is designed to manage the URL state of Streamlit widgets,

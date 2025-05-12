@@ -1,13 +1,13 @@
 from datetime import datetime, date, time
 from typing import Any
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 
 VALID_TYPES = {int, float, datetime, date, time}
 
 
-class HandlerSlider(HandleWidget):
+class SliderHandler(WidgetHandler):
     """
     Handler for slider widget URL state synchronization.
     """

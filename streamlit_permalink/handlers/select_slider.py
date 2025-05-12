@@ -1,12 +1,12 @@
 from typing import List
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 from ..utils import (
     _validate_multi_options,
 )
 
 
-class HandlerSelectSlider(HandleWidget):
+class SelectSliderHandler(WidgetHandler):
 
     def __init__(self, *args, **kwargs):
 

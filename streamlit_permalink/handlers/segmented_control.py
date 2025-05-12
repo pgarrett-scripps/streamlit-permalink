@@ -1,5 +1,5 @@
-from .pills import HandlerPills
+from .pills import PillsHandler
 
 
-class HandlerSegmentedControl(HandlerPills):
+class SegmentedControlHandler(PillsHandler):
     pass

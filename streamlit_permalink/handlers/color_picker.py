@@ -1,8 +1,8 @@
 import re
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 
-class HandlerColorPicker(HandleWidget):
+class ColorPickerHandler(WidgetHandler):
 
     def validate_color(self, value: str) -> str:
         """

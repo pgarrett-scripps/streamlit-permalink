@@ -1,7 +1,7 @@
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 
-class HandlerTextArea(HandleWidget):
+class TextAreaHandler(WidgetHandler):
     """
     Handler for text area widget URL state synchronization.
     """

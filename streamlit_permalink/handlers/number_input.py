@@ -1,9 +1,9 @@
 from typing import Any
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 
-class HandlerNumberInput(HandleWidget):
+class NumberInputHandler(WidgetHandler):
 
     def __init__(self, *args, **kwargs):
         """

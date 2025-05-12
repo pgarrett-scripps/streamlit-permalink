@@ -1,6 +1,6 @@
 from typing import List
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 from ..utils import (
     _validate_selection_mode,
@@ -8,7 +8,7 @@ from ..utils import (
 )
 
 
-class HandlerPills(HandleWidget):
+class PillsHandler(WidgetHandler):
 
     def __init__(self, *args, **kwargs):
         """

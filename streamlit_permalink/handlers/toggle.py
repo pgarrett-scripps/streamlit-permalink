@@ -1,5 +1,5 @@
-from .checkbox import HandlerCheckbox
+from .checkbox import CheckboxHandler
 
 
-class HandlerToggle(HandlerCheckbox):
+class ToggleHandler(CheckboxHandler):
     pass

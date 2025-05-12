@@ -1,12 +1,12 @@
 from typing import Optional
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 from ..utils import (
     _validate_multi_options,
 )
 
 
-class HandlerRadio(HandleWidget):
+class RadioHandler(WidgetHandler):
 
     def __init__(self, *args, **kwargs):
         """

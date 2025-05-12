@@ -1,7 +1,7 @@
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 
-class HandlerCheckbox(HandleWidget):
+class CheckboxHandler(WidgetHandler):
 
     def validate_bool(self, value: str) -> bool:
         """

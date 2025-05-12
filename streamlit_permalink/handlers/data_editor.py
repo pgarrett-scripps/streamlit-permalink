@@ -4,7 +4,7 @@ from io import StringIO
 import streamlit as st
 import pandas as pd
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 
 def fix_datetime_columns(
@@ -37,7 +37,7 @@ def fix_datetime_columns(
     return df
 
 
-class HandlerDataEditor(HandleWidget):
+class DataEditorHandler(WidgetHandler):
 
     def __init__(self, *args, **kwargs):
         """

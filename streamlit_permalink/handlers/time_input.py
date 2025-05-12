@@ -1,6 +1,6 @@
 from datetime import datetime, time
 
-from .handler import HandleWidget
+from .handler import WidgetHandler
 
 
 def _parse_time_from_string(value: str) -> time:
@@ -8,7 +8,7 @@ def _parse_time_from_string(value: str) -> time:
     return datetime.strptime(value, "%H:%M").time()
 
 
-class HandlerTimeInput(HandleWidget):
+class TimeInputHandler(WidgetHandler):
     """
     Handler for time input widget URL state synchronization.
     """

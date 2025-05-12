@@ -1,5 +1,5 @@
-from .text_area import HandlerTextArea
+from .text_area import TextAreaHandler
 
 
-class HandlerTextInput(HandlerTextArea):
+class TextInputHandler(TextAreaHandler):
     pass
