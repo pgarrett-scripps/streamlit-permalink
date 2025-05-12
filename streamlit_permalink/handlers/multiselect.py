@@ -22,7 +22,7 @@ class MultiSelectHandler(WidgetHandler):
             "accept_new_options", False
         )
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
         str_values = self.validate_multi_url_values(
             self.url_value, min_values=None, max_values=None, allow_none=True
         )

@@ -1,5 +1,4 @@
 from streamlit.testing.v1 import AppTest
-from packaging.version import parse as V
 
 from .utils import get_query_params, set_query_params
 
@@ -59,7 +58,7 @@ class TestNumberInput:
         assert params["limited"] == ["5"]
         assert params["stepped"] == ["0"]
         assert params["min_default"] == ["10"]
-        assert params["none_value"] == ['_STREAMLIT_PERMALINK_NONE']
+        assert params["none_value"] == ["_STREAMLIT_PERMALINK_NONE"]
 
     def test_number_input_url_params(self):
         """Test number inputs with URL parameters set"""

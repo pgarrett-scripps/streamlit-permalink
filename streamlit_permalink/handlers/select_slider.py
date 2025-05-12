@@ -30,7 +30,7 @@ class SelectSliderHandler(WidgetHandler):
 
             self.is_range_slider = True
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
 
         options_map = {str(v): v for v in self.options}
 

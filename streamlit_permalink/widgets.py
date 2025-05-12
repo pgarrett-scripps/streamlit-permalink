@@ -17,7 +17,7 @@ from .utils import (
 )
 from .handlers import HANDLERS
 from .handlers.data_editor import fix_datetime_columns
-from .constants import _EMPTY, _NONE, _EMPTY_STRING
+from .constants import EMPTY_LIST_URL_VALUE, NONE_URL_VALUE, EMPTY_STRING_URL_VALUE
 
 _active_form = None
 
@@ -27,14 +27,14 @@ T = TypeVar("T")
 # write a function that takes a callable and a list and runs it with each element of the list
 def _compress_list(func: Callable, l: Union[List[str], str]):
 
-    if l == _EMPTY:
-        return [_EMPTY]
-    
-    if l == _NONE:
-        return [_NONE]
+    if l == EMPTY_LIST_URL_VALUE:
+        return [EMPTY_LIST_URL_VALUE]
 
-    if l == "":
-        return [_EMPTY_STRING]
+    if l == NONE_URL_VALUE:
+        return [NONE_URL_VALUE]
+
+    if l == EMPTY_STRING_URL_VALUE:
+        return [EMPTY_STRING_URL_VALUE]
 
     if isinstance(l, str):
         return func(l)
@@ -46,13 +46,13 @@ def _compress_list(func: Callable, l: Union[List[str], str]):
 
 def _decompress_list(func: Callable, l: List[str]):
 
-    if l == [_EMPTY]:
+    if l == [EMPTY_LIST_URL_VALUE]:
         return []
 
-    if l == [_NONE]:
+    if l == [NONE_URL_VALUE]:
         return None
 
-    if l == [_EMPTY_STRING]:
+    if l == [EMPTY_STRING_URL_VALUE]:
         return [""]
 
     l = [func(e) for e in l]
@@ -448,12 +448,3 @@ class UrlAwareForm:
 
 
 form = UrlAwareForm
-
-
-def __getattr__(name: str) -> Any:
-    try:
-        return getattr(st, name)
-    except AttributeError as err:
-        raise AttributeError(
-            str(err).replace("streamlit", "streamlit_permalink")
-        ) from err

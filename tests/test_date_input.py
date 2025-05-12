@@ -1,8 +1,7 @@
 from streamlit.testing.v1 import AppTest
-from packaging.version import parse as V
 from datetime import date, datetime
 
-from streamlit_permalink.constants import _EMPTY, _NONE
+from streamlit_permalink import EMPTY_LIST_URL_VALUE, NONE_URL_VALUE
 from .utils import get_query_params, set_query_params
 
 
@@ -201,7 +200,8 @@ class TestDateInput:
         """Test handling of _EMPTY in date ranges"""
         # Test with empty for date range (should be valid)
         set_query_params(
-            self.at, {"date_range": [_EMPTY]}  # Use uppercase to match constant
+            self.at,
+            {"date_range": [EMPTY_LIST_URL_VALUE]},  # Use uppercase to match constant
         )
         self.at.run()
         assert not self.at.exception
@@ -234,7 +234,7 @@ class TestDateInput:
     def test_date_input_none_handling(self):
         """Test handling of _NONE in single date inputs (representing None)"""
         # Set URL parameter with _NONE for a single date input
-        set_query_params(self.at, {"date": [_NONE]})  # No date selected
+        set_query_params(self.at, {"date": [NONE_URL_VALUE]})  # No date selected
 
         self.at.run()
         assert not self.at.exception
@@ -244,7 +244,7 @@ class TestDateInput:
 
         # Verify the URL parameter is maintained
         params = get_query_params(self.at)
-        assert params["date"] == [_NONE]
+        assert params["date"] == [NONE_URL_VALUE]
 
         # Test setting back to a regular date
         self.at.date_input[0].set_value(date(2024, 3, 1)).run()
@@ -254,7 +254,7 @@ class TestDateInput:
         # Test setting back to None programmatically
         self.at.date_input[0].set_value(None).run()
         assert self.at.date_input[0].value is None
-        assert get_query_params(self.at)["date"] == [_NONE]
+        assert get_query_params(self.at)["date"] == [NONE_URL_VALUE]
 
     def test_date_input_direct_value_setting(self):
         """Test setting date values directly in the widget"""
@@ -270,7 +270,7 @@ class TestDateInput:
         self.at.date_input[0].set_value(None).run()
         assert not self.at.exception
         assert self.at.date_input[0].value is None
-        assert get_query_params(self.at)["date"] == [_NONE]
+        assert get_query_params(self.at)["date"] == [NONE_URL_VALUE]
 
         # Test with a datetime object (should be converted to date)
         test_datetime = datetime(2024, 8, 15, 12, 30, 0)
@@ -284,7 +284,7 @@ class TestDateInput:
         self.at.date_input[2].set_value(()).run()
         assert not self.at.exception
         assert self.at.date_input[2].value == ()
-        assert get_query_params(self.at)["date_range"] == [_EMPTY]
+        assert get_query_params(self.at)["date_range"] == [EMPTY_LIST_URL_VALUE]
 
         # Single-value tuple
         self.at.date_input[2].set_value((date(2024, 9, 1),)).run()

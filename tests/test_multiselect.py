@@ -1,11 +1,8 @@
 from streamlit.testing.v1 import AppTest
-from packaging.version import parse as V
 
 
-from streamlit_permalink.constants import _NONE
+from streamlit_permalink import NONE_URL_VALUE, EMPTY_LIST_URL_VALUE
 from .utils import get_query_params, set_query_params
-from streamlit_permalink.exceptions import UrlParamError
-from streamlit_permalink.utils import _EMPTY
 
 
 def create_multiselect_app():
@@ -86,7 +83,7 @@ class TestMultiselect:
         assert not self.at.exception
         assert len(self.at.multiselect) == 1
         assert self.at.multiselect[0].value == []
-        assert get_query_params(self.at)["multi"] == [_EMPTY]
+        assert get_query_params(self.at)["multi"] == [EMPTY_LIST_URL_VALUE]
 
     def test_multiselect_url_param(self):
         """Test multiselect with URL parameters set"""
@@ -100,7 +97,7 @@ class TestMultiselect:
         self.at.run()
 
         # Test initial state
-        assert get_query_params(self.at)["multi"] == [_EMPTY]
+        assert get_query_params(self.at)["multi"] == [EMPTY_LIST_URL_VALUE]
         assert self.at.multiselect[0].value == []
         assert self.at.multiselect[0].indices == []
 
@@ -123,7 +120,7 @@ class TestMultiselect:
 
         # Test clearing all selections
         self.at.multiselect[0].set_value([]).run()
-        assert get_query_params(self.at)["multi"] == [_EMPTY]
+        assert get_query_params(self.at)["multi"] == [EMPTY_LIST_URL_VALUE]
 
     def test_multiselect_invalid_url_param(self):
         """Test multiselect behavior with invalid URL parameter value"""
@@ -144,7 +141,7 @@ class TestFormMultiselect:
         assert not self.at.exception
         assert len(self.at.multiselect) == 1
         assert self.at.multiselect[0].value == []
-        assert get_query_params(self.at)["form_multi"] == [_EMPTY]
+        assert get_query_params(self.at)["form_multi"] == [EMPTY_LIST_URL_VALUE]
 
     def test_form_multiselect_url_param(self):
         """Test form multiselect with URL parameters set"""
@@ -191,7 +188,7 @@ class TestMultiselectAdditional:
         # Clear the selection
         at.multiselect[0].set_value([]).run()
         assert at.multiselect[0].value == []
-        assert get_query_params(at)["default_multi"] == [_EMPTY]
+        assert get_query_params(at)["default_multi"] == [EMPTY_LIST_URL_VALUE]
 
     def test_multiselect_empty_options_error(self):
         """Test error when multiselect options list is empty"""
@@ -277,7 +274,7 @@ class TestMultiselectAdditional:
 
         # Check all are unselected
         assert at.multiselect[0].value == []
-        assert get_query_params(at)["multi"] == [_EMPTY]
+        assert get_query_params(at)["multi"] == [EMPTY_LIST_URL_VALUE]
 
         # Test setting all at once
         at.multiselect[0].set_value(["Option A", "Option B", "Option C"]).run()

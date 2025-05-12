@@ -7,13 +7,13 @@ from datetime import date, datetime, time
 from typing import Any, Iterable, List, Union
 import zlib
 import warnings
-from urllib.parse import quote_plus
 from packaging.version import parse as V
 
 import pandas as pd
 import streamlit as st
 
-from .constants import _EMPTY, _NONE
+from .constants import EMPTY_LIST_URL_VALUE, EMPTY_STRING_URL_VALUE, NONE_URL_VALUE
+from urllib.parse import urlencode
 
 
 class TypedValue:
@@ -74,14 +74,16 @@ def to_url_value(result: Any) -> Union[str, List[str]]:
     Convert a result to a URL value.
     """
     if result is None:
-        return _NONE
+        return NONE_URL_VALUE
     if isinstance(result, str):
+        if result == "":
+            return EMPTY_STRING_URL_VALUE
         return result
     if isinstance(result, (bool, float, int)):
         return str(result)
     if isinstance(result, (list, tuple)):
         if len(result) == 0:
-            return _EMPTY
+            return EMPTY_LIST_URL_VALUE
         return list(map(to_url_value, result))
     if isinstance(result, (date, datetime)):
         return result.isoformat()
@@ -91,7 +93,10 @@ def to_url_value(result: Any) -> Union[str, List[str]]:
         # return as json string
         return result.to_json(orient="records")
     try:
-        return str(result)
+        res = str(result)
+        if res == "":
+            return EMPTY_STRING_URL_VALUE
+        return res
     except Exception as err:
         raise TypeError(f"unsupported type: {type(result)}") from err
 
@@ -257,12 +262,16 @@ def get_query_params_url(params_dict: dict) -> str:
     Returns:
         str: A URL query string starting with '?'
     """
-    params = []
+    # Convert nested params dict to flat list of tuples with repeated keys for multiple values
+    query_items = []
     for key, values in params_dict.items():
-        for value in to_list(values):
-            params.append(f"{key}={quote_plus(str(value))}")
+        values_list = to_list(values)
+        for value in values_list:
+            query_items.append((key, str(value)))
 
-    return "?" + "&".join(params)
+    # Use urlencode to properly handle URL encoding of parameters
+    query_string = urlencode(query_items)
+    return f"?{query_string}" if query_string else ""
 
 
 def requires_streamlit_version(min_version: str):
@@ -320,3 +329,30 @@ def get_page_url() -> str:
     """
     url_params = get_query_params()
     return f"{st.context.url}{get_query_params_url(url_params)}"
+
+
+def create_url(
+    url: str,
+    url_params: dict[str, Any] = None,
+) -> str:
+    """
+    Create a URL with include teh given values as query parameters.
+
+    Args:
+        url (str): Base URL
+        url_params (dict): Dictionary of query parameters
+
+    Returns:
+        str: Complete URL with query parameters
+    """
+    if url_params is None:
+        url_params = {}
+
+    url_params = {k: to_url_value(v) for k, v in url_params.items()}
+
+    # Handle URL with existing query parameters
+    if "?" in url:
+        base_url, existing_params = url.split("?", 1)
+        return f"{base_url}{get_query_params_url(url_params)}&{existing_params}"
+
+    return f"{url}{get_query_params_url(url_params)}"

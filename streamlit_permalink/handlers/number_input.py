@@ -36,7 +36,7 @@ class NumberInputHandler(WidgetHandler):
                 f"Value {value} is greater than the maximum allowed value {self.max_value}."
             )
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
 
         # Parse the URL value
         str_value = self.validate_single_url_value(self.url_value, allow_none=True)

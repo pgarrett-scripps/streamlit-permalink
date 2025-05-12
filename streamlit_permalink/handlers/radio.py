@@ -16,7 +16,7 @@ class RadioHandler(WidgetHandler):
         self.options = self.bound_args.arguments.get("options")
         self.str_options = _validate_multi_options(self.options, self.handler_name)
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
 
         str_value: Optional[str] = self.validate_single_url_value(
             self.url_value, allow_none=True

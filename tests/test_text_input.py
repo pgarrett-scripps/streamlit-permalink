@@ -1,5 +1,5 @@
 from streamlit.testing.v1 import AppTest
-from packaging.version import parse as V
+
 from .utils import get_query_params, set_query_params
 
 

@@ -2,7 +2,6 @@ from streamlit.testing.v1 import AppTest
 from .utils import get_query_params, set_query_params
 
 
-
 def create_checkbox_app():
     import streamlit_permalink as st
     import streamlit_permalink as stp

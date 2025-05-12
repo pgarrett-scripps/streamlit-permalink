@@ -53,7 +53,7 @@ class WidgetHandler:
         if self.has_url_value:
             self.url_value = self.decompressor(self.raw_url_value)
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
         """
         Parse the URL value and return the parsed value.
         This method should be overridden in subclasses to provide specific parsing logic.
@@ -94,7 +94,7 @@ class WidgetHandler:
             self.url_init(widget_value)
             return widget_value
 
-        self.update_bound_args()
+        self.sync_query_params()
 
         return self.base_widget(**self.bound_args.arguments)
 

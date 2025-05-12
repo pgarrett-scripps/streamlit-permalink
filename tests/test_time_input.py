@@ -1,8 +1,7 @@
 from streamlit.testing.v1 import AppTest
-from packaging.version import parse as V
 from datetime import time
+from streamlit_permalink import EMPTY_LIST_URL_VALUE, NONE_URL_VALUE
 
-from streamlit_permalink.constants import _EMPTY, _NONE
 from .utils import get_query_params, set_query_params
 
 
@@ -126,7 +125,12 @@ class TestTimeInput:
         """Test time inputs with _EMPTY and _NONE URL parameter values"""
         # Set URL parameters with special values
         set_query_params(
-            self.at, {"time": _EMPTY, "specific_time": _NONE, "stepped_time": "10:00"}
+            self.at,
+            {
+                "time": EMPTY_LIST_URL_VALUE,
+                "specific_time": NONE_URL_VALUE,
+                "stepped_time": "10:00",
+            },
         )
 
         self.at.run()
@@ -269,7 +273,9 @@ class TestFormTimeInput:
     def test_form_time_input_with_empty_none_values(self):
         """Test form time inputs with _EMPTY and _NONE URL parameter values"""
         # Set URL parameters with special values
-        set_query_params(self.at, {"form_time": _NONE, "form_stepped_time": _NONE})
+        set_query_params(
+            self.at, {"form_time": NONE_URL_VALUE, "form_stepped_time": NONE_URL_VALUE}
+        )
         self.at.run()
 
         assert self.at.exception

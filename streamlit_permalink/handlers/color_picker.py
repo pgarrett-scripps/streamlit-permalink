@@ -15,7 +15,7 @@ class ColorPickerHandler(WidgetHandler):
 
         return value
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
 
         str_value: str = self.validate_single_url_value(
             self.url_value, allow_none=False

@@ -13,7 +13,7 @@ class TimeInputHandler(WidgetHandler):
     Handler for time input widget URL state synchronization.
     """
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
         """
         Parse the URL value and update bound_args with the parsed value.
         """

@@ -46,7 +46,7 @@ class DateInputHandler(WidgetHandler):
                 f"Date {date_value} is after the maximum allowed date {self.max_value}."
             )
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
 
         if not self.is_range:
 
@@ -60,7 +60,8 @@ class DateInputHandler(WidgetHandler):
                 date_value = date.fromisoformat(str_value)
             except Exception as err:
                 self.raise_url_error(
-                    f"Invalid date format. Expected format: {str_value} YYYY-MM-DD.", err
+                    f"Invalid date format. Expected format: {str_value} YYYY-MM-DD.",
+                    err,
                 )
 
             self.validate_bounds(date_value)
@@ -75,7 +76,8 @@ class DateInputHandler(WidgetHandler):
                 date_values = tuple(date.fromisoformat(v) for v in str_values)
             except Exception as err:
                 self.raise_url_error(
-                    f"Invalid date format: {str_values}. Expected format: YYYY-MM-DD.", err
+                    f"Invalid date format: {str_values}. Expected format: YYYY-MM-DD.",
+                    err,
                 )
 
             if len(date_values) == 2:

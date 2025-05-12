@@ -61,7 +61,7 @@ class DataEditorHandler(WidgetHandler):
         if self.init_url:
             self.update_url_param(self.bound_args.arguments.get("data"))
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
 
         # Process URL value: ensure single value and convert to boolean
         parsed_value = self.validate_single_url_value(self.url_value, allow_none=False)

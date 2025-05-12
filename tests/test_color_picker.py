@@ -1,8 +1,8 @@
 from streamlit.testing.v1 import AppTest
-from packaging.version import parse as V
 from .utils import get_query_params, set_query_params
 
 _DEFAULT_VALUE = "#000000"
+
 
 def create_color_picker_app():
     import streamlit_permalink as stp

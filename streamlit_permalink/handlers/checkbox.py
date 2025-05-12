@@ -1,4 +1,5 @@
 from .handler import WidgetHandler
+from ..constants import TRUE_URL_VALUE, FALSE_URL_VALUE
 
 
 class CheckboxHandler(WidgetHandler):
@@ -8,14 +9,14 @@ class CheckboxHandler(WidgetHandler):
         Validate that the value is a boolean.
         """
         value = value.capitalize()
-        if value not in ["True", "False"]:
+        if value not in [TRUE_URL_VALUE, FALSE_URL_VALUE]:
             self.raise_url_error(
-                f"Invalid value for checkbox: '{value}'. Expected 'True' or 'False'."
+                f"Invalid value for checkbox: '{value}'. Expected {TRUE_URL_VALUE} or {FALSE_URL_VALUE}."
             )
 
-        return value == "True"
+        return value == TRUE_URL_VALUE
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
 
         str_value: str = self.validate_single_url_value(
             self.url_value, allow_none=False

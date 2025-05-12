@@ -1,8 +1,7 @@
 from streamlit.testing.v1 import AppTest
-from packaging.version import parse as V
-from .utils import get_query_params, set_query_params
-from streamlit_permalink.exceptions import UrlParamError
 from datetime import datetime, date, time, timedelta
+
+from .utils import get_query_params, set_query_params
 
 
 def create_single_slider_app():

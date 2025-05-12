@@ -1,3 +1,8 @@
+# 1.4.0 Release Notes
+- Fixed Naming
+- URL Building functions (to_url_value & create_url)
+- STP constants available from namespace
+
 # 1.3.0 Release Notes
 
 ## Changes

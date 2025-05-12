@@ -83,7 +83,7 @@ class SliderHandler(WidgetHandler):
                 f"Value {value} is greater than max_value {self.max_value}."
             )
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
         """
         Parse the URL value and update bound_args with the parsed value.
         """

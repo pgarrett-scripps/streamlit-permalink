@@ -24,7 +24,7 @@ class PillsHandler(WidgetHandler):
             self.bound_args.arguments.get("selection_mode", "single")
         )
 
-    def update_bound_args(self) -> None:
+    def sync_query_params(self) -> None:
 
         # Validate URL values against options
         str_values: List[str] = self.validate_multi_url_values(

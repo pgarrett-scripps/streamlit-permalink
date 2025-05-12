@@ -1,5 +1,5 @@
 from streamlit.testing.v1 import AppTest
-from packaging.version import parse as V
+
 from .utils import get_query_params, set_query_params
 
 
@@ -41,7 +41,7 @@ class TestTextArea:
 
         # Verify URL parameters are initialized with default values
         params = get_query_params(self.at)
-        assert params 
+        assert params
 
     def test_text_area_url_params(self):
         """Test text areas with URL parameters set"""
@@ -126,10 +126,12 @@ class TestFormTextArea:
         assert self.at.text_area[1].value == ""
         # Verify URL parameters are empty (forms don't initialize URL params until submitted)
         assert get_query_params(self.at)
-        assert get_query_params(self.at)["form_area"] == ['_STREAMLIT_PERMALINK_EMPTY_STRING']
-        assert get_query_params(self.at)["form_limited_area"] == ['_STREAMLIT_PERMALINK_EMPTY_STRING']
-
-
+        assert get_query_params(self.at)["form_area"] == [
+            "_STREAMLIT_PERMALINK_EMPTY_STRING"
+        ]
+        assert get_query_params(self.at)["form_limited_area"] == [
+            "_STREAMLIT_PERMALINK_EMPTY_STRING"
+        ]
 
     def test_form_text_area_url_params(self):
         """Test form text areas with URL parameters set"""
