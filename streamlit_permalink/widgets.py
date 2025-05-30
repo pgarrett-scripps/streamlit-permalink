@@ -2,7 +2,7 @@
 Widgets that are aware of URL parameters.
 """
 
-from typing import Callable, Any, List, Optional, TypeVar, Union
+from typing import Callable, Any, Optional, TypeVar
 from functools import partial
 import inspect
 
@@ -10,6 +10,8 @@ from packaging.version import parse as V
 import streamlit as st
 
 from .utils import (
+    _compress_list,
+    _decompress_list,
     compress_text,
     decompress_text,
     to_url_value,
@@ -17,47 +19,10 @@ from .utils import (
 )
 from .handlers import HANDLERS
 from .handlers.data_editor import fix_datetime_columns
-from .constants import EMPTY_LIST_URL_VALUE, NONE_URL_VALUE, EMPTY_STRING_URL_VALUE
 
 _active_form = None
 
 T = TypeVar("T")
-
-
-# write a function that takes a callable and a list and runs it with each element of the list
-def _compress_list(func: Callable, l: Union[List[str], str]):
-
-    if l == EMPTY_LIST_URL_VALUE:
-        return [EMPTY_LIST_URL_VALUE]
-
-    if l == NONE_URL_VALUE:
-        return [NONE_URL_VALUE]
-
-    if l == EMPTY_STRING_URL_VALUE:
-        return [EMPTY_STRING_URL_VALUE]
-
-    if isinstance(l, str):
-        return func(l)
-    if isinstance(l, (list, tuple)):
-        return [func(e) for e in l]
-
-    raise ValueError(f"Invalid list type: {type(l)}")
-
-
-def _decompress_list(func: Callable, l: List[str]):
-
-    if l == [EMPTY_LIST_URL_VALUE]:
-        return []
-
-    if l == [NONE_URL_VALUE]:
-        return None
-
-    if l == [EMPTY_STRING_URL_VALUE]:
-        return [""]
-
-    l = [func(e) for e in l]
-
-    return l
 
 
 class UrlAwareWidget:
@@ -194,6 +159,7 @@ class UrlAwareWidget:
             )  # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
 
             updated_df = update_data_editor(original_df, df_updates)
+            updated_df = fix_datetime_columns(updated_df)
 
             if V(st.__version__) < V("1.30"):
                 url[url_key] = compressor(to_url_value(updated_df))
@@ -268,6 +234,20 @@ class UrlAwareWidget:
             init_url=init_url,
         ).run()
         return result
+    
+    def get_url_value(self, url_key: str, decompressor: Optional[Callable] = None, compress: bool = False) -> Any:
+        handler = HANDLERS[self.base_widget.__name__]
+        return handler.get_url_value(
+            url_key, decompressor, compress
+        )
+
+    def set_url_value(self, url_key: str, value: Any, compressor: Optional[Callable] = None, compress: bool = False) -> None:
+        handler = HANDLERS[self.base_widget.__name__]
+        return handler.update_url(
+            value, url_key, compressor, compress
+        )
+    
+            
 
 
 class UrlAwareFormSubmitButton:
@@ -342,7 +322,7 @@ class UrlAwareFormSubmitButton:
                     )  # example = {'edited_rows': {}, 'added_rows': [{}, {'col1': 3}], 'deleted_rows': [1, 2]}
 
                     updated_df = update_data_editor(original_df, df_updates)
-                    raw_value = fix_datetime_columns(updated_df, column_config)
+                    raw_value = fix_datetime_columns(updated_df)
 
                 if raw_value is not None:
                     if V(st.__version__) < V("1.30"):

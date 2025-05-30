@@ -2,7 +2,7 @@
 Streamlit widgets that are aware of URL parameters.
 """
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 from typing import Any
 
@@ -16,7 +16,6 @@ from .constants import (
     TRUE_URL_VALUE,
     FALSE_URL_VALUE,
 )
-
 
 def __getattr__(name: str) -> Any:
     try:

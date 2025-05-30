@@ -1,4 +1,7 @@
 from datetime import datetime, time
+from typing import Any
+
+from ..url_validators import validate_single_url_value
 
 from .handler import WidgetHandler
 
@@ -31,3 +34,33 @@ class TimeInputHandler(WidgetHandler):
             )
 
         self.bound_args.arguments["value"] = parsed_value
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        """
+        Verify that the value is a valid time object.
+        """
+
+        if value == "now":
+            return datetime.now().time()
+
+        if isinstance(value, str):
+            try:
+                return _parse_time_from_string(value)
+            except ValueError as err:
+                raise ValueError(
+                    f"Invalid time string format: {value}. Expected HH:MM."
+                ) from err
+
+        if not isinstance(value, [datetime.time, datetime.datetime]):
+            raise ValueError(
+                f"{cls.__name__} value must be a time object, got {type(value)}"
+            )
+        return value
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        """
+        Validate the URL value for time input.
+        """
+        return validate_single_url_value(value, allow_none=False)

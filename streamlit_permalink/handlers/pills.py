@@ -1,4 +1,6 @@
-from typing import List
+from typing import Any, Iterable, List
+
+from ..url_validators import validate_multi_url_values
 
 from .handler import WidgetHandler
 
@@ -46,3 +48,15 @@ class PillsHandler(WidgetHandler):
         options_map = {str(v): v for v in self.options}
         actual_values = [options_map[v] for v in str_values]
         self.bound_args.arguments["default"] = actual_values
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        if not isinstance(value, Iterable):
+            raise ValueError(f"Pills value must be a list, got {type(value)}")
+        return value
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        return validate_multi_url_values(
+            value, min_values=None, max_values=None, allow_none=True
+        )

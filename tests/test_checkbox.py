@@ -125,7 +125,7 @@ class TestCheckbox:
         # Should accept mixed case 'FaLsE'
         assert not self.at.exception
         assert self.at.checkbox[0].value is False
-
+        
 
 def create_form_checkbox_app():
     import streamlit_permalink as stp

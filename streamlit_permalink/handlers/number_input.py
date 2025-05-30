@@ -1,5 +1,7 @@
 from typing import Any
 
+from ..url_validators import validate_single_url_value
+
 from .handler import WidgetHandler
 
 
@@ -72,3 +74,29 @@ class NumberInputHandler(WidgetHandler):
         self.validate_bounds(parsed_value)
 
         self.bound_args.arguments["value"] = parsed_value
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        """
+        Verify the value to be updated in the URL.
+        """
+        if not isinstance(value, (int, float, type(None))):
+            raise ValueError(f"Value must be int, float or None, got {type(value)}")
+        return value
+
+    @classmethod
+    def verify_get_url_value(value: Any) -> Any:
+        str_value = validate_single_url_value(value, allow_none=True)
+
+        if str_value is None:
+            return [None]
+
+        try:
+            return [int(str_value)]
+        except ValueError:
+            try:
+                return [float(str_value)]
+            except ValueError:
+                raise ValueError(
+                    f"Invalid number format: {str_value}. Expected int or float."
+                )

@@ -1,5 +1,7 @@
 # Effortless permalinks in Streamlit apps
 
+This is my fork of streamlit-permalink: https://github.com/franekp/streamlit-permalink. 
+
 ### Installation
 
 ```bash
@@ -142,9 +144,50 @@ text = stp.text_input("Enter text", url_key="non_url_text", stateful=False)
 
 This is useful when you have widgets that should not affect the shareable state of your application.
 
-### Note about Data Editor
+### Configuring URL Value Initialization
 
-Date, Datetime, and Time columns must be declared using the column configs or the values will be converted to the number of ms since epoch.
+By default all stp widgets will automatically populate thier url value upon initialization. This can be turned off by passing init_url=False to the stp widget.
+
+```python
+import streamlit_permalink as stp
+
+text = stp.text_input("Enter text", url_key="text_input", init_url=False)
+```
+
+### Setting URL Values
+
+Methods to set the URL value are available for each widget using set_url_value. URL value validation is minimal, since the actual widgets args are not accessible. Ensure that any value set by set_url_value is valid for the widget you are setting it for.
+
+```python
+import streamlit_permalink as stp
+
+# basic
+stp.checkbox.set_url_value(value=True, url_key='checkbox1')
+
+# compression
+stp.checkbox.set_url_value(value=True, url_key='checkbox2', compress=True)
+
+# custom compression
+stp.checkbox.set_url_value(value=True, url_key='checkbox3', compress=True, compressor=CUSTOM_COMPRESSION_FUNC)
+```
+
+### Getting URL Values
+
+likewise use, get_url_value to retrive the url value for widgets. Again, since the actual widget args are not available only minimal validation can be done. multiselect, pills, and segmented_control will return str values regardless of what options are provided.
+
+```python
+import streamlit_permalink as stp
+
+# basic
+stp.checkbox.get_url_value(url_key='checkbox1')
+
+# compression
+stp.checkbox.get_url_value(url_key='checkbox2', compress=True)
+
+# custom compression
+stp.checkbox.get_url_value(url_key='checkbox3', compress=True, decompressor=CUSTOM_DECOMPRESSION_FUNC)
+
+```
 
 ### Development and Testing
 
@@ -152,7 +195,7 @@ To set up the development environment and run tests:
 
 1. Clone the repository and install in editable mode with test dependencies:
 ```bash
-git clone https://github.com/franekp/streamlit-permalink.git
+git clone https://github.com/pgarrett-scripps/streamlit-permalink
 cd streamlit-permalink
 pip install -e ".[test]"
 ```
@@ -160,7 +203,7 @@ pip install -e ".[test]"
 2. Run the tests:
 ```bash
 # Run all tests
-pytest
+pytest tests
 
 # Run a specific test file
 pytest tests/test_checkbox.py

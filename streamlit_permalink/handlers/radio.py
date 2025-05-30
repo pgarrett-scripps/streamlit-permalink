@@ -1,4 +1,6 @@
-from typing import Optional
+from typing import Any, Optional
+
+from ..url_validators import validate_single_url_value
 
 from .handler import WidgetHandler
 from ..utils import (
@@ -35,3 +37,11 @@ class RadioHandler(WidgetHandler):
 
         actual_url_value = options_map[str_value]
         self.bound_args.arguments["index"] = self.options.index(actual_url_value)
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        return value
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        return [validate_single_url_value(value, allow_none=True)]

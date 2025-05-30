@@ -4,7 +4,8 @@ Utility functions for streamlit_permalink.
 
 import base64
 from datetime import date, datetime, time
-from typing import Any, Iterable, List, Union
+from functools import partial
+from typing import Any, Callable, Iterable, List, Optional, Union
 import zlib
 import warnings
 from packaging.version import parse as V
@@ -12,7 +13,7 @@ from packaging.version import parse as V
 import pandas as pd
 import streamlit as st
 
-from .constants import EMPTY_LIST_URL_VALUE, EMPTY_STRING_URL_VALUE, NONE_URL_VALUE
+from .constants import DATAEDITOR_DATE_VALUE_PREFIX, DATAEDITOR_DATETIME_VALUE_PREFIX, DATAEDITOR_TIME_VALUE_PREFIX, EMPTY_LIST_URL_VALUE, EMPTY_STRING_URL_VALUE, NONE_URL_VALUE
 from urllib.parse import urlencode
 
 
@@ -68,6 +69,19 @@ class StringHashableValue:
     def __repr__(self):
         return f"{self.value}"
 
+def serialize_df(df: pd.DataFrame) -> str:
+    result = df.copy(deep=True)
+    # Check all cells for date, datetime, and time types
+    for col in df.columns:
+        for idx in result.index:
+            value = result.at[idx, col]
+            if isinstance(value, date) and not isinstance(value, datetime):
+                result.at[idx, col] = f"{DATAEDITOR_DATE_VALUE_PREFIX}{value.isoformat()}"
+            elif isinstance(value, datetime):
+                result.at[idx, col] = f"{DATAEDITOR_DATETIME_VALUE_PREFIX}{value.isoformat()}"
+            elif isinstance(value, time):
+                result.at[idx, col] = f"{DATAEDITOR_TIME_VALUE_PREFIX}{value.strftime('%H:%M')}"
+    return result.to_json(orient="records")
 
 def to_url_value(result: Any) -> Union[str, List[str]]:
     """
@@ -90,8 +104,7 @@ def to_url_value(result: Any) -> Union[str, List[str]]:
     if isinstance(result, time):
         return result.strftime("%H:%M")
     if isinstance(result, pd.DataFrame):
-        # return as json string
-        return result.to_json(orient="records")
+        return serialize_df(result)
     try:
         res = str(result)
         if res == "":
@@ -356,3 +369,43 @@ def create_url(
         return f"{base_url}{get_query_params_url(url_params)}&{existing_params}"
 
     return f"{url}{get_query_params_url(url_params)}"
+
+
+# write a function that takes a callable and a list and runs it with each element of the list
+def _compress_list(func: Callable, l: Union[List[str], str]):
+
+    if l == EMPTY_LIST_URL_VALUE:
+        return [EMPTY_LIST_URL_VALUE]
+
+    if l == NONE_URL_VALUE:
+        return [NONE_URL_VALUE]
+
+    if l == EMPTY_STRING_URL_VALUE:
+        return [EMPTY_STRING_URL_VALUE]
+
+    if isinstance(l, str):
+        return func(l)
+    if isinstance(l, (list, tuple)):
+        return [func(e) for e in l]
+
+    raise ValueError(f"Invalid list type: {type(l)}")
+
+
+def _decompress_list(func: Callable, l: List[str]):
+
+    if l == [EMPTY_LIST_URL_VALUE]:
+        return []
+
+    if l == [NONE_URL_VALUE]:
+        return None
+
+    if l == [EMPTY_STRING_URL_VALUE]:
+        return [""]
+
+    l = [func(e) for e in l]
+
+    return l
+
+
+DEFAULT_COMPRESSOR = partial(_compress_list, compress_text)
+DEFAULT_DECOMPRESSOR = partial(_decompress_list, decompress_text)

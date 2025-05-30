@@ -1,10 +1,41 @@
 from datetime import datetime, date, time
 from typing import Any
 
+from ..url_validators import validate_multi_url_values
+
 from .handler import WidgetHandler
 
 
-VALID_TYPES = {int, float, datetime, date, time}
+VALID_TYPES = [int, float, datetime, date, time]
+
+
+def parse_value(value_type, value: Any) -> Any:
+
+    if value_type == int:
+        return int(value)
+    if value_type == float:
+        return float(value)
+    if value_type == datetime:
+        return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+    if value_type == date:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    if value_type == time:
+        return datetime.strptime(value, "%H:%M").time()
+    raise ValueError(
+        f"Unsupported value type: {value_type}. Expected one of: {VALID_TYPES}"
+    )
+
+
+def blind_parse_value(value: str) -> Any:
+    """
+    Attempt to parse date, datetime, date, int, float
+    """
+    for value_type in VALID_TYPES:
+        try:
+            return parse_value(value_type, value)
+        except ValueError:
+            continue
+    raise ValueError(f"Could not parse value: {value}. Expected one of: {VALID_TYPES}")
 
 
 class SliderHandler(WidgetHandler):
@@ -54,22 +85,6 @@ class SliderHandler(WidgetHandler):
                 f"Expected one of: {VALID_TYPES}"
             )
 
-    def parse_value(self, value: Any) -> Any:
-
-        if self.value_type == int:
-            return int(value)
-        if self.value_type == float:
-            return float(value)
-        if self.value_type == datetime:
-            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
-        if self.value_type == date:
-            return datetime.strptime(value, "%Y-%m-%d").date()
-        if self.value_type == time:
-            return datetime.strptime(value, "%H:%M").time()
-        raise ValueError(
-            f"Unsupported value type: {self.value_type}. Expected one of: {VALID_TYPES}"
-        )
-
     def check_bounds(self, value: Any) -> None:
         """
         Check if the value is within the bounds of min_value and max_value.
@@ -92,7 +107,7 @@ class SliderHandler(WidgetHandler):
             str_values = self.validate_multi_url_values(
                 self.url_value, min_values=2, max_values=2, allow_none=False
             )
-            parsed_values = [self.parse_value(v) for v in str_values]
+            parsed_values = [parse_value(self.value_type, v) for v in str_values]
 
             for v in parsed_values:
                 self.check_bounds(v)
@@ -106,6 +121,22 @@ class SliderHandler(WidgetHandler):
 
         else:
             str_value = self.validate_single_url_value(self.url_value, allow_none=False)
-            parsed_value = self.parse_value(str_value)
+            parsed_value = parse_value(self.value_type, str_value)
             self.check_bounds(parsed_value)
             self.bound_args.arguments["value"] = parsed_value
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        if isinstance(value, (list, tuple)):
+            if len(value) != 2:
+                raise ValueError(
+                    f"Slider value must be a list or tuple of length 2 for range sliders, got {len(value)}."
+                )
+            return [blind_parse_value(v) for v in value]
+        return blind_parse_value(value)
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        return validate_multi_url_values(
+            value, min_values=1, max_values=2, allow_none=False
+        )

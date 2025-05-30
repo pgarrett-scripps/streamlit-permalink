@@ -1,3 +1,6 @@
+from typing import Any
+
+from ..url_validators import validate_single_url_value
 from .handler import WidgetHandler
 from ..utils import (
     _validate_multi_options,
@@ -25,3 +28,13 @@ class OptionMenuHandler(WidgetHandler):
 
         actual_value = options_map[str_value]
         self.bound_args.arguments["default_index"] = self.options.index(actual_value)
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        if not isinstance(value, str):
+            raise ValueError(f"OptionMenu value must be a string, got {type(value)}")
+        return value
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        return [validate_single_url_value(value, allow_none=False)]

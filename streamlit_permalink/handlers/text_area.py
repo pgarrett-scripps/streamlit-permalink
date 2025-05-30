@@ -1,3 +1,6 @@
+from typing import Any
+
+from ..url_validators import validate_single_url_value
 from .handler import WidgetHandler
 
 
@@ -29,3 +32,18 @@ class TextAreaHandler(WidgetHandler):
 
         # Update bound arguments with validated value
         self.bound_args.arguments["value"] = value
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        if not isinstance(value, str):
+            raise ValueError(
+                f"{cls.__name__} value must be a string, got {type(value)}"
+            )
+        return value
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        """
+        Validate the URL value for text area.
+        """
+        return [validate_single_url_value(value, allow_none=True)]

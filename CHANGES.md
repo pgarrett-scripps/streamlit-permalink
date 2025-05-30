@@ -1,3 +1,8 @@
+# 1.5.0 Release Notes
+- Added class methods for getting and setting url values to each WidgetHandler
+    - available under stp.widget.get_url_value and stp.widget.set_url_value
+- Fixed DataEditor syncing issue with date, datetime, and time values
+
 # 1.4.0 Release Notes
 - Fixed Naming
 - URL Building functions (to_url_value & create_url)

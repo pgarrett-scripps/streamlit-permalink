@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Any, Union, Tuple
 from datetime import date
 
+from ..url_validators import validate_multi_url_values
+
 from .handler import WidgetHandler
 
 
@@ -89,3 +91,30 @@ class DateInputHandler(WidgetHandler):
                 self.validate_bounds(date_value)
 
             self.bound_args.arguments["value"] = date_values
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        if isinstance(value, (tuple, list)):
+            if len(value) > 2:
+                raise ValueError("Date input can only accept up to 2 values for range.")
+            return tuple(get_date_value(v) for v in value)
+        get_date_value(value)
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        str_values = validate_multi_url_values(
+            value, min_values=0, max_values=2, allow_none=True
+        )
+        try:
+            date_values = tuple(date.fromisoformat(v) for v in str_values)
+        except Exception as err:
+            raise ValueError(
+                f"Invalid date format: {str_values}. Expected format: YYYY-MM-DD.",
+                err,
+            )
+        if len(date_values) == 2:
+            start, end = date_values
+            if start > end:
+                raise ValueError("Start date must be before end date.")
+
+        return date_values

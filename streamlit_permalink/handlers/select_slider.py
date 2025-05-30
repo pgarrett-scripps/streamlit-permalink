@@ -1,4 +1,6 @@
-from typing import List
+from typing import Any, List
+
+from ..url_validators import validate_multi_url_values
 
 from .handler import WidgetHandler
 from ..utils import (
@@ -69,3 +71,19 @@ class SelectSliderHandler(WidgetHandler):
 
             actual_url_value = options_map[str_value]
             self.bound_args.arguments["value"] = actual_url_value
+
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        if isinstance(value, (tuple, list)):
+            if len(value) != 2:
+                raise ValueError(
+                    f"Select slider value must be a single value or a tuple of two values, got {value}."
+                )
+            return tuple(value)
+        return value
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        return validate_multi_url_values(
+            value, min_values=1, max_values=2, allow_none=False
+        )

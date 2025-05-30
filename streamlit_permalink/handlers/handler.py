@@ -1,13 +1,22 @@
+from functools import partial
 from typing import Any, Callable, List, Optional
 import inspect
 
 import streamlit as st
 
+from packaging.version import parse as V
+
 from ..exceptions import UrlParamError
 from ..utils import (
     init_url_value,
     to_url_value,
+    DEFAULT_COMPRESSOR,
+    DEFAULT_DECOMPRESSOR,
+    _compress_list,
+    _decompress_list,
 )
+
+from ..url_validators import validate_multi_url_values, validate_single_url_value
 
 
 class WidgetHandler:
@@ -126,17 +135,13 @@ class WidgetHandler:
         """
         Validate single value from URL parameter.
         """
-        if url_value is None:
-
-            if not allow_none:
-                self.raise_url_error("None value is not allowed.")
-
-            return None
-
-        if not (isinstance(url_value, (list, tuple)) and len(url_value) == 1):
-            self.raise_url_error("Expected a single value, but got multiple values.")
-
-        return self.url_value[0]
+        try:
+            return validate_single_url_value(url_value, allow_none)
+        except ValueError as err:
+            self.raise_url_error(
+                f"Invalid value for {self.handler_name}: {err}",
+                err=err,
+            )
 
     def validate_multi_url_values(
         self,
@@ -148,25 +153,68 @@ class WidgetHandler:
         """
         Validate that all multiselect values are in the options list.
         """
-        # Handle special case for empty selection
-        if url_values is None:
-
-            if not allow_none:
-                self.raise_url_error("None value is not allowed.")
-
-            return []
-
-        if not isinstance(url_values, (list, tuple)):
-            self.raise_url_error("Expected a list of values.")
-
-        if min_values is not None and len(url_values) < min_values:
+        try:
+            return validate_multi_url_values(
+                url_values,
+                min_values=min_values,
+                max_values=max_values,
+                allow_none=allow_none,
+            )
+        except ValueError as err:
             self.raise_url_error(
-                f"Expected at least {min_values} values, but got {len(url_values)}."
+                f"Invalid values for {self.handler_name}: {err}",
+                err=err,
             )
 
-        if max_values is not None and len(url_values) > max_values:
-            self.raise_url_error(
-                f"Expected at most {max_values} values, but got {len(url_values)}."
-            )
+    @classmethod
+    def verify_update_url_value(cls, value: Any) -> Any:
+        # Override this method to verify the value before updating the URL.
+        return value
 
-        return url_values
+    @staticmethod
+    def update_url(
+        value: Any,
+        url_key: str,
+        compressor: Optional[Callable] = None,
+        compress: bool = False,
+    ) -> str:
+        """
+        Update the URL parameter
+        """
+
+        if compressor is None and compress is True:
+            compressor = DEFAULT_COMPRESSOR
+
+        if compress is False:
+            compressor = partial(_compress_list, lambda x: x)
+
+        value = WidgetHandler.verify_update_url_value(value)
+
+        init_url_value(url_key, compressor(to_url_value(value)))
+
+    @classmethod
+    def verify_get_url_value(cls, value: Any) -> Any:
+        # Override this method to verify the value before updating the URL.
+        return value
+
+    @staticmethod
+    def get_url_value(
+        url_key: str, decompressor: Optional[Callable] = None, compress: bool = False
+    ) -> Any:
+        """
+        Get the URL value for the given key.
+        """
+        if decompressor is None and compress is True:
+            decompressor = DEFAULT_DECOMPRESSOR
+        if compress is False:
+            decompressor = partial(_decompress_list, lambda x: x)
+
+        if V(st.__version__) < V("1.30"):
+            raw_url_value = st.experimental_get_query_params().get(url_key, None)
+        else:
+            raw_url_value = st.query_params.get_all(url_key) or None
+
+        if raw_url_value is None:
+            None  # TODO: Differentiate not set vs actaul None value
+
+        return WidgetHandler.verify_get_url_value(decompressor(raw_url_value))

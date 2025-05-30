@@ -67,10 +67,6 @@ example_df = pd.DataFrame(
     }
 )
 
-# drop appointment column
-# example_df = example_df.drop(columns=['appointment (datetime)', 'appointment (time)', 'birthday'])
-
-
 df = stp.data_editor(
     example_df,
     url_key="example_data_editor1",
