@@ -51,5 +51,5 @@ class MultiSelectHandler(WidgetHandler):
         return value
 
     @classmethod
-    def verify_get_url_value(value: Any) -> Any:
+    def verify_get_url_value(cls, value: Any) -> Any:
         return validate_multi_url_values(value, allow_none=False)

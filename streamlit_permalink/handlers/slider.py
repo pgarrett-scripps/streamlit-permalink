@@ -132,11 +132,19 @@ class SliderHandler(WidgetHandler):
                 raise ValueError(
                     f"Slider value must be a list or tuple of length 2 for range sliders, got {len(value)}."
                 )
-            return [blind_parse_value(v) for v in value]
-        return blind_parse_value(value)
+            for v in value:
+                if not isinstance(v, (int, float, datetime, date, time)):
+                    raise ValueError(
+                        f"Invalid value type for slider: {type(v)}. Expected one of: {VALID_TYPES}"
+                    )
+        if not isinstance(value, (int, float, datetime, date, time)):
+            raise ValueError(
+                f"Slider value must be one of {VALID_TYPES}, got {type(value)}"
+            )
+        return value
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
-        return validate_multi_url_values(
+        return [blind_parse_value(v) for v in validate_multi_url_values(
             value, min_values=1, max_values=2, allow_none=False
-        )
+        )]

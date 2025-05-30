@@ -37,5 +37,5 @@ class CheckboxHandler(WidgetHandler):
         return value
 
     @classmethod
-    def verify_get_url_value(value: Any) -> Any:
+    def verify_get_url_value(cls, value: Any) -> Any:
         return [validate_bool(validate_single_url_value(value, allow_none=False))]

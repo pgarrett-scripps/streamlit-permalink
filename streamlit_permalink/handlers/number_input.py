@@ -85,7 +85,7 @@ class NumberInputHandler(WidgetHandler):
         return value
 
     @classmethod
-    def verify_get_url_value(value: Any) -> Any:
+    def verify_get_url_value(cls, value: Any) -> Any:
         str_value = validate_single_url_value(value, allow_none=True)
 
         if str_value is None:

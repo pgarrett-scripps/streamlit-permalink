@@ -4,11 +4,11 @@ requires = ["setuptools"]
 [project]
 name = "streamlit-permalink-pg"
 dynamic = ["version"]
-description = "Effortless permalinks in Streamlit apps"
+description = "Effortless permalinks in Streamlit apps. Synchronize Streamlit Widgets with URL Query Params."
 readme = "README.md"
 authors = [
-    { name = "Franciszek Piszcz", email = "franciszek.piszcz@rtbhouse.com"},
     { name = "Patrick Garrett", email = "pgarrett@scripps.edu"}
+    { name = "Franciszek Piszcz", email = "franciszek.piszcz@rtbhouse.com"},
 ]
 requires-python = ">=3.9"
 dependencies = [
@@ -23,7 +23,7 @@ package-dir = {"" = "."}
 version = {attr = "streamlit_permalink.__version__"}
 
 [project.urls]
-repository = "https://github.com/franekp/streamlit-permalink"
+repository = "https://github.com/pgarrett-scripps/streamlit-permalink"
 
 [project.optional-dependencies]
 test = [

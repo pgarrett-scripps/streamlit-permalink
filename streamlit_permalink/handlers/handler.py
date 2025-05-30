@@ -169,10 +169,13 @@ class WidgetHandler:
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
         # Override this method to verify the value before updating the URL.
-        return value
+        raise NotImplementedError(
+            f"{cls.__name__} must implement verify_update_url_value method."
+        )
 
-    @staticmethod
+    @classmethod
     def update_url(
+        cls,
         value: Any,
         url_key: str,
         compressor: Optional[Callable] = None,
@@ -188,18 +191,20 @@ class WidgetHandler:
         if compress is False:
             compressor = partial(_compress_list, lambda x: x)
 
-        value = WidgetHandler.verify_update_url_value(value)
+        value = cls.verify_update_url_value(value)
 
         init_url_value(url_key, compressor(to_url_value(value)))
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
         # Override this method to verify the value before updating the URL.
-        return value
+        raise NotImplementedError(
+            f"{cls.__name__} must implement verify_get_url_value method."
+        )
 
-    @staticmethod
+    @classmethod
     def get_url_value(
-        url_key: str, decompressor: Optional[Callable] = None, compress: bool = False
+        cls, url_key: str, decompressor: Optional[Callable] = None, compress: bool = False
     ) -> Any:
         """
         Get the URL value for the given key.
@@ -212,9 +217,11 @@ class WidgetHandler:
         if V(st.__version__) < V("1.30"):
             raw_url_value = st.experimental_get_query_params().get(url_key, None)
         else:
-            raw_url_value = st.query_params.get_all(url_key) or None
+            raw_url_value = st.query_params.get_all(url_key)
+            if len(raw_url_value) == 0:
+                raw_url_value = None
 
         if raw_url_value is None:
-            None  # TODO: Differentiate not set vs actaul None value
+            return None
 
-        return WidgetHandler.verify_get_url_value(decompressor(raw_url_value))
+        return cls.verify_get_url_value(decompressor(raw_url_value))
