@@ -2,7 +2,7 @@
 Streamlit widgets that are aware of URL parameters.
 """
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 
 from typing import Any
 

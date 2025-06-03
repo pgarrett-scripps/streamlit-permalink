@@ -51,4 +51,4 @@ class SelectboxHandler(WidgetHandler):
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
-        return validate_single_url_value(value, allow_none=True)
+        return [validate_single_url_value(value, allow_none=True)]

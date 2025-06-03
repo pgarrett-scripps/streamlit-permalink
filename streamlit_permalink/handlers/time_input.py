@@ -63,4 +63,4 @@ class TimeInputHandler(WidgetHandler):
         """
         Validate the URL value for time input.
         """
-        return validate_single_url_value(value, allow_none=False)
+        return [validate_single_url_value(value, allow_none=False)]
