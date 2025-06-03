@@ -1,6 +1,3 @@
-# 1.5.1 Release Notes
-- bug fix for get_url_value - some widgets didnt returna a list
-
 # 1.5.0 Release Notes
 - Added class methods for getting and setting url values to each WidgetHandler
     - available under stp.widget.get_url_value and stp.widget.set_url_value
