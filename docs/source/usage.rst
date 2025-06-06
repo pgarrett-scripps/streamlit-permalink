@@ -1,51 +1,23 @@
 Usage
 =====
 
-Basic Usage
-----------
+Getting Started
+--------------
 
-The ``streamlit_permalink`` (shorthand: ``stp``) namespace contains URL-aware versions of almost all input widgets from Streamlit. 
-
-General usage of input widgets is described in `Streamlit docs <https://docs.streamlit.io/library/api-reference/widgets>`_.
-
-Import the package:
+Replace Streamlit widgets with their URL-aware versions from ``streamlit_permalink`` (``stp``):
 
 .. code-block:: python
 
    import streamlit as st
    import streamlit_permalink as stp
 
-Use URL-aware widgets:
+   # Regular Streamlit widget
+   name = st.text_input("Your name")
 
-.. code-block:: python
+   # URL-aware version - saves state in URL
+   name = stp.text_input("Your name", url_key="name")
 
-   # Instead of st.checkbox
-   is_checked = stp.checkbox("My checkbox", url_key="check")
-
-   # Instead of st.radio
-   option = stp.radio("My radio", options=["A", "B", "C"], url_key="radio")
-
-   # Instead of st.selectbox
-   selected = stp.selectbox("My selectbox", options=["X", "Y", "Z"], url_key="select")
-
-URL Keys
---------
-
-A ``url_key`` is required for all widgets. If not specified:
-
-1. The widget's ``key`` value will be used as ``url_key``
-2. If no ``key`` is present, the widget's label will be used
-
-When ``url_key`` is specified, it also sets the widget's ``key``. Therefore, it's recommended to use only ``url_key``:
-
-.. code-block:: python
-
-   import streamlit_permalink as stp
-
-   # Using url_key parameter makes the widget URL-aware
-   text1 = stp.text_input('Type some text', url_key='secret')
-   # If the user typed 'foobar' into the above text field, the
-   # URL would end with '?secret=foobar' at this point.
+Every widget needs a ``url_key`` to identify it in the URL. When you change the widget value, the URL updates automatically.
 
 Forms Support
 ------------
@@ -79,7 +51,7 @@ Or with alternative syntax:
      # URL is updated only when users hit the submit button
      st.write(text)
 
-Compression Support
+Compression/Decompression of URL values
 ------------------
 
 For widgets that may contain large amounts of text (like ``text_area``), you can enable compression to reduce the URL length:
@@ -147,7 +119,7 @@ By default, all stp widgets will automatically populate their URL value upon ini
 
    text = stp.text_input("Enter text", url_key="text_input", init_url=False)
 
-Setting URL Values Programmatically
+Setting URL Values
 ---------------------------------
 
 Methods to set the URL value are available for each widget using ``set_url_value``. URL value validation is minimal since the actual widgets args are not accessible. Ensure that any value set by ``set_url_value`` is valid for the widget you are setting it for:
@@ -165,7 +137,7 @@ Methods to set the URL value are available for each widget using ``set_url_value
    # custom compression
    stp.checkbox.set_url_value(value=True, url_key='checkbox3', compress=True, compressor=CUSTOM_COMPRESSION_FUNC)
 
-Getting URL Values Programmatically
+Getting URL Values
 ---------------------------------
 
 Likewise, use ``get_url_value`` to retrieve the URL value for widgets. Again, since the actual widget args are not available, only minimal validation can be done. ``multiselect``, ``pills``, and ``segmented_control`` will return string values regardless of what options are provided:
@@ -207,12 +179,7 @@ Available Widgets
 In addition to standard input widgets, it also has an URL-aware version of the `streamlit-option-menu <https://github.com/victoryhb/streamlit-option-menu>`_ component: ``st.option_menu``. For this to work, ``streamlit-option-menu`` must be installed separately.
 
 
-Best Practices
-=============
-
-This page contains best practices and recommendations for using streamlit-permalink effectively.
-
-Avoid Using st.stop()
+Avoid Using st.stop() with Streamlit-Permalink
 --------------------
 
 Using ``st.stop()`` in your Streamlit apps can cause desynchronization issues with URL parameters. 

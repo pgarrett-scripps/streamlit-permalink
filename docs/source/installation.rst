@@ -1,19 +1,17 @@
 Installation
 ============
 
-You can install streamlit-permalink using pip:
+Install via pip:
 
 .. code-block:: bash
 
    pip install streamlit-permalink-pg
 
-Development Installation
------------------------
+That's it! Now you can import and use URL-aware widgets:
 
-For development, you can install the package from source:
+.. code-block:: python
 
-.. code-block:: bash
+   import streamlit_permalink as stp
 
-   git clone https://github.com/pgarrett-scripps/streamlit-permalink.git
-   cd streamlit-permalink
-   pip install -e .
+   # Use any widget with url_key parameter
+   name = stp.text_input("Your name", url_key="name")
