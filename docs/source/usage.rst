@@ -17,12 +17,42 @@ Replace Streamlit widgets with their URL-aware versions from ``streamlit_permali
    # URL-aware version - saves state in URL
    name = stp.text_input("Your name", url_key="name")
 
-Every widget needs a ``url_key`` to identify it in the URL. When you change the widget value, the URL updates automatically.
+Every widget needs a ``url_key`` to identify it in the URL. This will be used to store and retrieve the widget's value in the URL query string. If not
+``url_key`` is provided, the widget will defaul to using the ``key`` parameter, and then the widgets ``label`` if no key is provided. It is recommended 
+to either provide a ``url_key`` or a ``key``.
+
+
+Available Widgets
+----------------
+
+* ``stp.checkbox``
+* ``stp.radio``
+* ``stp.selectbox``
+* ``stp.multiselect``
+* ``stp.slider``
+* ``stp.select_slider``
+* ``stp.text_input``
+* ``stp.number_input``
+* ``stp.text_area``
+* ``stp.date_input``
+* ``stp.time_input``
+* ``stp.color_picker``
+* ``stp.form_submit_button``
+* ``stp.pills``
+* ``stp.segmented_control``
+* ``stp.toggle``
+* ``stp.data_editor``
+
+In addition to standard input widgets, it also has an URL-aware version of the 
+`streamlit-option-menu <https://github.com/victoryhb/streamlit-option-menu>`_ component: 
+``st.option_menu``. For this to work, ``streamlit-option-menu`` must be installed separately.
+
 
 Forms Support
 ------------
 
-To use URL-aware widgets inside Streamlit forms, you need to use ``stp.form`` and ``stp.form_submit_button``, which are the URL-aware counterparts of Streamlit's form functions:
+To use URL-aware widgets inside Streamlit forms, you need to use ``stp.form`` and ``stp.form_submit_button``, which are the URL-aware counterparts 
+of Streamlit's form functions:
 
 .. code-block:: python
 
@@ -91,7 +121,6 @@ By default, compression uses a built-in text compression algorithm. You can also
        decompressor=custom_decompress
    )
 
-Compression also works with lists, such as in ``multiselect`` widgets, where each item in the list will be compressed individually.
 
 Disabling URL-aware Statefulness
 -------------------------------
@@ -155,35 +184,13 @@ Likewise, use ``get_url_value`` to retrieve the URL value for widgets. Again, si
    # custom compression
    stp.checkbox.get_url_value(url_key='checkbox3', compress=True, decompressor=CUSTOM_DECOMPRESSION_FUNC)
 
-Available Widgets
-----------------
-
-* ``stp.checkbox``
-* ``stp.radio``
-* ``stp.selectbox``
-* ``stp.multiselect``
-* ``stp.slider``
-* ``stp.select_slider``
-* ``stp.text_input``
-* ``stp.number_input``
-* ``stp.text_area``
-* ``stp.date_input``
-* ``stp.time_input``
-* ``stp.color_picker``
-* ``stp.form_submit_button``
-* ``stp.pills``
-* ``stp.segmented_control``
-* ``stp.toggle``
-* ``stp.data_editor``
-
-In addition to standard input widgets, it also has an URL-aware version of the `streamlit-option-menu <https://github.com/victoryhb/streamlit-option-menu>`_ component: ``st.option_menu``. For this to work, ``streamlit-option-menu`` must be installed separately.
-
 
 Avoid Using st.stop() with Streamlit-Permalink
 --------------------
 
-Using ``st.stop()`` in your Streamlit apps can cause desynchronization issues with URL parameters. 
-When ``st.stop()`` is called, it can sometimes cause widgets to desynch from their url values.
+Using ``st.stop()`` in your Streamlit apps can cause desynchronization issues with URL parameters, so it's recommended 
+to avoid it when using `streamlit_permalink`. Instead, use conditional statements to control the flow of your application 
+without stopping execution.
 
 **Problem:**
 
@@ -216,3 +223,37 @@ Instead of using ``st.stop()``, use conditional statements to control the flow o
        st.warning("Please enter a value")
    else:
        st.write(f"You entered: {user_input}")
+
+
+Getting and Creating URLs
+--------------------
+
+With the most recent versions of Streamlit (>1.45.0), its possible to get the current page URL 
+from st.context. If your streamlit version is compatible, then you can retreive the full page url 
+with query paramsby using the function: ``get_page_url()``.
+
+.. code-block:: python
+
+   import streamlit as st
+   from streamlit_permalink.utils import get_page_url
+
+   # Get the current page URL with query parameters
+   current_url = get_page_url()
+   st.write(f"Current URL: {current_url}")
+
+Any version of Streamlit can use the utility function ``create_url()`` and ``get_query_params()``. 
+It's possible to acheive the same functionality as ``get_page_url()`` by using these two functions together.
+But this requires that you define the base URL of your Streamlit app.
+
+.. code-block:: python
+
+   from streamlit_permalink.utils import create_url, get_query_params
+
+   URL = "https://example.com"
+   # Create a URL with query parameters
+   url = create_url(URL, {"name": "Alice", "age": 30})
+   st.write(f"Created URL: {url}")
+
+   # Get current query parameters
+   params = get_query_params()
+   st.write(f"Current query parameters: {params}")

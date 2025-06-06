@@ -1,12 +1,22 @@
 # Effortless permalinks in Streamlit apps
 
-This is my fork of streamlit-permalink: https://github.com/franekp/streamlit-permalink. 
-
 ### Installation
 
 ```bash
 pip install streamlit-permalink-pg
 ```
+
+### Demo
+
+[Demo App (Click me!)](https://streamlit-notify.readthedocs.io/).
+
+![Demo](gif/demo.gif)
+
+
+### Interractive Docs App
+
+[Interractive Docs (Click Me!)](https://streamlit-notify.readthedocs.io/).
+
 
 ### Basic usage
 
