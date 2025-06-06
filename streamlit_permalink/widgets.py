@@ -31,9 +31,19 @@ class UrlAwareWidget:
     This class wraps standard Streamlit widgets to enable their values to be
     controlled via URL parameters, enabling permalink functionality.
 
-    Args:
-        base_widget (Callable): The original Streamlit widget function to wrap
-        form (Optional[UrlAwareForm]): The form instaurlAwareFormwidget is part of a form
+    Parameters
+    ----------
+    base_widget : Callable
+        The original Streamlit widget function to wrap
+    _form : Optional[UrlAwareForm], optional
+        The form instance if this widget is part of a form, by default None
+
+    Attributes
+    ----------
+    base_widget : Callable
+        The original Streamlit widget function
+    form : Optional[UrlAwareForm]
+        The form instance if this widget is part of a form
     """
 
     def __init__(
@@ -56,11 +66,52 @@ class UrlAwareWidget:
     # called like a method on the form object. Therefore, we use the
     # descriptor protocol to attach the form object:
     def __get__(self, _form: "UrlAwareForm", _objtype=None):
+        """Descriptor protocol method to support form.widget() syntax.
+
+        Parameters
+        ----------
+        _form : UrlAwareForm
+            The form instance
+        _objtype : type, optional
+            The object type, by default None
+
+        Returns
+        -------
+        UrlAwareWidget
+            A new widget instance with the form attached
+        """
         return UrlAwareWidget(
             getattr(_form.base_form, self.base_widget.__name__), _form
         )
 
     def __call__(self, *args, **kwargs):
+        """Call the wrapped Streamlit widget with URL parameter support.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments passed to the Streamlit widget
+        **kwargs : dict
+            Keyword arguments passed to the Streamlit widget. Special parameters:
+            
+            - url_key : str, optional
+                The key to use in URL parameters, defaults to widget key or label
+            - compress : bool, optional
+                Whether to compress the widget value, by default False
+            - compressor : Callable, optional
+                Custom compression function, by default compress_text
+            - decompressor : Callable, optional
+                Custom decompression function, by default decompress_text
+            - stateful : bool, optional
+                Whether to track the widget state in URL, by default True
+            - init_url : bool, optional
+                Whether to initialize URL parameters on first load, by default True
+
+        Returns
+        -------
+        Any
+            The result from the wrapped Streamlit widget
+        """
 
         url_key = kwargs.pop("url_key", None)
         compress = kwargs.pop("compress", False)
@@ -134,7 +185,15 @@ class UrlAwareWidget:
             user_supplied_change_handler = bound_args.arguments.get("on_change")
 
         def on_change(*args, **kwargs):
+            """Handle widget value changes and update URL parameters.
 
+            Parameters
+            ----------
+            *args : tuple
+                Positional arguments passed to the on_change handler
+            **kwargs : dict
+                Keyword arguments passed to the on_change handler
+            """
             if V(st.__version__) < V("1.30"):
                 url[url_key] = compressor(
                     to_url_value(getattr(st.session_state, bound_args.arguments["key"]))
@@ -149,7 +208,15 @@ class UrlAwareWidget:
                 user_supplied_change_handler(*args, **kwargs)
 
         def on_change_data_editor(*args, **kwargs):
+            """Special handler for data_editor widget changes.
 
+            Parameters
+            ----------
+            *args : tuple
+                Positional arguments passed to the on_change handler
+            **kwargs : dict
+                Keyword arguments passed to the on_change handler
+            """
             original_df = getattr(
                 st.session_state,
                 f'STREAMLIT_PERMALINK_DATA_EDITOR_{bound_args.arguments["key"]}',
@@ -201,20 +268,28 @@ class UrlAwareWidget:
         decompressor: Callable,
         init_url: bool = True,
     ) -> Any:
-        """
-        Call the widget inside a form.
+        """Call the widget inside a form.
 
-        Args:
-            _form: The form instance
-            url_key: The URL key
-            bound_args: The bound arguments
-            compressor: The compressor function
-            decompressor: The decompressor function
+        Parameters
+        ----------
+        _form : UrlAwareForm
+            The form instance
+        url_key : str
+            The URL key for the widget
+        bound_args : inspect.BoundArguments
+            The bound arguments for the widget call
+        compressor : Callable
+            The compressor function
+        decompressor : Callable
+            The decompressor function
+        init_url : bool, optional
+            Whether to initialize URL parameters on first load, by default True
 
-        Returns:
+        Returns
+        -------
+        Any
             The result of the widget call
         """
-
         _form.field_mapping[url_key] = bound_args.arguments["key"]
 
         if V(st.__version__) < V("1.30"):
@@ -236,12 +311,41 @@ class UrlAwareWidget:
         return result
     
     def get_url_value(self, url_key: str, decompressor: Optional[Callable] = None, compress: bool = False) -> Any:
+        """Get the URL parameter value for a widget.
+
+        Parameters
+        ----------
+        url_key : str
+            The URL key for the widget
+        decompressor : Optional[Callable], optional
+            Custom decompression function, by default None
+        compress : bool, optional
+            Whether the value is compressed, by default False
+
+        Returns
+        -------
+        Any
+            The URL parameter value
+        """
         handler = HANDLERS[self.base_widget.__name__]
         return handler.get_url_value(
             url_key, decompressor, compress
         )
 
     def set_url_value(self, url_key: str, value: Any, compressor: Optional[Callable] = None, compress: bool = False) -> None:
+        """Set the URL parameter value for a widget.
+
+        Parameters
+        ----------
+        url_key : str
+            The URL key for the widget
+        value : Any
+            The value to set
+        compressor : Optional[Callable], optional
+            Custom compression function, by default None
+        compress : bool, optional
+            Whether to compress the value, by default False
+        """
         handler = HANDLERS[self.base_widget.__name__]
         return handler.update_url(
             value, url_key, compressor, compress
@@ -255,9 +359,12 @@ class UrlAwareFormSubmitButton:
 
     Handles updating URL parameters when a form is submitted.
 
-    Args:
-        base_widget (Callable): The original form submit button widget
-        form (Optional[UrlAwareForm]): The form instance if this button is part of a form
+    Parameters
+    ----------
+    base_widget : Callable
+        The original form submit button widget
+    _form : Optional[UrlAwareForm], optional
+        The form instance if this button is part of a form
     """
 
     def __init__(
@@ -275,6 +382,20 @@ class UrlAwareFormSubmitButton:
     # called like a method on the form object. Therefore, we use the
     # descriptor protocol to attach the form object:
     def __get__(self, _form: "UrlAwareForm", _objtype=None):
+        """Descriptor protocol method to support form.widget() syntax.
+
+        Parameters
+        ----------
+        _form : UrlAwareForm
+            The form instance
+        _objtype : type, optional
+            The object type, by default None
+
+        Returns
+        -------
+        UrlAwareFormSubmitButton
+            A new button instance with the form attached
+        """
         return UrlAwareFormSubmitButton(
             getattr(_form.base_form, self.base_widget.__name__), _form
         )
@@ -285,13 +406,21 @@ class UrlAwareFormSubmitButton:
         return self.base_widget(*args, **kwargs)
 
     def call_inside_form(self, _form: "UrlAwareForm", *args, **kwargs):
-        """
-        Call the form submit button inside a form.
+        """Call the form submit button inside a form.
 
-        Args:
-            _form: The form instance
-            *args: The arguments
-            **kwargs: The keyword arguments
+        Parameters
+        ----------
+        _form : UrlAwareForm
+            The form instance
+        *args
+            Positional arguments passed to the submit button
+        **kwargs
+            Keyword arguments passed to the submit button
+            
+        Returns
+        -------
+        Any
+            The result of the submit button call
         """
 
         if V(st.__version__) < V("1.30"):
@@ -377,10 +506,14 @@ class UrlAwareForm:
     Enables form fields to be controlled via URL parameters and updates the URL
     when the form is submitted.
 
-    Args:
-        key (str): The unique key for the form
-        *args: Additional positional arguments passed to st.form
-        **kwargs: Additional keyword arguments passed to st.form
+    Parameters
+    ----------
+    key : str
+        The unique key for the form
+    *args
+        Additional positional arguments passed to st.form
+    **kwargs
+        Additional keyword arguments passed to st.form
     """
 
     checkbox = UrlAwareWidget(st.checkbox)
@@ -414,16 +547,51 @@ class UrlAwareForm:
         self.field_mapping = {}
 
     def __enter__(self):
+        """Enter the form context.
+        
+        Returns
+        -------
+        Any
+            The result of the base form's __enter__ method
+        """
         global _active_form
         _active_form = self
         return self.base_form.__enter__()
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the form context.
+        
+        Parameters
+        ----------
+        exc_type : type
+            The exception type if an exception was raised
+        exc_value : Exception
+            The exception value if an exception was raised
+        traceback : traceback
+            The traceback if an exception was raised
+            
+        Returns
+        -------
+        Any
+            The result of the base form's __exit__ method
+        """
         global _active_form
         _active_form = None
         return self.base_form.__exit__(exc_type, exc_value, traceback)
 
     def __getattr__(self, attr):
+        """Get an attribute from the base form.
+        
+        Parameters
+        ----------
+        attr : str
+            The attribute name
+            
+        Returns
+        -------
+        Any
+            The attribute value
+        """
         return getattr(self.base_form, attr)
 
 

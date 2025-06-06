@@ -1,5 +1,14 @@
 """
 Streamlit widgets that are aware of URL parameters.
+
+This module provides URL-aware versions of Streamlit widgets that synchronize
+their state with URL query parameters, enabling permalink functionality.
+
+Key features:
+- Automatic synchronization of widget states with URL parameters
+- Support for compressing large values
+- Works with all standard Streamlit widgets
+- Form support
 """
 
 __version__ = "1.5.0"
