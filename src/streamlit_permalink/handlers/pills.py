@@ -1,32 +1,37 @@
 from typing import Any, Iterable, List
 
 from ..url_validators import validate_multi_url_values
-
-from .handler import WidgetHandler
-
 from ..utils import (
-    _validate_selection_mode,
-    _validate_multi_options,
+    validate_multi_options,
+    validate_selection_mode,
 )
+from .handler import WidgetHandler
 
 
 class PillsHandler(WidgetHandler):
 
-    def __init__(self, *args, **kwargs):
-        """
-        Initialize the HandlerPills instance.
-        """
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initialize the HandlerPills instance."""
+
         super().__init__(*args, **kwargs)
-        self.options = self.bound_args.arguments.get("options", None)
-        self.str_options: List[str] = _validate_multi_options(
+        options = self.bound_args.arguments.get("options", None)
+
+        self.options: List[Any]
+        if options is None:
+            self.options = []
+        else:
+            self.options = options
+
+        self.str_options: List[str] = validate_multi_options(
             self.options, self.handler_name
         )
 
-        self.selection_mode = _validate_selection_mode(
+        self.selection_mode = validate_selection_mode(
             self.bound_args.arguments.get("selection_mode", "single")
         )
 
     def sync_query_params(self) -> None:
+        """Sync pills value with URL parameter."""
 
         # Validate URL values against options
         str_values: List[str] = self.validate_multi_url_values(
@@ -51,9 +56,12 @@ class PillsHandler(WidgetHandler):
 
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
+        """Verify that the value is a list."""
+
         if not isinstance(value, Iterable):
             raise ValueError(f"Pills value must be a list, got {type(value)}")
-        return value
+
+        return value  # type: ignore
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:

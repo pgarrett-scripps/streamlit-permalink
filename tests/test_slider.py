@@ -174,7 +174,8 @@ class TestSingleSlider:
         set_query_params(at, {"step_slider": ["3"]})
         at.run()
 
-        # assert at.exception (Should probably raise an error, but streamlit doesnt check if value is a multiple of step)
+        # assert at.exception (Should probably raise an error, but streamlit dose not
+        # check if value is a multiple of step)
 
 
 class TestRangeSlider:

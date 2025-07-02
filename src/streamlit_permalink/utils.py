@@ -3,35 +3,40 @@ Utility functions for streamlit_permalink.
 """
 
 import base64
+import warnings
+import zlib
 from datetime import date, datetime, time
 from functools import partial
-from typing import Any, Callable, Iterable, List, Optional, Union
-import zlib
-import warnings
-from packaging.version import parse as V
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
+from urllib.parse import urlencode
 
 import pandas as pd
 import streamlit as st
+from packaging.version import parse as V
 
-from .constants import DATAEDITOR_DATE_VALUE_PREFIX, DATAEDITOR_DATETIME_VALUE_PREFIX, DATAEDITOR_TIME_VALUE_PREFIX, EMPTY_LIST_URL_VALUE, EMPTY_STRING_URL_VALUE, NONE_URL_VALUE
-from urllib.parse import urlencode
+from .constants import (
+    DATAEDITOR_DATE_VALUE_PREFIX,
+    DATAEDITOR_DATETIME_VALUE_PREFIX,
+    DATAEDITOR_TIME_VALUE_PREFIX,
+    EMPTY_LIST_URL_VALUE,
+    EMPTY_STRING_URL_VALUE,
+    NONE_URL_VALUE,
+)
 
 
 class TypedValue:
-    """
-    A class that converts a value to a string and makes it hashable.
-    """
+    """A class that converts a value to a string and makes it hashable."""
 
-    def __init__(self, value):
+    def __init__(self, value: Any):
         self.value = value
-        self.type = type(value)
+        self.type: type = type(value)
 
-    def __eq__(self, other):
-        if not isinstance(other, TypedValue):
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, "TypedValue"):
             return False
         return self.value == other.value and self.type == other.type
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((str(self.value), self.type))
 
     def __repr__(self):
@@ -43,18 +48,18 @@ class StringHashableValue:
     A class that converts a value to a string and makes it hashable.
     """
 
-    def __init__(self, value):
+    def __init__(self, value: Any):
         self.value = value
         self.is_hashable = self._is_hashable(value)
 
-    def _is_hashable(self, value):
+    def _is_hashable(self, value: Any) -> bool:
         try:
             hash(value)
             return True
         except TypeError:
             return False
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, StringHashableValue):
             return False
         if self.is_hashable and other.is_hashable:
@@ -69,19 +74,22 @@ class StringHashableValue:
     def __repr__(self):
         return f"{self.value}"
 
+
 def serialize_df(df: pd.DataFrame) -> str:
     result = df.copy(deep=True)
-    # Check all cells for date, datetime, and time types
     for col in df.columns:
         for idx in result.index:
-            value = result.at[idx, col]
+            value = result.at[idx, col]  # type: ignore
             if isinstance(value, date) and not isinstance(value, datetime):
-                result.at[idx, col] = f"{DATAEDITOR_DATE_VALUE_PREFIX}{value.isoformat()}"
+                result.at[idx, col] = f"{DATAEDITOR_DATE_VALUE_PREFIX}{value.isoformat()}"  # type: ignore
             elif isinstance(value, datetime):
-                result.at[idx, col] = f"{DATAEDITOR_DATETIME_VALUE_PREFIX}{value.isoformat()}"
+                result.at[idx, col] = f"{DATAEDITOR_DATETIME_VALUE_PREFIX}{value.isoformat()}"  # type: ignore
             elif isinstance(value, time):
-                result.at[idx, col] = f"{DATAEDITOR_TIME_VALUE_PREFIX}{value.strftime('%H:%M')}"
-    return result.to_json(orient="records")
+                result.at[idx, col] = f"{DATAEDITOR_TIME_VALUE_PREFIX}{value.strftime('%H:%M')}"  # type: ignore
+
+    json_str: str = result.to_json(orient="records")  # type: ignore
+    return json_str
+
 
 def to_url_value(result: Any) -> Union[str, List[str]]:
     """
@@ -96,9 +104,9 @@ def to_url_value(result: Any) -> Union[str, List[str]]:
     if isinstance(result, (bool, float, int)):
         return str(result)
     if isinstance(result, (list, tuple)):
-        if len(result) == 0:
+        if len(result) == 0:  # type: ignore
             return EMPTY_LIST_URL_VALUE
-        return list(map(to_url_value, result))
+        return list(map(to_url_value, result))  # type: ignore
     if isinstance(result, (date, datetime)):
         return result.isoformat()
     if isinstance(result, time):
@@ -115,31 +123,27 @@ def to_url_value(result: Any) -> Union[str, List[str]]:
 
 
 def init_url_value(url_key: str, url_value: str):
-    """
-    Initialize a URL value.
-    """
+    """Initialize a URL value."""
+
     if V(st.__version__) < V("1.30"):
         url = st.experimental_get_query_params()
-        url[url_key] = url_value
+        url[url_key] = [url_value]
         st.experimental_set_query_params(**url)
     else:
         st.query_params[url_key] = url_value
 
 
-def _validate_multi_options(options: Iterable[Any], widget_name: str) -> List[str]:
-    """
-    Validate multiselect options and convert to strings.
-    """
+def validate_multi_options(
+    options: Optional[Iterable[Any]], widget_name: str
+) -> List[str]:
+    """Validate multiselect options and convert to strings."""
+
     if options is None:
         raise ValueError(
             f"{widget_name.capitalize()} options cannot be None. Expected a non-empty list of options."
         )
 
-    if not isinstance(options, Iterable):
-        raise ValueError(
-            f"Invalid value for {widget_name} options: {options}. Expected an iterable."
-        )
-
+    options = list(options)
     if len(options) == 0:
         raise ValueError(
             f"{widget_name.capitalize()} options cannot be empty. Expected a non-empty list of options."
@@ -170,32 +174,34 @@ def _validate_multi_options(options: Iterable[Any], widget_name: str) -> List[st
     return str_options
 
 
-def _validate_multi_default(
-    default: Union[List[Any], Any, None],
-    options: Union[List[Any], Any, None],
+def validate_multi_default(
+    default: Optional[Union[List[Any], Any]],
+    options: Optional[Union[List[Any], Any]],
     widget_name: str,
 ) -> List[str]:
-    """
-    Validate multiselect default value and convert to list of strings.
-    """
+    """Validate multiselect default value and convert to list of strings."""
+
     if default is None:
         return []
 
     if not isinstance(default, Iterable):
         default = [default]
 
+    if options is None:
+        options = []
+
     # ensure that all default values are in the options list
-    invalid_defaults = [v for v in default if v not in options]
+    invalid_defaults = [v for v in default if v not in options]  # type: ignore
     if invalid_defaults:
         raise ValueError(
             f"Invalid default values for {widget_name}: {invalid_defaults}. "
             f"Valid options are: {options}"
         )
 
-    return list(map(str, default))
+    return list(map(str, default))  # type: ignore
 
 
-def _validate_selection_mode(selection_mode: str) -> str:
+def validate_selection_mode(selection_mode: str) -> str:
     """
     Validate selection mode and convert to string.
     """
@@ -238,14 +244,12 @@ def decompress_text(compressed_text: str) -> str:
     return decompressed
 
 
-def update_data_editor(df: pd.DataFrame, df_updates: dict) -> pd.DataFrame:
-    """
-    Update a DataFrame based on the updates from the data editor.
-    """
+def update_data_editor(df: pd.DataFrame, df_updates: Dict[str, Any]) -> pd.DataFrame:
+    """Update a DataFrame based on the updates from the data editor."""
 
     for row_index, row_data in df_updates["edited_rows"].items():
         for column_name, value in row_data.items():
-            df.at[int(row_index), column_name] = value
+            df.at[int(row_index), column_name] = value  # type: ignore
 
     for row_data in df_updates["added_rows"]:
         df = pd.concat([df, pd.DataFrame([row_data])], ignore_index=True)
@@ -256,16 +260,17 @@ def update_data_editor(df: pd.DataFrame, df_updates: dict) -> pd.DataFrame:
     return df
 
 
-def to_list(value: Any) -> List:
+def to_list(value: Any) -> List[Any]:
     """Convert a value to a list if it's not already one."""
+
     if value is None:
         return []
     if isinstance(value, list):
-        return value
+        return value  # type: ignore
     return [value]
 
 
-def get_query_params_url(params_dict: dict) -> str:
+def get_query_params_url(params_dict: Dict[str, Any]) -> str:
     """
     Create URL query string from a dictionary of parameters.
 
@@ -276,7 +281,7 @@ def get_query_params_url(params_dict: dict) -> str:
         str: A URL query string starting with '?'
     """
     # Convert nested params dict to flat list of tuples with repeated keys for multiple values
-    query_items = []
+    query_items: List[Tuple[str, str]] = []
     for key, values in params_dict.items():
         values_list = to_list(values)
         for value in values_list:
@@ -287,7 +292,9 @@ def get_query_params_url(params_dict: dict) -> str:
     return f"?{query_string}" if query_string else ""
 
 
-def requires_streamlit_version(min_version: str):
+def requires_streamlit_version(
+    min_version: str,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to check if the current Streamlit version meets the minimum requirement.
 
@@ -303,8 +310,8 @@ def requires_streamlit_version(min_version: str):
             # Function implementation
     """
 
-    def decorator(func):
-        def wrapper(*args, **kwargs):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             if V(st.__version__) < V(min_version):
                 raise RuntimeError(
                     f"{func.__name__} requires Streamlit {min_version} or newer. "
@@ -317,7 +324,7 @@ def requires_streamlit_version(min_version: str):
     return decorator
 
 
-def get_query_params() -> dict[str, List]:
+def get_query_params() -> Dict[str, List[str]]:
     """
     Get the current query parameters from the URL.
 
@@ -346,10 +353,10 @@ def get_page_url() -> str:
 
 def create_url(
     url: str,
-    url_params: dict[str, Any] = None,
+    url_params: Optional[Dict[str, Any]] = None,
 ) -> str:
     """
-    Create a URL with include teh given values as query parameters.
+    Create a URL with include the given values as query parameters.
 
     Args:
         url (str): Base URL
@@ -371,8 +378,7 @@ def create_url(
     return f"{url}{get_query_params_url(url_params)}"
 
 
-# write a function that takes a callable and a list and runs it with each element of the list
-def _compress_list(func: Callable, l: Union[List[str], str]):
+def compress_list(func: Callable[..., str], l: Union[List[str], str]) -> List[str]:
 
     if l == EMPTY_LIST_URL_VALUE:
         return [EMPTY_LIST_URL_VALUE]
@@ -384,14 +390,12 @@ def _compress_list(func: Callable, l: Union[List[str], str]):
         return [EMPTY_STRING_URL_VALUE]
 
     if isinstance(l, str):
-        return func(l)
-    if isinstance(l, (list, tuple)):
-        return [func(e) for e in l]
+        return [func(l)]
 
-    raise ValueError(f"Invalid list type: {type(l)}")
+    return [func(e) for e in l]
 
 
-def _decompress_list(func: Callable, l: List[str]):
+def decompress_list(func: Callable[..., Any], l: List[str]) -> Optional[List[Any]]:
 
     if l == [EMPTY_LIST_URL_VALUE]:
         return []
@@ -407,5 +411,5 @@ def _decompress_list(func: Callable, l: List[str]):
     return l
 
 
-DEFAULT_COMPRESSOR = partial(_compress_list, compress_text)
-DEFAULT_DECOMPRESSOR = partial(_decompress_list, decompress_text)
+DEFAULT_COMPRESSOR = partial(compress_list, compress_text)
+DEFAULT_DECOMPRESSOR = partial(decompress_list, decompress_text)

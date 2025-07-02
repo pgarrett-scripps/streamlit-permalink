@@ -187,6 +187,6 @@ class TestFormTextInput:
         assert not self.at.exception
         params = get_query_params(self.at)
 
-        # Again this shoul dwork but doesnt
+        # Again this should work but does not
         # assert params.get("form_text") == ['']
         # assert params.get("form_limited") == ['']

@@ -1,0 +1,9 @@
+.
+pandas>=2.2.3
+streamlit>=1.45.0
+streamlit_option_menu>=0.4.0
+black>=25.1.0
+pytest>=8.4.1
+pylint>=3.3.7
+mypy>=1.16.1
+pre-commit>=4.2.0

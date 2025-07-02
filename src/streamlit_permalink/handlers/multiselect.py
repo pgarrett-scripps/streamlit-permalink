@@ -1,22 +1,27 @@
 from typing import Any, Iterable, List
 
 from ..url_validators import validate_multi_url_values
-
-from .handler import WidgetHandler
 from ..utils import (
-    _validate_multi_options,
+    validate_multi_options,
 )
+from .handler import WidgetHandler
 
 
 class MultiSelectHandler(WidgetHandler):
 
-    def __init__(self, *args, **kwargs):
-        """
-        Initialize the HandlerMultiSelect instance.
-        """
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize the HandlerMultiSelect instance."""
+
         super().__init__(*args, **kwargs)
-        self.options = self.bound_args.arguments.get("options")
-        self.str_options: List[str] = _validate_multi_options(
+        options = self.bound_args.arguments.get("options", None)
+
+        self.options: List[Any]
+        if options is None:
+            self.options = []
+        else:
+            self.options = options
+
+        self.str_options: List[str] = validate_multi_options(
             self.options, self.handler_name
         )
 
@@ -25,6 +30,8 @@ class MultiSelectHandler(WidgetHandler):
         )
 
     def sync_query_params(self) -> None:
+        """Sync multiselect value with URL parameter."""
+
         str_values = self.validate_multi_url_values(
             self.url_value, min_values=None, max_values=None, allow_none=True
         )
@@ -46,10 +53,15 @@ class MultiSelectHandler(WidgetHandler):
 
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
+        """Verify that the value is a list."""
+
         if not isinstance(value, Iterable):
             raise ValueError(f"MultiSelect value must be a list, got {type(value)}")
-        return value
+
+        return value  # type: ignore
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
+        """Verify that the value is a list of strings."""
+
         return validate_multi_url_values(value, allow_none=False)

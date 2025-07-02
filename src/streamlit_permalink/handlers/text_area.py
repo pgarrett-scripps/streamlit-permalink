@@ -1,22 +1,22 @@
+"""Handler for text area widget URL state synchronization."""
+
 from typing import Any
 
-from ..url_validators import validate_single_url_value
+from ..url_validators import validate_single_url_value_allow_none
 from .handler import WidgetHandler
 
 
 class TextAreaHandler(WidgetHandler):
-    """
-    Handler for text area widget URL state synchronization.
-    """
+    """Handler for text area widget URL state synchronization."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.max_chars = self.bound_args.arguments.get("max_chars", None)
 
     def sync_query_params(self) -> None:
 
         # Get the validated single URL value
-        value = self.validate_single_url_value(self.url_value, allow_none=True)
+        value = self.validate_single_url_value_allow_none(self.url_value)
 
         if value is None:
             # If no URL value is provided, set value to None
@@ -46,4 +46,4 @@ class TextAreaHandler(WidgetHandler):
         """
         Validate the URL value for text area.
         """
-        return [validate_single_url_value(value, allow_none=True)]
+        return [validate_single_url_value_allow_none(value)]

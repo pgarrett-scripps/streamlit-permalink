@@ -1,26 +1,34 @@
+"""Handler for select slider widget."""
+
 from typing import Any, List
 
 from ..url_validators import validate_multi_url_values
-
-from .handler import WidgetHandler
 from ..utils import (
-    _validate_multi_options,
+    validate_multi_options,
 )
+from .handler import WidgetHandler
 
 
 class SelectSliderHandler(WidgetHandler):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initialize the HandlerSelectSlider instance."""
 
         super().__init__(*args, **kwargs)
         # Get and validate options
-        self.options = self.bound_args.arguments.get("options")
-        self.str_options: List[str] = _validate_multi_options(
+        options = self.bound_args.arguments.get("options", None)
+        self.options: List[Any]
+        if options is None:
+            self.options = []
+        else:
+            self.options = options
+
+        self.str_options: List[str] = validate_multi_options(
             self.options, self.handler_name
         )
 
         # Get value
-        self.value = self.bound_args.arguments.get("value", self.options[0])
+        self.value: Any = self.bound_args.arguments.get("value", self.options[0])
 
         self.is_range_slider = False
         if isinstance(self.value, (tuple, list)):
@@ -33,6 +41,7 @@ class SelectSliderHandler(WidgetHandler):
             self.is_range_slider = True
 
     def sync_query_params(self) -> None:
+        """Sync select slider value with URL parameter."""
 
         options_map = {str(v): v for v in self.options}
 
@@ -60,8 +69,8 @@ class SelectSliderHandler(WidgetHandler):
             self.bound_args.arguments["value"] = actual_values
 
         else:
-            str_value: str = self.validate_single_url_value(
-                self.url_value, allow_none=False
+            str_value: str = self.validate_single_url_value_disallow_none(
+                self.url_value
             )
 
             if str_value not in self.str_options:
@@ -74,16 +83,20 @@ class SelectSliderHandler(WidgetHandler):
 
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
+        """Verify that the value is a single value or a tuple of two values."""
+
         if isinstance(value, (tuple, list)):
-            if len(value) != 2:
+            if len(value) != 2:  # type: ignore
                 raise ValueError(
                     f"Select slider value must be a single value or a tuple of two values, got {value}."
                 )
-            return tuple(value)
+            return tuple(value)  # type: ignore
         return value
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
+        """Verify that the value is a list of one or two strings."""
+
         return validate_multi_url_values(
             value, min_values=1, max_values=2, allow_none=False
         )

@@ -1,9 +1,11 @@
 # 1.5.0 Release Notes
+
 - Added class methods for getting and setting url values to each WidgetHandler
-    - available under stp.widget.get_url_value and stp.widget.set_url_value
+  - available under stp.widget.get_url_value and stp.widget.set_url_value
 - Fixed DataEditor syncing issue with date, datetime, and time values
 
 # 1.4.0 Release Notes
+
 - Fixed Naming
 - URL Building functions (to_url_value & create_url)
 - STP constants available from namespace
@@ -11,19 +13,21 @@
 # 1.3.0 Release Notes
 
 ## Changes
+
 - Added support for `accept_new_options` to multiselect and selectbox (for streamlit v1.45)
 - Added functions: `get_query_params` and `get_page_url` (for streamlit v1.45)
 - Revert docs & examples to use `url_key` for widget creation.
 - Added support for `stp.data_editor`
 - Added handler base class, and refactored handlers to use this
 - Url value init now optional
-- Added "_STREAMLIT_PERMALINK_EMPTY_STRING" to the possible stp query values. 
-- Compression will no longer compress _STREAMLIT_PERMALINK_* values
-- Created docs_app.py (interractive documentation)
+- Added "\_STREAMLIT_PERMALINK_EMPTY_STRING" to the possible stp query values.
+- Compression will no longer compress _STREAMLIT_PERMALINK_\* values
+- Created docs_app.py (interactive documentation)
 
 # 1.2.0 Release Notes
 
 ## Changes
+
 - Improved code organization
 - Added comprehensive type annotations
 - Added support for `pills` and `segmented_control` widgets
@@ -40,7 +44,7 @@
 - Statefulness can be disabled by passing `stateful=False`
 
 ## Future Roadmap
+
 - Add test coverage for `pills`, `segmented_control` & `data_editor` widgets once testing functions become available
 - Remove support for `st.option_menu`?
 - Add `data_editor` url value validation
-

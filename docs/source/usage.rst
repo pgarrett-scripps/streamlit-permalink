@@ -18,7 +18,7 @@ Replace Streamlit widgets with their URL-aware versions from ``streamlit_permali
    name = stp.text_input("Your name", url_key="name")
 
 Every widget needs a ``url_key`` to identify it in the URL. This will be used to store and retrieve the widget's value in the URL query string. If not
-``url_key`` is provided, the widget will defaul to using the ``key`` parameter, and then the widgets ``label`` if no key is provided. It is recommended 
+``url_key`` is provided, the widget will default to using the ``key`` parameter, and then the widgets ``label`` if no key is provided. It is recommended
 to either provide a ``url_key`` or a ``key``.
 
 
@@ -43,15 +43,15 @@ Available Widgets
 * ``stp.toggle``
 * ``stp.data_editor``
 
-In addition to standard input widgets, it also has an URL-aware version of the 
-`streamlit-option-menu <https://github.com/victoryhb/streamlit-option-menu>`_ component: 
+In addition to standard input widgets, it also has an URL-aware version of the
+`streamlit-option-menu <https://github.com/victoryhb/streamlit-option-menu>`_ component:
 ``st.option_menu``. For this to work, ``streamlit-option-menu`` must be installed separately.
 
 
 Forms Support
 ------------
 
-To use URL-aware widgets inside Streamlit forms, you need to use ``stp.form`` and ``stp.form_submit_button``, which are the URL-aware counterparts 
+To use URL-aware widgets inside Streamlit forms, you need to use ``stp.form`` and ``stp.form_submit_button``, which are the URL-aware counterparts
 of Streamlit's form functions:
 
 .. code-block:: python
@@ -114,8 +114,8 @@ By default, compression uses a built-in text compression algorithm. You can also
 
    # Use custom compression for a text area
    long_text = stp.text_area(
-       "Enter long text", 
-       url_key="essay", 
+       "Enter long text",
+       url_key="essay",
        compress=True,
        compressor=custom_compress,
        decompressor=custom_decompress
@@ -188,8 +188,8 @@ Likewise, use ``get_url_value`` to retrieve the URL value for widgets. Again, si
 Avoid Using st.stop() with Streamlit-Permalink
 --------------------
 
-Using ``st.stop()`` in your Streamlit apps can cause desynchronization issues with URL parameters, so it's recommended 
-to avoid it when using `streamlit_permalink`. Instead, use conditional statements to control the flow of your application 
+Using ``st.stop()`` in your Streamlit apps can cause desynchronization issues with URL parameters, so it's recommended
+to avoid it when using `streamlit_permalink`. Instead, use conditional statements to control the flow of your application
 without stopping execution.
 
 **Problem:**
@@ -198,13 +198,13 @@ without stopping execution.
 
    import streamlit as st
    import streamlit_permalink as stp
-   
+
    user_input = stp.text_input("Enter something", url_key="input")
-   
+
    if not user_input:
        st.warning("Please enter a value")
        st.stop()  # This can cause URL sync issues!
-   
+
    # The code below may not execute, preventing URL sync
    st.write(f"You entered: {user_input}")
 
@@ -216,9 +216,9 @@ Instead of using ``st.stop()``, use conditional statements to control the flow o
 
    import streamlit as st
    import streamlit_permalink as stp
-   
+
    user_input = stp.text_input("Enter something", url_key="input")
-   
+
    if not user_input:
        st.warning("Please enter a value")
    else:
@@ -228,8 +228,8 @@ Instead of using ``st.stop()``, use conditional statements to control the flow o
 Getting and Creating URLs
 --------------------
 
-With the most recent versions of Streamlit (>1.45.0), its possible to get the current page URL 
-from st.context. If your streamlit version is compatible, then you can retreive the full page url 
+With the most recent versions of Streamlit (>1.45.0), its possible to get the current page URL
+from st.context. If your streamlit version is compatible, then you can retrieve the full page url
 with query paramsby using the function: ``get_page_url()``.
 
 .. code-block:: python
@@ -241,8 +241,8 @@ with query paramsby using the function: ``get_page_url()``.
    current_url = get_page_url()
    st.write(f"Current URL: {current_url}")
 
-Any version of Streamlit can use the utility function ``create_url()`` and ``get_query_params()``. 
-It's possible to acheive the same functionality as ``get_page_url()`` by using these two functions together.
+Any version of Streamlit can use the utility function ``create_url()`` and ``get_query_params()``.
+It's possible to achieve the same functionality as ``get_page_url()`` by using these two functions together.
 But this requires that you define the base URL of your Streamlit app.
 
 .. code-block:: python

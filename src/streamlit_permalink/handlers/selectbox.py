@@ -1,30 +1,37 @@
-from typing import Any, Optional
+from typing import Any, List, Optional
 
-from ..url_validators import validate_single_url_value
-
-from .handler import WidgetHandler
+from ..url_validators import validate_single_url_value_allow_none
 from ..utils import (
-    _validate_multi_options,
+    validate_multi_options,
 )
+from .handler import WidgetHandler
 
 
 class SelectboxHandler(WidgetHandler):
 
-    def __init__(self, *args, **kwargs):
-        """
-        Initialize the HandlerSelectbox instance.
-        """
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initialize the HandlerSelectbox instance."""
+
         super().__init__(*args, **kwargs)
-        self.options = self.bound_args.arguments.get("options")
-        self.str_options = _validate_multi_options(self.options, self.handler_name)
+        options = self.bound_args.arguments.get("options")
+
+        self.options: List[Any]
+        if options is None:
+            self.options = []
+        else:
+            self.options = options
+
+        self.str_options = validate_multi_options(self.options, self.handler_name)
 
         self.accept_new_options = self.bound_args.arguments.get(
             "accept_new_options", False
         )
 
     def sync_query_params(self) -> None:
-        str_value: Optional[str] = self.validate_single_url_value(
-            self.url_value, allow_none=True
+        """Sync selectbox value with URL parameter."""
+
+        str_value: Optional[str] = self.validate_single_url_value_allow_none(
+            self.url_value
         )
 
         if str_value is None:
@@ -47,8 +54,12 @@ class SelectboxHandler(WidgetHandler):
 
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
+        """Verify that the value is a string or None."""
+
         return value
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
-        return [validate_single_url_value(value, allow_none=True)]
+        """Verify that the value is a list of strings or None."""
+
+        return [validate_single_url_value_allow_none(value)]

@@ -2,23 +2,24 @@
 Widgets that are aware of URL parameters.
 """
 
-from typing import Callable, Any, Optional, TypeVar
-from functools import partial
 import inspect
+from functools import partial
+from typing import Any, Callable, Optional, TypeVar
 
-from packaging.version import parse as V
 import streamlit as st
+from packaging.version import parse as V
+from streamlit.delta_generator import DeltaGenerator
 
+from .handlers import HANDLERS
+from .handlers.data_editor import fix_datetime_columns
 from .utils import (
-    _compress_list,
-    _decompress_list,
+    compress_list,
     compress_text,
+    decompress_list,
     decompress_text,
     to_url_value,
     update_data_editor,
 )
-from .handlers import HANDLERS
-from .handlers.data_editor import fix_datetime_columns
 
 _active_form = None
 
@@ -47,7 +48,9 @@ class UrlAwareWidget:
     """
 
     def __init__(
-        self, base_widget: Callable, _form: Optional["UrlAwareForm"] = None
+        self,
+        base_widget: Callable[..., DeltaGenerator],
+        _form: Optional["UrlAwareForm"] = None,
     ) -> None:
         self.base_widget = base_widget
         self.form = _form
@@ -93,7 +96,7 @@ class UrlAwareWidget:
             Positional arguments passed to the Streamlit widget
         **kwargs : dict
             Keyword arguments passed to the Streamlit widget. Special parameters:
-            
+
             - url_key : str, optional
                 The key to use in URL parameters, defaults to widget key or label
             - compress : bool, optional
@@ -128,8 +131,8 @@ class UrlAwareWidget:
             decompressor = lambda x: x
 
         # partial partial run_with_each_element for compressor and decompressor
-        compressor = partial(_compress_list, compressor)
-        decompressor = partial(_decompress_list, decompressor)
+        compressor = partial(compress_list, compressor)
+        decompressor = partial(decompress_list, decompressor)
 
         # add compressor and decompressor to session state
         if st.session_state.get("compress_map") is None:
@@ -309,8 +312,13 @@ class UrlAwareWidget:
             init_url=init_url,
         ).run()
         return result
-    
-    def get_url_value(self, url_key: str, decompressor: Optional[Callable] = None, compress: bool = False) -> Any:
+
+    def get_url_value(
+        self,
+        url_key: str,
+        decompressor: Optional[Callable] = None,
+        compress: bool = False,
+    ) -> Any:
         """Get the URL parameter value for a widget.
 
         Parameters
@@ -328,11 +336,15 @@ class UrlAwareWidget:
             The URL parameter value
         """
         handler = HANDLERS[self.base_widget.__name__]
-        return handler.get_url_value(
-            url_key, decompressor, compress
-        )
+        return handler.get_url_value(url_key, decompressor, compress)
 
-    def set_url_value(self, url_key: str, value: Any, compressor: Optional[Callable] = None, compress: bool = False) -> None:
+    def set_url_value(
+        self,
+        url_key: str,
+        value: Any,
+        compressor: Optional[Callable] = None,
+        compress: bool = False,
+    ) -> None:
         """Set the URL parameter value for a widget.
 
         Parameters
@@ -347,11 +359,7 @@ class UrlAwareWidget:
             Whether to compress the value, by default False
         """
         handler = HANDLERS[self.base_widget.__name__]
-        return handler.update_url(
-            value, url_key, compressor, compress
-        )
-    
-            
+        return handler.update_url(value, url_key, compressor, compress)
 
 
 class UrlAwareFormSubmitButton:
@@ -416,7 +424,7 @@ class UrlAwareFormSubmitButton:
             Positional arguments passed to the submit button
         **kwargs
             Keyword arguments passed to the submit button
-            
+
         Returns
         -------
         Any
@@ -548,7 +556,7 @@ class UrlAwareForm:
 
     def __enter__(self):
         """Enter the form context.
-        
+
         Returns
         -------
         Any
@@ -560,7 +568,7 @@ class UrlAwareForm:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Exit the form context.
-        
+
         Parameters
         ----------
         exc_type : type
@@ -569,7 +577,7 @@ class UrlAwareForm:
             The exception value if an exception was raised
         traceback : traceback
             The traceback if an exception was raised
-            
+
         Returns
         -------
         Any
@@ -581,12 +589,12 @@ class UrlAwareForm:
 
     def __getattr__(self, attr):
         """Get an attribute from the base form.
-        
+
         Parameters
         ----------
         attr : str
             The attribute name
-            
+
         Returns
         -------
         Any

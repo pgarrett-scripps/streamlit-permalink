@@ -1,16 +1,15 @@
-from datetime import datetime
-from typing import Any, Union, Tuple
-from datetime import date
+"""Handler for the st.date_input widget."""
+
+from datetime import date, datetime
+from typing import Any, Optional, Tuple, Union
 
 from ..url_validators import validate_multi_url_values
-
 from .handler import WidgetHandler
-
 
 DateValue = Union[None, date, Tuple[date, ...]]
 
 
-def get_date_value(value: Any) -> DateValue:
+def get_date_value(value: Optional[Union[str, date, datetime]]) -> DateValue:
     """
     Convert a value ("today", datetime.date, datetime.datetime, str, or None) to a date value.
     """
@@ -28,8 +27,11 @@ def get_date_value(value: Any) -> DateValue:
 
 
 class DateInputHandler(WidgetHandler):
+    """Handler for the st.date_input widget."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initialize the HandlerDateInput instance."""
+
         super().__init__(*args, **kwargs)
         self.is_range = isinstance(
             self.bound_args.arguments.get("value", "today"), (list, tuple)
@@ -39,6 +41,8 @@ class DateInputHandler(WidgetHandler):
         self.max_value = get_date_value(self.bound_args.arguments.get("max_value"))
 
     def validate_bounds(self, date_value: Any) -> None:
+        """Validate that the date value is within the specified bounds."""
+
         if self.min_value is not None and date_value < self.min_value:
             self.raise_url_error(
                 f"Date {date_value} is before the minimum allowed date {self.min_value}."
@@ -49,10 +53,11 @@ class DateInputHandler(WidgetHandler):
             )
 
     def sync_query_params(self) -> None:
+        """Sync date input value with URL parameter."""
 
         if not self.is_range:
 
-            str_value = self.validate_single_url_value(self.url_value, allow_none=True)
+            str_value = self.validate_single_url_value_allow_none(self.url_value)
 
             if str_value is None:
                 self.bound_args.arguments["value"] = None
@@ -63,11 +68,11 @@ class DateInputHandler(WidgetHandler):
             except Exception as err:
                 self.raise_url_error(
                     f"Invalid date format. Expected format: {str_value} YYYY-MM-DD.",
-                    err,
+                    err=err,
                 )
+                raise RuntimeError("Unreachable")
 
             self.validate_bounds(date_value)
-
             self.bound_args.arguments["value"] = date_value
 
         else:
@@ -81,6 +86,7 @@ class DateInputHandler(WidgetHandler):
                     f"Invalid date format: {str_values}. Expected format: YYYY-MM-DD.",
                     err,
                 )
+                raise RuntimeError("Unreachable")
 
             if len(date_values) == 2:
                 start, end = date_values
@@ -94,14 +100,23 @@ class DateInputHandler(WidgetHandler):
 
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
+        """Verify that the value is a valid date or date range."""
+
         if isinstance(value, (tuple, list)):
-            if len(value) > 2:
+            if len(value) > 2:  # type: ignore
                 raise ValueError("Date input can only accept up to 2 values for range.")
-            return tuple(get_date_value(v) for v in value)
-        get_date_value(value)
+            return tuple(get_date_value(v) for v in value)  # type: ignore
+        elif isinstance(value, str):
+            return get_date_value(value)
+        else:
+            raise ValueError(
+                f"Date input must be a string or a list/tuple, got {type(value)}"
+            )
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
+        """Validate the URL value for date input."""
+
         str_values = validate_multi_url_values(
             value, min_values=0, max_values=2, allow_none=True
         )

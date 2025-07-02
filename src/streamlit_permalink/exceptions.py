@@ -2,15 +2,21 @@
 Exceptions for streamlit_permalink.
 """
 
+from typing import Any, Optional
+
 
 class UrlParamError(Exception):
     """Exception raised for errors in URL parameter handling."""
 
     def __init__(
-        self, message="URL parameter error", handler=None, url_value=None, url_key=None
+        self,
+        message: str = "URL parameter error",
+        handler_name: Optional[str] = None,
+        url_value: Optional[Any] = None,
+        url_key: Optional[str] = None,
     ):
         self.message = message
-        self.handler = handler
+        self.handler = handler_name
         self.url_value = url_value
         self.url_key = url_key
         super().__init__(self.message)

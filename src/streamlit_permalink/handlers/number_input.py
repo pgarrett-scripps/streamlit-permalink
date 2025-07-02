@@ -1,34 +1,35 @@
-from typing import Any
+from typing import Any, Optional, Union
 
-from ..url_validators import validate_single_url_value
-
+from ..url_validators import validate_single_url_value_allow_none
 from .handler import WidgetHandler
 
 
 class NumberInputHandler(WidgetHandler):
 
-    def __init__(self, *args, **kwargs):
-        """
-        Initialize the HandlerMultiSelect instance.
-        """
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize the NumberInputHandler instance."""
+
         super().__init__(*args, **kwargs)
         self.value = self.bound_args.arguments.get("value", "min")
         if self.value == "min":
             self.value = self.bound_args.arguments.get("min_value", 0.0)
 
-        self.value_type = type(self.value)
+        self.value_type: type = type(self.value)
 
         # Validate input value type
         if self.value_type not in (int, float, type(None)):
             self.raise_url_error("Expected int, float or None value.")
 
-        self.min_value = self.bound_args.arguments.get("min_value", None)
-        self.max_value = self.bound_args.arguments.get("max_value", None)
+        self.min_value: Optional[float] = self.bound_args.arguments.get(
+            "min_value", None
+        )
+        self.max_value: Optional[float] = self.bound_args.arguments.get(
+            "max_value", None
+        )
 
-    def validate_bounds(self, value: Any) -> None:
-        """
-        Validate the bounds of the number input.
-        """
+    def validate_bounds(self, value: Union[int, float]) -> None:
+        """Validate the bounds of the number input."""
+
         if self.min_value is not None and value < self.min_value:
             self.raise_url_error(
                 f"Value {value} is less than the minimum allowed value {self.min_value}."
@@ -39,9 +40,9 @@ class NumberInputHandler(WidgetHandler):
             )
 
     def sync_query_params(self) -> None:
+        """Sync number input value with URL parameter."""
 
-        # Parse the URL value
-        str_value = self.validate_single_url_value(self.url_value, allow_none=True)
+        str_value = self.validate_single_url_value_allow_none(self.url_value)
 
         if str_value is None:
 
@@ -51,6 +52,7 @@ class NumberInputHandler(WidgetHandler):
             self.bound_args.arguments["value"] = None
             return
 
+        parsed_value = None
         try:
             if self.value_type == int:
                 parsed_value = int(str_value)
@@ -69,24 +71,28 @@ class NumberInputHandler(WidgetHandler):
                 else "float" if self.value_type == float else "int, float"
             )
             self.raise_url_error(f"Expected {type_name} value.", err)
+            raise RuntimeError("Unreachable")
 
-        # Validate the parsed value against min and max bounds
+        if parsed_value is None:
+            self.raise_url_error("Failed to parse value.")
+            raise RuntimeError("Unreachable")
+
         self.validate_bounds(parsed_value)
-
         self.bound_args.arguments["value"] = parsed_value
 
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
-        """
-        Verify the value to be updated in the URL.
-        """
+        """Verify the value to be updated in the URL."""
+
         if not isinstance(value, (int, float, type(None))):
             raise ValueError(f"Value must be int, float or None, got {type(value)}")
         return value
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
-        str_value = validate_single_url_value(value, allow_none=True)
+        """Verify the value to be set in the URL."""
+
+        str_value = validate_single_url_value_allow_none(value)
 
         if str_value is None:
             return [None]

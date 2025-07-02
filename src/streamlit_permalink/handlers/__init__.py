@@ -2,23 +2,26 @@
 This module contains handlers for the Streamlit widgets.
 """
 
+from typing import Dict, Type
+
 import streamlit as st
 
 # Base handlers that are available in all Streamlit versions
 from .checkbox import CheckboxHandler
+from .color_picker import ColorPickerHandler
+from .date_input import DateInputHandler
+from .handler import WidgetHandler
+from .multiselect import MultiSelectHandler
+from .number_input import NumberInputHandler
 from .radio import RadioHandler
 from .selectbox import SelectboxHandler
-from .multiselect import MultiSelectHandler
 from .slider import SliderHandler
-from .text_input import TextInputHandler
-from .number_input import NumberInputHandler
 from .text_area import TextAreaHandler
-from .date_input import DateInputHandler
+from .text_input import TextInputHandler
 from .time_input import TimeInputHandler
-from .color_picker import ColorPickerHandler
 
 # Initialize handlers dictionary with base widgets
-HANDLERS = {
+HANDLERS: Dict[str, Type[WidgetHandler]] = {
     "checkbox": CheckboxHandler,
     "radio": RadioHandler,
     "selectbox": SelectboxHandler,
@@ -60,7 +63,8 @@ if hasattr(st, "data_editor"):
 
 # option menu (from streamlit_option_menu import option_menu) not in st
 try:
-    from streamlit_option_menu import option_menu
+    from streamlit_option_menu import option_menu  # type: ignore
+
     from .option_menu import OptionMenuHandler
 
     HANDLERS["option_menu"] = OptionMenuHandler

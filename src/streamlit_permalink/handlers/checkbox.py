@@ -1,17 +1,17 @@
+"""Handler for checkbox widget URL state synchronization."""
+
 from typing import Any
 
-from ..url_validators import validate_bool, validate_single_url_value
-
+from ..constants import FALSE_URL_VALUE, TRUE_URL_VALUE
+from ..url_validators import validate_bool, validate_single_url_value_disallow_none
 from .handler import WidgetHandler
-from ..constants import TRUE_URL_VALUE, FALSE_URL_VALUE
 
 
 class CheckboxHandler(WidgetHandler):
+    """Handler for checkbox widget URL state synchronization."""
 
     def validate_bool(self, value: str) -> bool:
-        """
-        Validate that the value is a boolean.
-        """
+        """Validate that the value is a boolean."""
 
         try:
             return validate_bool(value)
@@ -21,15 +21,19 @@ class CheckboxHandler(WidgetHandler):
                 err=err,
             )
 
+        raise RuntimeError("Unreachable")
+
     def sync_query_params(self) -> None:
-        str_value: str = self.validate_single_url_value(
-            self.url_value, allow_none=False
-        )
-        bool_value: bool = self.validate_bool(str_value)
+        """Sync checkbox value with URL parameter."""
+
+        str_value = self.validate_single_url_value_disallow_none(self.url_value)
+        bool_value = self.validate_bool(str_value)
         self.bound_args.arguments["value"] = bool_value
 
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
+        """Verify that the value is a boolean."""
+
         if not isinstance(value, bool):
             raise ValueError(
                 f"{cls.__name__} value must be a boolean, got {type(value)}"
@@ -38,4 +42,6 @@ class CheckboxHandler(WidgetHandler):
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
-        return [validate_bool(validate_single_url_value(value, allow_none=False))]
+        """Validate the URL value for checkbox."""
+
+        return [validate_bool(validate_single_url_value_disallow_none(value))]

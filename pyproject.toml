@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "."}
+package-dir = {"" = "src"}
 
 [tool.setuptools.dynamic]
 version = {attr = "streamlit_permalink.__version__"}
@@ -42,6 +42,6 @@ docs = [
 [tool.pylint]
 fail-under = 9.0
 max-line-length = 120
-max-positional-arguments = 7 
+max-positional-arguments = 7
 max-args = 7
 disable = ["duplicate-code"]

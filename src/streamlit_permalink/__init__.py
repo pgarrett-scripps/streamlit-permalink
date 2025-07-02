@@ -15,16 +15,18 @@ __version__ = "1.5.0"
 
 from typing import Any
 
-# Import all streamlit_permalink modules
-from .widgets import *
-from .utils import get_page_url, get_query_params, to_url_value, create_url
 from .constants import (
     EMPTY_LIST_URL_VALUE,
-    NONE_URL_VALUE,
     EMPTY_STRING_URL_VALUE,
-    TRUE_URL_VALUE,
     FALSE_URL_VALUE,
+    NONE_URL_VALUE,
+    TRUE_URL_VALUE,
 )
+from .utils import create_url, get_page_url, get_query_params, to_url_value
+
+# Import all streamlit_permalink modules
+from .widgets import *
+
 
 def __getattr__(name: str) -> Any:
     try:

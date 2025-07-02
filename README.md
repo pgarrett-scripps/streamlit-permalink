@@ -12,21 +12,20 @@ pip install streamlit-permalink-pg
 
 ![Demo](gif/demo.gif)
 
+### Interactive Docs App (All stp Widgets)
 
-### Interractive Docs App (All stp Widgets)
-
-[Interractive Docs (Click Me!)](https://stp-docs.streamlit.app/).
+[Interactive Docs (Click Me!)](https://stp-docs.streamlit.app/).
 
 ### Read The Docs
 
 [Read The Docs (Click Me!)](https://streamlit-permalink.readthedocs.io/en/latest/).
-
 
 ### Development and Testing
 
 To set up the development environment and run tests:
 
 1. Clone the repository and install in editable mode with test dependencies:
+
 ```bash
 git clone https://github.com/pgarrett-scripps/streamlit-permalink
 cd streamlit-permalink
@@ -34,6 +33,7 @@ pip install -e ".[test]"
 ```
 
 2. Run the tests:
+
 ```bash
 # Run all tests
 pytest tests

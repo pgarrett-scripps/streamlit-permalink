@@ -7,10 +7,12 @@ with stp.form("form"):
     stp.form_submit_button("Submit")
 
 st.caption("radio (url_key='radio')")
-radio = stp.radio("radio", options=['Hello', 'World'], index=1, url_key="radio")
+radio = stp.radio("radio", options=["Hello", "World"], index=1, url_key="radio")
 
 st.caption("text_input with compression (url_key='text_input')")
-text_input = stp.text_input("text_input (compressed)", value="Hello World", url_key="text_input", compress=True)
+text_input = stp.text_input(
+    "text_input (compressed)", value="Hello World", url_key="text_input", compress=True
+)
 
 page_link = stp.get_page_url()
 

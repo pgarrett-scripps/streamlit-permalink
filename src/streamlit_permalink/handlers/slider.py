@@ -1,15 +1,15 @@
-from datetime import datetime, date, time
-from typing import Any
+"""Handler for slider widget."""
+
+from datetime import date, datetime, time
+from typing import Any, List
 
 from ..url_validators import validate_multi_url_values
-
 from .handler import WidgetHandler
 
+VALID_TYPES: List[type] = [int, float, datetime, date, time]
 
-VALID_TYPES = [int, float, datetime, date, time]
 
-
-def parse_value(value_type, value: Any) -> Any:
+def parse_value(value_type: type, value: Any) -> Any:
 
     if value_type == int:
         return int(value)
@@ -39,14 +39,11 @@ def blind_parse_value(value: str) -> Any:
 
 
 class SliderHandler(WidgetHandler):
-    """
-    Handler for slider widget URL state synchronization.
-    """
+    """Handler for slider widget."""
 
-    def __init__(self, *args, **kwargs):
-        """
-        Initialize the HandlerSlider instance.
-        """
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initialize the HandlerSlider instance."""
+
         super().__init__(*args, **kwargs)
 
         self.min_value = self.bound_args.arguments.get("min_value")
@@ -86,9 +83,8 @@ class SliderHandler(WidgetHandler):
             )
 
     def check_bounds(self, value: Any) -> None:
-        """
-        Check if the value is within the bounds of min_value and max_value.
-        """
+        """Check that the value is within the specified bounds."""
+
         if self.min_value is not None and value < self.min_value:
             self.raise_url_error(
                 f"Value {value} is less than min_value {self.min_value}."
@@ -99,9 +95,7 @@ class SliderHandler(WidgetHandler):
             )
 
     def sync_query_params(self) -> None:
-        """
-        Parse the URL value and update bound_args with the parsed value.
-        """
+        """Sync slider value with URL parameter."""
 
         if self.is_range:
             str_values = self.validate_multi_url_values(
@@ -120,13 +114,15 @@ class SliderHandler(WidgetHandler):
             self.bound_args.arguments["value"] = parsed_values
 
         else:
-            str_value = self.validate_single_url_value(self.url_value, allow_none=False)
+            str_value = self.validate_single_url_value_disallow_none(self.url_value)
             parsed_value = parse_value(self.value_type, str_value)
             self.check_bounds(parsed_value)
             self.bound_args.arguments["value"] = parsed_value
 
     @classmethod
     def verify_update_url_value(cls, value: Any) -> Any:
+        """Verify that the value is of the correct type."""
+
         if isinstance(value, (list, tuple)):
             if len(value) != 2:
                 raise ValueError(
@@ -145,6 +141,11 @@ class SliderHandler(WidgetHandler):
 
     @classmethod
     def verify_get_url_value(cls, value: Any) -> Any:
-        return [blind_parse_value(v) for v in validate_multi_url_values(
-            value, min_values=1, max_values=2, allow_none=False
-        )]
+        """Verify that the value is a list of one or two strings."""
+
+        return [
+            blind_parse_value(v)
+            for v in validate_multi_url_values(
+                value, min_values=1, max_values=2, allow_none=False
+            )
+        ]
