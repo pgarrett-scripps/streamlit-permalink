@@ -70,8 +70,8 @@ publish: build
 	uv publish
 
 # Documentation targets
-docs:
-	cd docs && uv run make html
+docs: install-docs
+	cd docs && uv run --with sphinx --with sphinx-rtd-theme --with sphinx-autodoc-typehints --with sphinx-autoapi sphinx-build -b html source build/html
 
 serve-docs:
 	cd docs/build/html && python -m http.server 8000

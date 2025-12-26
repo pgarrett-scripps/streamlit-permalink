@@ -246,7 +246,7 @@ def decompress_text(compressed_text: str) -> str:
 
 def update_data_editor(df: pd.DataFrame, df_updates: Dict[str, Any]) -> pd.DataFrame:
     """Update a DataFrame based on the updates from the data editor."""
-
+    print(df_updates)
     for row_index, row_data in df_updates["edited_rows"].items():
         for column_name, value in row_data.items():
             df.at[int(row_index), column_name] = value  # type: ignore

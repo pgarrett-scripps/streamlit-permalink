@@ -460,9 +460,26 @@ class UrlAwareFormSubmitButton:
         return self.base_widget(*args, **kwargs)
 
 
+class _UnsupportedWidget:
+    """Placeholder for widgets that don't exist in this Streamlit version.
+    
+    Raises AttributeError when called to match Streamlit's behavior.
+    """
+    def __init__(self, name: str):
+        self.name = name
+    
+    def __call__(self, *args, **kwargs):
+        raise AttributeError(f"'{self.name}' is not available in this version of Streamlit")
+    
+    def __repr__(self):
+        return f"<UnsupportedWidget: {self.name}>"
+
+
 checkbox = UrlAwareWidget(st.checkbox)
 if hasattr(st, "toggle"):
     toggle = UrlAwareWidget(st.toggle)
+else:
+    toggle = _UnsupportedWidget("toggle")
 radio = UrlAwareWidget(st.radio)
 selectbox = UrlAwareWidget(st.selectbox)
 multiselect = UrlAwareWidget(st.multiselect)
@@ -476,20 +493,27 @@ time_input = UrlAwareWidget(st.time_input)
 color_picker = UrlAwareWidget(st.color_picker)
 if hasattr(st, "pills"):
     pills = UrlAwareWidget(st.pills)
+else:
+    pills = _UnsupportedWidget("pills")
 if hasattr(st, "segmented_control"):
     segmented_control = UrlAwareWidget(st.segmented_control)
+else:
+    segmented_control = _UnsupportedWidget("segmented_control")
 if hasattr(st, "data_editor"):
     data_editor = UrlAwareWidget(st.data_editor)
+else:
+    data_editor = _UnsupportedWidget("data_editor")
 form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
 
 
 try:
-    import streamlit_option_menu
+    import streamlit_option_menu # type: ignore
 
     option_menu = UrlAwareWidget(streamlit_option_menu.option_menu)
     HAS_OPTION_MENU = True
 except ImportError:
     HAS_OPTION_MENU = False
+    option_menu = _UnsupportedWidget("option_menu")
 
 
 class UrlAwareForm:
@@ -497,6 +521,8 @@ class UrlAwareForm:
     checkbox = UrlAwareWidget(st.checkbox)
     if hasattr(st, "toggle"):
         toggle = UrlAwareWidget(st.toggle)
+    else:
+        toggle = _UnsupportedWidget("toggle")
     radio = UrlAwareWidget(st.radio)
     selectbox = UrlAwareWidget(st.selectbox)
     multiselect = UrlAwareWidget(st.multiselect)
@@ -510,14 +536,22 @@ class UrlAwareForm:
     color_picker = UrlAwareWidget(st.color_picker)
     if hasattr(st, "pills"):
         pills = UrlAwareWidget(st.pills)
+    else:
+        pills = _UnsupportedWidget("pills")
     if hasattr(st, "segmented_control"):
         segmented_control = UrlAwareWidget(st.segmented_control)
+    else:
+        segmented_control = _UnsupportedWidget("segmented_control")
     if hasattr(st, "data_editor"):
         data_editor = UrlAwareWidget(st.data_editor)
+    else:
+        data_editor = _UnsupportedWidget("data_editor")
     form_submit_button = UrlAwareFormSubmitButton(st.form_submit_button)
 
     if HAS_OPTION_MENU:
         option_menu = UrlAwareWidget(streamlit_option_menu.option_menu)
+    else:
+        option_menu = _UnsupportedWidget("option_menu")
 
     def __init__(self, key, *args, **kwargs):
         self.base_form = st.form(key, *args, **kwargs)

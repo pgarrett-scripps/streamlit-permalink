@@ -54,7 +54,7 @@ napoleon_attr_annotations = True
 
 # AutoAPI settings
 autoapi_type = "python"
-autoapi_dirs = ["../../streamlit_permalink"]
+autoapi_dirs = ["../../src/streamlit_permalink"]
 autoapi_add_toctree_entry = True
 autoapi_python_class_content = "both"
 autoapi_member_order = "groupwise"
