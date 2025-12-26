@@ -24,20 +24,51 @@ pip install streamlit-permalink-pg
 
 To set up the development environment and run tests:
 
-1. Clone the repository and install in editable mode with test dependencies:
+1. Install `uv` (if not already installed):
+
+```bash
+pip install uv
+```
+
+2. Clone the repository and install in editable mode with dev dependencies:
 
 ```bash
 git clone https://github.com/pgarrett-scripps/streamlit-permalink
 cd streamlit-permalink
-pip install -e ".[test]"
+make install-dev
 ```
 
-2. Run the tests:
+3. Run the tests:
 
 ```bash
 # Run all tests
-pytest tests
+make test
+
+# Run tests with coverage
+make test-cov
+
+# Run tests in parallel
+make test-parallel
 
 # Run a specific test file
-pytest tests/test_checkbox.py
+uv run pytest tests/test_checkbox.py
+```
+
+4. Other useful commands:
+
+```bash
+# Format code
+make format
+
+# Run linter
+make lint
+
+# Type check
+make type-check
+
+# Build package
+make build
+
+# See all available commands
+make help
 ```

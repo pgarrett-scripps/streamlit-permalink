@@ -218,6 +218,9 @@ class TestMultiselectAdditional:
 
         # URL params should have string representations
         assert get_query_params(at)["num_multi"] == ["1", "Hello"]
+    
+    def test_multiselect_with_nonstring_options(self):
+        at = AppTest.from_function(create_multiselect_with_nonstring_app)
 
         # Test setting from URL with string representations
         set_query_params(at, {"num_multi": ["2", "World"]})
@@ -227,7 +230,7 @@ class TestMultiselectAdditional:
         assert 2 in at.multiselect[0].value
         assert "World" in at.multiselect[0].value
 
-    def test_multiselect_with_special_chars(self):
+    def test_multiselect_with_special_chars1(self):
         """Test multiselect with options containing spaces and special characters"""
         at = AppTest.from_function(create_multiselect_with_specialchars_app)
         at.run()
@@ -244,6 +247,11 @@ class TestMultiselectAdditional:
         assert "Option with spaces" in params["special_multi"]
         assert "Option/with/slashes" in params["special_multi"]
         assert "Option?with&symbols" in params["special_multi"]
+    
+    def test_multiselect_with_special_chars2(self):
+        """Test multiselect with options containing spaces and special characters"""
+        at = AppTest.from_function(create_multiselect_with_specialchars_app)
+
 
         # Test setting just one option from URL
         set_query_params(at, {"special_multi": ["Option?with&symbols"]})

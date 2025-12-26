@@ -120,7 +120,7 @@ class TestToggle:
         # Verify URL parameter is initialized to True
         assert get_query_params(at)["toggle_default_true"] == ["True"]
 
-    def test_toggle_case_insensitive_url_param(self):
+    def test_toggle_case_insensitive_url_param1(self):
         """Test toggle with case-insensitive URL parameter values"""
         # Test with lowercase 'true'
         set_query_params(self.at, {"toggle": "true"})
@@ -130,6 +130,8 @@ class TestToggle:
         assert not self.at.exception
         assert self.at.toggle[0].value is True
 
+    def test_toggle_case_insensitive_url_param2(self):
+        """Test toggle with case-insensitive URL parameter values"""
         # Test with mixed case 'FaLsE'
         set_query_params(self.at, {"toggle": "FaLsE"})
         self.at.run()

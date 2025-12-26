@@ -8,7 +8,7 @@ def create_single_select_slider_app():
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
     stp.select_slider(
-        "Single Select Slider", options=OPTIONS, value="M", url_key="select_slider"
+        "Single Select Slider", options=OPTIONS, value="M", key="select_slider"
     )
 
 
@@ -17,7 +17,7 @@ def create_range_select_slider_app():
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
     stp.select_slider(
-        "Range Select Slider", options=OPTIONS, value=("S", "L"), url_key="range_select"
+        "Range Select Slider", options=OPTIONS, value=("S", "L"), key="range_select"
     )
 
 
@@ -28,13 +28,13 @@ def create_form_select_slider_app():
     with form:
         OPTIONS = ["XS", "S", "M", "L", "XL"]
         single = form.select_slider(
-            "Form Single Select", options=OPTIONS, value="M", url_key="form_select"
+            "Form Single Select", options=OPTIONS, value="M", key="form_select"
         )
         range_select = form.select_slider(
             "Form Range Select",
             options=OPTIONS,
             value=("S", "L"),
-            url_key="form_range_select",
+            key="form_range_select",
         )
         submitted = form.form_submit_button("Submit")
 
@@ -44,7 +44,7 @@ def create_no_value_select_slider_app():
 
     OPTIONS = ["XS", "S", "M", "L", "XL"]
     stp.select_slider(
-        "No Value Select Slider", options=OPTIONS, url_key="no_value_select"
+        "No Value Select Slider", options=OPTIONS, key="no_value_select"
     )
 
 
@@ -53,7 +53,7 @@ def create_numeric_select_slider_app():
 
     OPTIONS = [1, 2, 3, 4, 5]
     stp.select_slider(
-        "Numeric Select Slider", options=OPTIONS, value=3, url_key="numeric_select"
+        "Numeric Select Slider", options=OPTIONS, value=3, key="numeric_select"
     )
 
 
@@ -62,7 +62,7 @@ def create_numeric_range_select_slider_app():
 
     OPTIONS = [1, 2, 3, 4, 5]
     stp.select_slider(
-        "Numeric Range Select", options=OPTIONS, value=(2, 4), url_key="numeric_range"
+        "Numeric Range Select", options=OPTIONS, value=(2, 4), key="numeric_range"
     )
 
 
@@ -71,7 +71,7 @@ def create_mixed_types_select_slider_app():
 
     OPTIONS = [1, "2", 3.0, "four", False]
     stp.select_slider(
-        "Mixed Types Select", options=OPTIONS, value="2", url_key="mixed_types"
+        "Mixed Types Select", options=OPTIONS, value="2", key="mixed_types"
     )
 
 
@@ -440,7 +440,7 @@ class TestMixedTypesSelectSlider:
         # Verify select slider reflects URL state
         assert self.at.select_slider[0].value == False
 
-    def test_mixed_types_select_slider_numeric_options(self):
+    def test_mixed_types_select_slider_numeric_options1(self):
         """Test mixed types select slider with numeric options"""
         # Set initial URL parameter to numeric value
         set_query_params(self.at, {"mixed_types": "1"})
@@ -452,6 +452,8 @@ class TestMixedTypesSelectSlider:
 
         # Verify select slider reflects URL state
         assert self.at.select_slider[0].value == 1
+
+    def test_mixed_types_select_slider_numeric_options2(self):
 
         # Try float value
         set_query_params(self.at, {"mixed_types": "3.0"})

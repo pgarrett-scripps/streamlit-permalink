@@ -414,22 +414,6 @@ class UrlAwareFormSubmitButton:
         return self.base_widget(*args, **kwargs)
 
     def call_inside_form(self, _form: "UrlAwareForm", *args, **kwargs):
-        """Call the form submit button inside a form.
-
-        Parameters
-        ----------
-        _form : UrlAwareForm
-            The form instance
-        *args
-            Positional arguments passed to the submit button
-        **kwargs
-            Keyword arguments passed to the submit button
-
-        Returns
-        -------
-        Any
-            The result of the submit button call
-        """
 
         if V(st.__version__) < V("1.30"):
             url = st.experimental_get_query_params()
@@ -509,20 +493,6 @@ except ImportError:
 
 
 class UrlAwareForm:
-    """A wrapper class for Streamlit forms that adds URL parameter support.
-
-    Enables form fields to be controlled via URL parameters and updates the URL
-    when the form is submitted.
-
-    Parameters
-    ----------
-    key : str
-        The unique key for the form
-    *args
-        Additional positional arguments passed to st.form
-    **kwargs
-        Additional keyword arguments passed to st.form
-    """
 
     checkbox = UrlAwareWidget(st.checkbox)
     if hasattr(st, "toggle"):
@@ -555,51 +525,16 @@ class UrlAwareForm:
         self.field_mapping = {}
 
     def __enter__(self):
-        """Enter the form context.
-
-        Returns
-        -------
-        Any
-            The result of the base form's __enter__ method
-        """
         global _active_form
         _active_form = self
         return self.base_form.__enter__()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the form context.
-
-        Parameters
-        ----------
-        exc_type : type
-            The exception type if an exception was raised
-        exc_value : Exception
-            The exception value if an exception was raised
-        traceback : traceback
-            The traceback if an exception was raised
-
-        Returns
-        -------
-        Any
-            The result of the base form's __exit__ method
-        """
         global _active_form
         _active_form = None
         return self.base_form.__exit__(exc_type, exc_value, traceback)
 
     def __getattr__(self, attr):
-        """Get an attribute from the base form.
-
-        Parameters
-        ----------
-        attr : str
-            The attribute name
-
-        Returns
-        -------
-        Any
-            The attribute value
-        """
         return getattr(self.base_form, attr)
 
 

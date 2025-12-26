@@ -108,7 +108,7 @@ class TestCheckbox:
         # Verify URL parameter is initialized to True
         assert get_query_params(at)["check_default_true"] == ["True"]
 
-    def test_checkbox_case_insensitive_url_param(self):
+    def test_checkbox_case_insensitive_url_param1(self):
         """Test checkbox with case-insensitive URL parameter values"""
         # Test with lowercase 'true'
         set_query_params(self.at, {"check": "true"})
@@ -117,6 +117,9 @@ class TestCheckbox:
         # Should accept lowercase 'true'
         assert not self.at.exception
         assert self.at.checkbox[0].value is True
+
+    def test_checkbox_case_insensitive_url_param2(self):
+        """Test checkbox with case-insensitive URL parameter values"""
 
         # Test with mixed case 'FaLsE'
         set_query_params(self.at, {"check": "FaLsE"})
